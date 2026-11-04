@@ -40,10 +40,10 @@ Two adjustments decide the **build order** for ad revenue. They don't change the
 | 17 | PDF to JPG | 4 | 3 | 5 | **60** | Med | High | ✅ |
 | 18 | Split PDF | 4 | 3 | 5 | **60** | Med | High | ✅ |
 | 19 | Organize / delete PDF pages | 4 | 3 | 5 | **60** | Med | Med | ✅ |
-| 20 | **Fill PDF form** | 3 | 5 | 4 | **60** | High | Med | 🔜 |
+| 20 | **Fill PDF form** (in Edit PDF) | 3 | 5 | 4 | **60** | High | Med | ✅ |
 | 21 | Image compressor (bulk, TinyPNG-style PNG) | 5 | 2 | 5 | **50** | Med | High | ✅ |
 | 22 | **Passport photo maker** (white background, print sheet) | 4 | 4 | 3 | **48** | Med | Med | ✅ |
-| 23 | **Unlock / protect PDF** (qpdf WASM) | 4 | 4 | 3 | **48** | Med | Med | 🔜 |
+| 23 | **Unlock / protect PDF** (qpdf WASM) + e-Aadhaar password page | 4 | 4 | 3 | **48** | Med | Med | ✅ |
 | 24 | **Image to text (OCR)** | 4 | 3 | 4 | **48** | Med | High | ✅ |
 | 25 | **Video to GIF** | 3 | 4 | 4 | **48** | Low | Med | ✅ |
 | 26 | **MP3 cutter / ringtone maker** | 3 | 4 | 4 | **48** | Low | Med | ✅ |
@@ -78,8 +78,13 @@ Two adjustments decide the **build order** for ad revenue. They don't change the
 | 55 | Unit converter (gaj, bigha, marla, cent, guntha) | 5 | 1 | 5 | **25** | Med | Med | ✅ |
 | 56 | Time zone converter + meeting planner (IST ↔ US/UK/EU) | 4 | 1 | 5 | **20** | Med | High | ✅ |
 | 57 | BMI (Indian cut-offs), days between dates, password generator | 5 | 1 | 5 | **25** | Low | High | ✅ |
+| 58 | NPS calculator (Dec 2025 exit rules) + retirement planner | 4 | 2 | 5 | **40** | **Very high** | Med | ✅ |
+| 59 | Compress PDF to 100 KB / 200 KB / … (6 pages, auto-fit) | 4 | 3 | 4 | **48** | Med | **Low** | ✅ |
+| 60 | Salary slip generator | 4 | 4 | 4 | **64** | **High** | Med | ✅ |
+| 61 | Compound / simple interest, inflation, discount | 5 | 1 | 5 | **25** | Med | High | ✅ |
+| 62 | Hindi, Bengali, Marathi, Telugu, Tamil versions of every tool | – | – | – | – | Med | **Low** | ✅ |
 
-**Built now: 73 tools and 131 pages in total** (tools plus exam, KB-size, loan-type, country and currency-pair landing pages).
+**Built now: 82 tools and 603 pages in 6 languages** (tools plus exam, KB-size, PDF-size, loan-type, country and currency-pair landing pages, and the translated pages).
 
 ## 3. Build order from here
 
@@ -87,14 +92,13 @@ Done since the first plan: Edit PDF, background remover (MediaPipe, Apache-2.0),
 
 Next, in order (shared engines first, then high RPM):
 
-1. **Hindi versions** of the top 10 India pages (`/hi/...` with hreflang). Roughly doubles the India search surface with low competition.
-2. **Salary slip and quotation generators** on the invoice engine (high RPM, low competition).
-3. **NPS and retirement planner** on the finance engine.
-4. **Unlock / protect PDF** with qpdf-wasm (Apache-2.0).
-5. **Fill PDF form** on the Edit PDF overlay engine.
-6. **More country pages** for the abroad calculator as Search Console shows demand (one entry in `src/lib/abroad.ts`).
-7. **Bank statement analyzer** (on-device PDF parsing). Strong privacy story, very high RPM, low competition.
-8. Later: speech to text (Whisper, needs a model on R2), PDF ↔ Word (needs a server).
+1. **Native-speaker review** of the five language packs, then translate the most-visited tools' FAQs fully (starting with Hindi).
+2. **Translated exam pages** (`/hi/ssc-photo-resizer` …) and Hindi KB-size pages: huge Hindi search volume, very low competition.
+3. **Quotation generator** and **GST e-way-bill-style delivery challan** on the invoice engine.
+4. **Aadhaar card print layout** (front + back on one A4 page) and **PDF to text** for e-Aadhaar/e-PAN.
+5. **More country pages** for the abroad calculator as Search Console shows demand.
+6. **Bank statement analyzer** (on-device PDF parsing). Strong privacy story, very high RPM, low competition.
+7. Later: speech to text (Whisper, needs a model on R2), PDF ↔ Word (needs a server).
 
 Let real data reorder this list: after a month, the PostHog "Top searches" chart and Search Console impressions show what people want that we don't have yet.
 

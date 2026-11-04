@@ -28,8 +28,9 @@ const steps = ['Step one.', 'Step two.'];
    - `lib/media.ts`: `probe`, `convert` (Mediabunny/WebCodecs: trim, resize, transcode, extract audio)
    - `lib/finance.ts`, `lib/format.ts`, `lib/charts.ts`, `components/SliderField.astro` for calculators
    - **Lazy-load heavy libraries** with `await import('…')` inside the click handler, never at the top of the page.
-4. **Test**: add a spec in `tests/specs/` (see the existing ones), then run `npm run build && npm run test:e2e -- my-tool`.
-5. **Ship**: commit and push; Cloudflare redeploys automatically.
+4. **Translate the name**: add `'my-tool': ['name', 'short text']` to each file in `src/i18n/lang/` (hi, bn, mr, te, ta). The tool then gets `/hi/my-tool` and the other language pages automatically, with translated steps and FAQs. `npm run test:unit` fails until all five are filled in. If the tool has new common labels (button or field text), add them to `phrases` in each language file.
+5. **Test**: add a spec in `tests/specs/` (see the existing ones), then run `npm run build && npm run test:e2e -- my-tool`.
+6. **Ship**: commit and push; Cloudflare redeploys automatically.
 
 ## Content rules (for SEO and AdSense)
 - One page = one search intent. Don't create near-duplicate pages that only swap a number.

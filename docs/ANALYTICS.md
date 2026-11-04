@@ -30,7 +30,7 @@ The default creates 1 overall dashboard, 9 category dashboards and 1 dashboard p
 | **Engagement** | Tasks per day; tasks per active user; sessions; most-used tools; output types | `task_completed` total / avg per user / breakdown `tool`, `output`; `$pageview` unique sessions |
 | **Retention** | Weekly retention for task completers and for all visitors; WAU; PWA installs | Retention on `task_completed` and `$pageview` (first-time cohort, weekly, 8 weeks) |
 | **Revenue** | Estimated ad revenue (total and by tool); donation clicks | `ad_filled.est_revenue_usd` (= eCPM ÷ 1000 per filled ad); `donate_clicked` by method. **Real revenue is in AdSense**; PostHog shows which tools earn it. |
-| **Adoption** | Category reach; one-click presets used; cross-tool discovery | `$pageview` by `category`; `preset_used` by `preset`; `related_tool_clicked` by `to` |
+| **Adoption** | Category reach; one-click presets used; cross-tool discovery; languages | `$pageview` by `category`; `preset_used` by `preset`; `related_tool_clicked` by `to`; visitors and tasks by `lang`; `language_changed` by `to` |
 | **Referral** | Share clicks per tool | `share_clicked` |
 | **Discovery** | Top searches on the home page | `search_used.query` (shows tools people want that we don't have yet) |
 | **Reliability** | Errors by tool and message | `error_shown` |
@@ -41,7 +41,7 @@ Category and tool dashboards repeat the core set (visitors, sources, funnel, com
 
 | Event | When | Properties |
 |---|---|---|
-| `$pageview` / `$pageleave` | Every page | super-properties `page_type` (home, hub, tool, content), `tool`, `category`; URL **without** query string |
+| `$pageview` / `$pageleave` | Every page | super-properties `page_type` (home, hub, tool, content), `tool`, `category`, `lang` (en, hi, bn, mr, te, ta); URL **without** query string |
 | `tool_started` | First interaction on a tool page (once per view) | `method`: `file`, `input`, `preset` |
 | `file_added` | Files picked, dropped or pasted | `count`, `size_mb` (rounded) |
 | `task_completed` | Download, copy, share, or a calculator result seen | `output` (e.g. `pdf`, `jpg`, `mp4`, `calculation`, `share`, `copy`), `first_in_view` |
@@ -53,6 +53,7 @@ Category and tool dashboards repeat the core set (visitors, sources, funnel, com
 | `ad_filled` | An AdSense slot is filled | `slot`, `est_revenue_usd` |
 | `error_shown` | A red error message is shown | `message` (120 chars max) |
 | `pwa_installed` | App installed | (none) |
+| `language_changed` | Language picked in the header (or "Read in English") | `to` |
 
 ## 4. Privacy guarantees (keeps the "no data stored" promise honest)
 
