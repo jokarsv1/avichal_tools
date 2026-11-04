@@ -1,0 +1,31 @@
+{
+  "name": "avichal-tools",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Free, open-source, no-login utility tools that run 100% in your browser.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "deploy": "astro build && wrangler deploy",
+    "test": "node tests/run.mjs"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
+    "@mediabunny/aac-encoder": "^1.65.1",
+    "@mediabunny/mp3-encoder": "^1.65.1",
+    "astro": "^7.4.5",
+    "fflate": "^0.8.3",
+    "heic-to": "^1.6.7",
+    "mediabunny": "^1.65.1",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.5.438",
+    "qrcode": "^1.5.4",
+    "upng-js": "^2.1.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.40.0"
+  }
+}

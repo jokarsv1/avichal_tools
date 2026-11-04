@@ -1,0 +1,155 @@
+---
+import '../styles/global.css';
+import { SITE, ADS, ANALYTICS } from '../config/site';
+import { CATEGORIES, LIVE_TOOLS } from '../data/tools';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Path of this page, e.g. "/compress-pdf". Used for the canonical URL. */
+  path: string;
+  /** JSON-LD objects for this page. */
+  schema?: Record<string, unknown>[];
+  activeCategory?: string;
+  noindex?: boolean;
+  ogImage?: string;
+  /** Skip the brand suffix in <title> (home page). */
+  rawTitle?: boolean;
+}
+
+const { title, description, path, schema = [], activeCategory, noindex = false, ogImage = '/og.png', rawTitle = false } = Astro.props;
+const fullTitle = rawTitle ? title : `${title} | ${SITE.name}`;
+const canonical = SITE.url + (path === '/' ? '/' : path.replace(/\/$/, ''));
+const ogUrl = ogImage.startsWith('http') ? ogImage : SITE.url + ogImage;
+const popular = LIVE_TOOLS.filter((t) => t.popular).slice(0, 8);
+const year = new Date().getFullYear();
+const isProd = import.meta.env.PROD;
+const cfBeacon = ANALYTICS.cloudflareToken ? JSON.stringify({ token: ANALYTICS.cloudflareToken }) : '';
+---
+<!doctype html>
+<html lang={SITE.locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <meta name="theme-color" content={SITE.themeColor} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogUrl} />
+    {schema.map((s) => <script type="application/ld+json" set:html={JSON.stringify(s)} />)}
+    {ADS.client && <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin />}
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="container bar">
+        <a class="brand" href="/" aria-label={`${SITE.name} home`}>
+          <span class="brand-mark" aria-hidden="true">✦</span>{SITE.name}
+        </a>
+        <nav class="cat-nav" aria-label="Tool categories">
+          {CATEGORIES.map((c) => (
+            <a href={c.path} aria-current={activeCategory === c.id ? 'page' : undefined}>{c.label}</a>
+          ))}
+        </nav>
+        <a class="header-cta" href="/support">☕ Support</a>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div>
+            <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">✦</span>{SITE.name}</a>
+            <p style="margin-top:10px">Free, open-source tools that run entirely in your browser. No login, no watermark, and your files never leave your device.</p>
+            <p>Contact: <a href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
+          </div>
+          <div>
+            <h2>Popular tools</h2>
+            <ul>{popular.map((t) => <li><a href={`/${t.slug}`}>{t.name}</a></li>)}</ul>
+          </div>
+          <div>
+            <h2>Categories</h2>
+            <ul>{CATEGORIES.map((c) => <li><a href={c.path}>{c.label} tools</a></li>)}</ul>
+          </div>
+          <div>
+            <h2>About</h2>
+            <ul>
+              <li><a href="/about">About us</a></li>
+              <li><a href="/contact">Contact</a></li>
+              <li><a href="/roadmap">Roadmap &amp; requests</a></li>
+              <li><a href="/support">Support the project</a></li>
+              <li><a href="/privacy-policy">Privacy policy</a></li>
+              <li><a href="/terms">Terms of use</a></li>
+              <li><a href={SITE.github} rel="noopener">Source code (GitHub)</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>© {year} {SITE.name}. Open source under the MIT licence.</span>
+          <span>Made in India 🇮🇳 for everyone.</span>
+        </div>
+      </div>
+    </footer>
+
+    {ADS.client && (
+      <script is:inline define:vars={{ client: ADS.client }}>
+        // Load AdSense after the page is interactive so it never delays the tool (Core Web Vitals).
+        (function () {
+          function pushSlots() {
+            document.querySelectorAll('ins.adsbygoogle:not([data-pushed])').forEach(function (el) {
+              if (el.offsetWidth === 0) return; // hidden (e.g. sidebar on mobile)
+              el.setAttribute('data-pushed', '1');
+              try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+            });
+          }
+          function load() {
+            var s = document.createElement('script');
+            s.async = true;
+            s.crossOrigin = 'anonymous';
+            s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + client;
+            s.onload = pushSlots;
+            document.head.appendChild(s);
+          }
+          var idle = window.requestIdleCallback || function (cb) { setTimeout(cb, 1200); };
+          if (document.readyState === 'complete') idle(load); else addEventListener('load', function () { idle(load); });
+          window.__pushAds = pushSlots;
+        })();
+      </script>
+    )}
+    {isProd && cfBeacon && <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={cfBeacon}></script>}
+    {isProd && ANALYTICS.ga4Id && (
+      <>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${ANALYTICS.ga4Id}`}></script>
+        <script is:inline define:vars={{ id: ANALYTICS.ga4Id }}>
+          window.dataLayer = window.dataLayer || [];
+          function gtag() { dataLayer.push(arguments); }
+          gtag('js', new Date());
+          gtag('config', id);
+        </script>
+      </>
+    )}
+    {isProd && (
+      <script is:inline>
+        if ('serviceWorker' in navigator) addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function () {}); });
+      </script>
+    )}
+  </body>
+</html>

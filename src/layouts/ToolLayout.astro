@@ -1,0 +1,146 @@
+---
+/**
+ * Layout for every tool page. Gives each page, for free:
+ *  - unique <title>/description/canonical (from src/data/tools.ts)
+ *  - WebApplication + BreadcrumbList + FAQPage structured data
+ *  - privacy badges, reserved ad slots, how-to steps, FAQ, related tools, support box
+ * The tool UI goes in the default slot; long-form SEO copy goes in the "content" slot.
+ */
+import Base from './Base.astro';
+import AdSlot from '../components/AdSlot.astro';
+import ToolTile from '../components/ToolTile.astro';
+import SupportBox from '../components/SupportBox.astro';
+import { SITE } from '../config/site';
+import { getTool, getCategory, relatedTools } from '../data/tools';
+
+export interface Faq { q: string; a: string }
+interface Props {
+  slug: string;
+  /** Override registry values (used by programmatic pages like /ssc-photo-resizer). */
+  path?: string;
+  title?: string;
+  description?: string;
+  h1?: string;
+  lead?: string;
+  steps?: string[];
+  faqs?: Faq[];
+  /** Badges under the H1. */
+  badges?: string[];
+  /** Extra breadcrumb level label (for programmatic pages). */
+  crumb?: string;
+}
+
+const tool = getTool(Astro.props.slug);
+const cat = getCategory(tool.category);
+const {
+  path = `/${tool.slug}`,
+  title = tool.title,
+  description = tool.description,
+  h1 = tool.name,
+  lead = tool.description,
+  steps = [],
+  faqs = [],
+  badges = ['🔒 Files stay on your device', '✅ No login', '🚫 No watermark', '∞ No limits'],
+  crumb,
+} = Astro.props;
+const strip = (s: string) => s.replace(/<[^>]+>/g, '');
+const url = SITE.url + path;
+const related = relatedTools(tool.slug);
+
+const schema: Record<string, unknown>[] = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: h1,
+    url,
+    description,
+    applicationCategory: tool.category === 'finance' ? 'FinanceApplication' : 'UtilitiesApplication',
+    operatingSystem: 'Any (runs in the browser)',
+    browserRequirements: 'Requires JavaScript',
+    isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+    publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE.url + '/' },
+      { '@type': 'ListItem', position: 2, name: `${cat.label} tools`, item: SITE.url + cat.path },
+      { '@type': 'ListItem', position: 3, name: h1, item: url },
+    ],
+  },
+];
+if (faqs.length) {
+  schema.push({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: strip(f.a) } })),
+  });
+}
+---
+<Base title={title} description={description} path={path} schema={schema} activeCategory={cat.id}>
+  <slot name="head" slot="head" />
+  <div class="container">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a> › <a href={cat.path}>{cat.label} tools</a> › {crumb ? <><a href={`/${tool.slug}`}>{tool.name}</a> › {crumb}</> : <span>{h1}</span>}
+    </nav>
+    <div class="tool-layout">
+      <div>
+        <header class="tool-hero">
+          <h1>{h1}</h1>
+          <p class="lead" set:html={lead} />
+          <div class="trust">{badges.map((b) => <span>{b}</span>)}</div>
+          {tool.desktopOnly && <p class="hint" style="margin-top:8px">💻 Works best on a desktop or laptop browser (Chrome, Edge, Firefox).</p>}
+        </header>
+
+        <section class="card tool-card" aria-label={h1}>
+          <noscript><p class="status warn">This tool needs JavaScript. It runs entirely in your browser.</p></noscript>
+          <slot />
+        </section>
+
+        <AdSlot slot="belowTool" />
+
+        <article class="prose">
+          <slot name="content" />
+          {steps.length > 0 && (
+            <>
+              <h2>How to use the {tool.name.toLowerCase()} tool</h2>
+              <ol>{steps.map((s) => <li set:html={s} />)}</ol>
+            </>
+          )}
+          <AdSlot slot="inContent" />
+          <h2>Why {SITE.name}?</h2>
+          <ul>
+            <li><b>Private by design:</b> your files are processed by your own browser and are never uploaded to a server.</li>
+            <li><b>Free with no catches:</b> no account, no watermark, no "credits" and no daily limit.</li>
+            <li><b>Works offline:</b> once the page has loaded, most tools keep working without internet.</li>
+            <li><b>Open source:</b> anyone can read the code on <a href={SITE.github} rel="noopener">GitHub</a>.</li>
+          </ul>
+          {faqs.length > 0 && (
+            <section class="faq">
+              <h2>Frequently asked questions</h2>
+              {faqs.map((f) => (
+                <details>
+                  <summary>{f.q}</summary>
+                  <p set:html={f.a} />
+                </details>
+              ))}
+            </section>
+          )}
+        </article>
+
+        {related.length > 0 && (
+          <section>
+            <div class="section-head"><h2>Related tools</h2><a href={cat.path}>All {cat.label.toLowerCase()} tools →</a></div>
+            <div class="tool-grid">{related.map((t) => <ToolTile tool={t} />)}</div>
+          </section>
+        )}
+        <SupportBox />
+      </div>
+      <aside class="tool-aside" aria-label="Sidebar">
+        <AdSlot slot="sidebar" />
+      </aside>
+    </div>
+  </div>
+</Base>

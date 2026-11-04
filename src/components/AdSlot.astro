@@ -1,0 +1,27 @@
+---
+/**
+ * A reserved-size ad container. Reserving the height up front prevents layout shift (CLS).
+ * - No ADS.client configured -> renders nothing (dev shows a dashed placeholder).
+ * - Client configured but no slot id -> renders nothing; AdSense Auto ads place ads themselves.
+ * Rules we follow to stay AdSense-compliant: always labelled "Advertisement", never next to the
+ * upload or download buttons, never styled like a button.
+ */
+import { ADS } from '../config/site';
+interface Props { slot: 'belowTool' | 'inContent' | 'sidebar' }
+const { slot } = Astro.props;
+const slotId = ADS.slots[slot];
+const showPlaceholder = !slotId && import.meta.env.DEV && ADS.showPlaceholdersInDev;
+const cls = `ad-slot ${slot === 'sidebar' ? 'sidebar' : ''}`;
+---
+{ADS.client && slotId ? (
+  <div class={cls} aria-label="Advertisement">
+    <span class="ad-label">Advertisement</span>
+    <ins class="adsbygoogle" style="display:block" data-ad-client={ADS.client} data-ad-slot={slotId}
+      data-ad-format={slot === 'sidebar' ? 'vertical' : 'auto'} data-full-width-responsive={slot === 'sidebar' ? 'false' : 'true'}></ins>
+  </div>
+) : showPlaceholder ? (
+  <div class={`${cls} placeholder`} aria-hidden="true">Ad slot: {slot}</div>
+) : null}
+<style is:global>
+  .ad-slot:has(ins[data-ad-status="unfilled"]) { display: none; }
+</style>

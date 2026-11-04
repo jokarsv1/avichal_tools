@@ -1,0 +1,23 @@
+---
+/**
+ * File picker that also accepts drag & drop and paste (Ctrl/Cmd+V).
+ * Client code listens for the "files" CustomEvent on the element (see src/lib/ui.ts -> onFiles).
+ */
+interface Props {
+  id: string;
+  accept: string;
+  multiple?: boolean;
+  title?: string;
+  hint?: string;
+  icon?: string;
+  compact?: boolean;
+  capture?: boolean;
+}
+const { id, accept, multiple = false, title = 'Choose a file', hint = 'or drag & drop it here', icon = '📂', compact = false } = Astro.props;
+---
+<div class={`dropzone ${compact ? 'compact' : ''}`} id={id} data-dropzone>
+  <input type="file" accept={accept} multiple={multiple} aria-label={title} />
+  <div class="dz-icon" aria-hidden="true">{icon}</div>
+  <p class="dz-title">{title}</p>
+  <p class="dz-hint">{hint}</p>
+</div>

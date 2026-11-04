@@ -1,0 +1,15 @@
+---
+import { SITE } from '../config/site';
+---
+<aside class="card support no-print">
+  <div class="emoji" aria-hidden="true">☕</div>
+  <div>
+    <h2>Found this useful?</h2>
+    <p>{SITE.name} is free and open source, with no login and no watermark. A small tip keeps the servers fast and the tools free.</p>
+    <div class="btn-row">
+      <a class="btn btn-primary btn-sm" href="/support">Buy me a coffee</a>
+      <a class="btn btn-sm" href={SITE.github} rel="noopener">⭐ Star on GitHub</a>
+      <a class="btn btn-sm" href="/roadmap">Request a tool</a>
+    </div>
+  </div>
+</aside>
