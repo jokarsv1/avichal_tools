@@ -14,6 +14,8 @@ import { SITE, ADS, USP } from '../config/site';
 import { getTool, getCategory, relatedTools } from '../data/tools';
 
 export interface Faq { q: string; a: string }
+/** One-click "Popular uses": either set form fields (CSS selector -> value) or link to a pre-filled URL. */
+export interface Preset { label: string; hint?: string; set?: Record<string, string | boolean>; href?: string }
 interface Props {
   slug: string;
   /** Override registry values (used by programmatic pages like /ssc-photo-resizer). */
@@ -28,6 +30,8 @@ interface Props {
   badges?: string[];
   /** Extra breadcrumb level label (for programmatic pages). */
   crumb?: string;
+  /** One-click quick starts for the most common tasks. */
+  presets?: Preset[];
 }
 
 const tool = getTool(Astro.props.slug);
@@ -42,7 +46,9 @@ const {
   faqs = [],
   badges: extraBadges = ['📵 Files never leave your device', '🚫 No watermark', '∞ No limits'],
   crumb,
+  presets = [],
 } = Astro.props;
+const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const strip = (s: string) => s.replace(/<[^>]+>/g, '');
 // The USP badges always come first; page-specific badges follow (duplicates of the USP are dropped).
 const badges = [...USP.short, ...extraBadges.filter((b) => !/no login|no account|free forever|no data/i.test(b))];
@@ -97,6 +103,14 @@ if (faqs.length) {
           {tool.desktopOnly && <p class="hint" style="margin-top:8px">💻 Works best on a desktop or laptop browser (Chrome, Edge, Firefox).</p>}
         </header>
 
+        {presets.length > 0 && (
+          <div class="quick" role="group" aria-label="Popular uses">
+            <span class="quick-label">⚡ One-click:</span>
+            {presets.map((p) => p.href
+              ? <a class="chip" href={p.href} title={p.hint}>{p.label}</a>
+              : <button type="button" class="chip" data-preset={JSON.stringify(p.set ?? {})} data-preset-id={slugify(p.label)} title={p.hint}>{p.label}</button>)}
+          </div>
+        )}
         <section class="card tool-card" aria-label={h1}>
           <noscript><p class="status warn">This tool needs JavaScript. It runs entirely in your browser.</p></noscript>
           <slot />
@@ -149,4 +163,28 @@ if (faqs.length) {
       )}
     </div>
   </div>
+  <script>
+    import { track } from '../lib/ui';
+    function apply(btn: HTMLElement, scroll = true) {
+      const set = JSON.parse(btn.dataset.preset || '{}') as Record<string, string | boolean>;
+      for (const [sel, v] of Object.entries(set)) {
+        document.querySelectorAll<HTMLElement>(sel).forEach((el) => {
+          if (el instanceof HTMLButtonElement || el.tagName === 'LABEL') { if (v) el.click(); return; }
+          const input = el as HTMLInputElement;
+          if (input.type === 'checkbox' || input.type === 'radio') input.checked = !!v;
+          else input.value = String(v);
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+      }
+      document.querySelectorAll('.quick .chip').forEach((c) => c.classList.toggle('active', c === btn));
+      track('preset_used', { preset: btn.dataset.presetId || '' });
+      const card = document.querySelector('.tool-card');
+      if (scroll && card && card.getBoundingClientRect().top > innerHeight * 0.6) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    document.querySelectorAll<HTMLElement>('.quick [data-preset]').forEach((b) => b.addEventListener('click', () => apply(b)));
+    const want = new URLSearchParams(location.search).get('preset');
+    const match = want && document.querySelector<HTMLElement>(`.quick [data-preset-id="${CSS.escape(want)}"]`);
+    if (match) setTimeout(() => apply(match, false), 0);
+  </script>
 </Base>

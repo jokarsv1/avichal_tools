@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Choose a PDF.', 'Pick a mode: extract pages, custom ranges, every page, or every N pages.', 'Type the page numbers if needed.', 'Press <b>Split PDF</b>. Multiple files download as a ZIP.'];
 ---
-<ToolLayout slug="split-pdf" h1="Split PDF" lead="Extract pages from a PDF or split it into several files by page ranges, single pages or equal parts. Free and private." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "1️⃣ Extract page 1", "set": {"input[name=sp-mode][value=extract]": true, "#sp-range": "1"}}, {"label": "📑 Every page separately", "set": {"input[name=sp-mode][value=each]": true}}, {"label": "✌️ Every 2 pages", "set": {"input[name=sp-mode][value=every]": true, "#sp-every": "2"}}, {"label": "🔟 Every 10 pages", "set": {"input[name=sp-mode][value=every]": true, "#sp-every": "10"}}]} slug="split-pdf" h1="Split PDF" lead="Extract pages from a PDF or split it into several files by page ranges, single pages or equal parts. Free and private." steps={steps} faqs={faqs}>
   <div class="stack">
     <Dropzone id="sp-drop" accept=".pdf,application/pdf" title="Choose a PDF to split" icon="✂️" />
     <div id="sp-panel" class="stack-sm hidden">

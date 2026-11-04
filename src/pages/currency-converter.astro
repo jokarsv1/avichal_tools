@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Enter the amount.', 'Choose the currencies (⇄ swaps them).', 'Read the result and the quick conversion tables.'];
 ---
-<ToolLayout slug="currency-converter" h1="Currency Converter (Live Rates)" lead="Convert between the rupee and 35 currencies, including US dollar, euro, pound and UAE dirham, at live mid-market rates. Free, no sign-up." steps={steps} faqs={faqs} badges={['💱 Live ECB rates', '🇮🇳 INR focused', '📵 Works offline']}>
+<ToolLayout presets={[{"label": "🇺🇸 USD → INR", "href": "/usd-to-inr"}, {"label": "🇦🇪 AED → INR", "href": "/aed-to-inr"}, {"label": "🇬🇧 GBP → INR", "href": "/gbp-to-inr"}, {"label": "🇪🇺 EUR → INR", "href": "/eur-to-inr"}, {"label": "🇸🇦 SAR → INR", "href": "/sar-to-inr"}]} slug="currency-converter" h1="Currency Converter (Live Rates)" lead="Convert between the rupee and 35 currencies, including US dollar, euro, pound and UAE dirham, at live mid-market rates. Free, no sign-up." steps={steps} faqs={faqs} badges={['💱 Live ECB rates', '🇮🇳 INR focused', '📵 Works offline']}>
   <CurrencyConverter />
   <Fragment slot="content">
     <h2>Popular conversions</h2>

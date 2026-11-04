@@ -7,7 +7,7 @@ const faqs = [
 ];
 const steps = ['Type the number or amount.', 'Choose the Indian or international system and the currency.', 'Copy the words.'];
 ---
-<ToolLayout slug="number-to-words" h1="Number to Words Converter" lead="Convert numbers and amounts to words in the Indian (lakh, crore) or international (million, billion) system, with rupees and paise for cheques." steps={steps} faqs={faqs} badges={['🇮🇳 Lakh & crore', '🧾 Cheque format', '✅ No login']}>
+<ToolLayout presets={[{"label": "🧾 Cheque (₹ in words)", "href": "/number-to-words?n=125000&s=indian&c=inr"}, {"label": "Lakh / crore", "href": "/number-to-words?n=12500000&s=indian&c=none"}, {"label": "Million / billion", "href": "/number-to-words?n=12500000&s=international&c=none"}, {"label": "$ USD", "href": "/number-to-words?n=1250.75&s=international&c=usd"}]} slug="number-to-words" h1="Number to Words Converter" lead="Convert numbers and amounts to words in the Indian (lakh, crore) or international (million, billion) system, with rupees and paise for cheques." steps={steps} faqs={faqs} badges={['🇮🇳 Lakh & crore', '🧾 Cheque format', '✅ No login']}>
   <div class="stack-sm">
     <div class="field"><label for="n-in">Number or amount</label><input id="n-in" data-key="n" type="text" inputmode="decimal" value="1250000.50" style="font-size:1.4rem;font-weight:700" /></div>
     <div class="grid-2">

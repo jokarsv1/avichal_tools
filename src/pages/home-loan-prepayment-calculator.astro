@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Enter your loan amount, interest rate and tenure.', 'Add a one-time prepayment (and when), and/or regular monthly or yearly extra payments.', 'Choose whether to reduce tenure or EMI.', 'See interest saved and how many months earlier you will be debt-free.'];
 ---
-<ToolLayout slug="home-loan-prepayment-calculator" h1="Home Loan Prepayment Calculator" lead="See how much interest you save and how much sooner you finish your loan by prepaying a lump sum or paying a little extra every month or year." steps={steps} faqs={faqs} badges={['💸 Interest saved', '⏩ Months saved', '📤 Shareable link', '✅ No login']}>
+<ToolLayout presets={[{"label": "₹5L once after 1 year", "href": "/home-loan-prepayment-calculator?p=5000000&r=8.5&y=20&l=500000&lm=12&me=0&ye=0&m=tenure"}, {"label": "1 extra EMI every year", "href": "/home-loan-prepayment-calculator?p=5000000&r=8.5&y=20&l=0&lm=1&me=0&ye=43391&m=tenure"}, {"label": "₹5,000 extra every month", "href": "/home-loan-prepayment-calculator?p=5000000&r=8.5&y=20&l=0&lm=1&me=5000&ye=0&m=tenure"}, {"label": "Bonus → lower EMI", "href": "/home-loan-prepayment-calculator?p=5000000&r=8.5&y=20&l=300000&lm=12&me=0&ye=0&m=emi"}]} slug="home-loan-prepayment-calculator" h1="Home Loan Prepayment Calculator" lead="See how much interest you save and how much sooner you finish your loan by prepaying a lump sum or paying a little extra every month or year." steps={steps} faqs={faqs} badges={['💸 Interest saved', '⏩ Months saved', '📤 Shareable link', '✅ No login']}>
   <div class="calc">
     <div class="stack">
       <SliderField id="p" key="p" label="Loan amount" unit="₹" min={100000} max={30000000} step={50000} value={5000000} />

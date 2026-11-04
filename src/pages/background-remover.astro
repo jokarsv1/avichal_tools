@@ -10,7 +10,7 @@ const faqs = [
 ];
 const steps = ['Choose a photo of a person (selfie, portrait, profile photo).', 'Wait a second while the background is removed on your device.', 'Pick transparent, white, colour or blur.', 'Download PNG (transparent) or JPG.'];
 ---
-<ToolLayout slug="background-remover" h1="Remove Background From Photo" lead="Remove the background from photos of people in one click: transparent PNG, white background for passport photos, any colour or a blurred 'portrait mode' effect. Free, HD, no watermark." steps={steps} faqs={faqs} badges={['🪄 AI on your device', '🖼️ Full resolution', '🚫 No watermark', '∞ No credits']}>
+<ToolLayout presets={[{"label": "⬜ White (passport / exam)", "set": {"[data-bg=white]": true}}, {"label": "🔲 Transparent PNG", "set": {"[data-bg=transparent]": true}}, {"label": "🟦 Blue (ID card)", "set": {"#bg-color": "#2563eb"}}, {"label": "🌫️ Blur (portrait mode)", "set": {"[data-bg=blur]": true}}]} slug="background-remover" h1="Remove Background From Photo" lead="Remove the background from photos of people in one click: transparent PNG, white background for passport photos, any colour or a blurred 'portrait mode' effect. Free, HD, no watermark." steps={steps} faqs={faqs} badges={['🪄 AI on your device', '🖼️ Full resolution', '🚫 No watermark', '∞ No credits']}>
   <div class="stack">
     <Dropzone id="bg-drop" accept="image/*,.heic,.heif" title="Choose a photo of a person" hint="Selfies, portraits, profile and passport photos · drag & drop or paste" icon="🪄" />
     <div id="bg-panel" class="stack-sm hidden">

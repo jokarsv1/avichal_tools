@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Enter the yearly deposit (₹250 to ₹1.5 lakh).', "Enter your daughter's current age and the interest rate.", 'See the maturity amount and the year-by-year balance.'];
 ---
-<ToolLayout slug="sukanya-samriddhi-calculator" h1="Sukanya Samriddhi Yojana (SSY) Calculator" lead="Calculate the maturity value of your daughter's Sukanya Samriddhi account: 15 years of deposits, maturity at 21 years, tax-free." steps={steps} faqs={faqs} badges={['👧 For girl child', '🇮🇳 Govt scheme', '📤 Shareable link']}>
+<ToolLayout presets={[{"label": "Max ₹1.5L / year", "href": "/sukanya-samriddhi-calculator?d=150000&r=8.2&g=1"}, {"label": "₹50,000 / year", "href": "/sukanya-samriddhi-calculator?d=50000&r=8.2&g=3"}, {"label": "₹1,000 / month", "href": "/sukanya-samriddhi-calculator?d=12000&r=8.2&g=0"}]} slug="sukanya-samriddhi-calculator" h1="Sukanya Samriddhi Yojana (SSY) Calculator" lead="Calculate the maturity value of your daughter's Sukanya Samriddhi account: 15 years of deposits, maturity at 21 years, tax-free." steps={steps} faqs={faqs} badges={['👧 For girl child', '🇮🇳 Govt scheme', '📤 Shareable link']}>
   <div class="calc">
     <div class="stack">
       <SliderField id="d" key="d" label="Yearly deposit" unit="₹" min={250} max={150000} step={250} value={150000} />

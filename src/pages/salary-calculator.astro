@@ -10,7 +10,7 @@ const faqs = [
 ];
 const steps = ['Enter your annual CTC and any variable/bonus component.', 'Adjust basic %, HRA %, PF and gratuity to match your offer letter.', 'Pick the tax regime (and rent for HRA under the old regime).', 'Read your monthly in-hand salary and the full breakdown.'];
 ---
-<ToolLayout slug="salary-calculator" h1="In-hand Salary Calculator (CTC to Take-home)" lead="Convert your CTC to monthly in-hand salary with PF, gratuity, professional tax and income tax (new or old regime, FY 2026-27)." steps={steps} faqs={faqs} badges={['🇮🇳 FY 2026-27', '💼 CTC → in-hand', '📤 Shareable link', '✅ No login']}>
+<ToolLayout presets={[{"label": "10 LPA", "href": "/salary-calculator?c=1000000&v=0&b=50&h=50&p=capped&g=1&t=2400&r=new&rp=0"}, {"label": "20 LPA", "href": "/salary-calculator?c=2000000&v=0&b=50&h=50&p=capped&g=1&t=2400&r=new&rp=0"}, {"label": "30 LPA + 10% variable", "href": "/salary-calculator?c=3000000&v=300000&b=50&h=50&p=capped&g=1&t=2400&r=new&rp=0"}, {"label": "50 LPA", "href": "/salary-calculator?c=5000000&v=500000&b=50&h=50&p=capped&g=1&t=2400&r=new&rp=0"}]} slug="salary-calculator" h1="In-hand Salary Calculator (CTC to Take-home)" lead="Convert your CTC to monthly in-hand salary with PF, gratuity, professional tax and income tax (new or old regime, FY 2026-27)." steps={steps} faqs={faqs} badges={['🇮🇳 FY 2026-27', '💼 CTC → in-hand', '📤 Shareable link', '✅ No login']}>
   <div class="calc">
     <div class="stack">
       <SliderField id="ctc" key="c" label="Annual CTC" unit="₹" min={100000} max={10000000} step={10000} value={1200000} />

@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Enter your current Indian CTC, city, family and lifestyle.', 'Pick the destination country and city.', 'Optionally ask to save 25% or 50% more than now.', 'Use the result (and the table for all cities) to negotiate your offer.'];
 ---
-<ToolLayout slug="salary-needed-abroad" h1="What Salary Should I Ask For Abroad?" lead="Enter your Indian CTC and lifestyle. We calculate the gross salary you need in the US, UK, Canada, Germany, Dubai, Singapore and more to save as much as you do now, or more." steps={steps} faqs={faqs} badges={['🤝 Negotiation helper', '🌍 25 cities', '💱 Live INR rates']}>
+<ToolLayout presets={[{"label": "20 LPA → USA", "href": "/salary-needed-abroad?ctc=2000000&ic=bengaluru&c=usa&ct=seattle&sp=0&k=0&l=moderate&m=25"}, {"label": "30 LPA → UK", "href": "/salary-needed-abroad?ctc=3000000&ic=bengaluru&c=uk&ct=london&sp=0&k=0&l=moderate&m=25"}, {"label": "15 LPA → Dubai (family)", "href": "/salary-needed-abroad?ctc=1500000&ic=hyderabad&c=uae&ct=dubai&sp=1&k=1&l=moderate&m=25"}, {"label": "25 LPA → Germany", "href": "/salary-needed-abroad?ctc=2500000&ic=pune&c=germany&ct=berlin&sp=0&k=0&l=moderate&m=25"}]} slug="salary-needed-abroad" h1="What Salary Should I Ask For Abroad?" lead="Enter your Indian CTC and lifestyle. We calculate the gross salary you need in the US, UK, Canada, Germany, Dubai, Singapore and more to save as much as you do now, or more." steps={steps} faqs={faqs} badges={['🤝 Negotiation helper', '🌍 25 cities', '💱 Live INR rates']}>
   <div class="calc" data-sna>
     <div class="stack-sm">
       <div class="grid-2">

@@ -8,7 +8,7 @@ const faqs = [
 ];
 const steps = ['Enter the amount you will invest once.', 'Set the expected annual return and the number of years.', 'See the future value and the year-by-year growth.'];
 ---
-<ToolLayout slug="lumpsum-calculator" h1="Lumpsum Calculator" lead="Calculate the future value of a one-time investment in mutual funds, stocks or FDs, with a year-by-year growth table." steps={steps} faqs={faqs} badges={['⚡ Instant', '📈 Year-wise growth', '📤 Shareable link', '✅ No login']}>
+<ToolLayout presets={[{"label": "₹1L × 10 yrs", "href": "/lumpsum-calculator?p=100000&r=12&y=10"}, {"label": "₹10L × 20 yrs", "href": "/lumpsum-calculator?p=1000000&r=12&y=20"}, {"label": "Bonus ₹2L × 5 yrs", "href": "/lumpsum-calculator?p=200000&r=11&y=5"}]} slug="lumpsum-calculator" h1="Lumpsum Calculator" lead="Calculate the future value of a one-time investment in mutual funds, stocks or FDs, with a year-by-year growth table." steps={steps} faqs={faqs} badges={['⚡ Instant', '📈 Year-wise growth', '📤 Shareable link', '✅ No login']}>
   <div class="calc">
     <div class="stack">
       <SliderField id="p" key="p" label="Investment amount" unit="₹" min={1000} max={50000000} step={1000} value={100000} />

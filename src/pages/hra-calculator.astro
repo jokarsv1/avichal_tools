@@ -8,7 +8,7 @@ const faqs = [
 ];
 const steps = ['Enter your annual basic + DA, HRA received and rent paid.', 'Choose whether you live in a metro city.', 'See the exempt and taxable HRA.'];
 ---
-<ToolLayout slug="hra-calculator" h1="HRA Exemption Calculator" lead="Find out how much of your House Rent Allowance is tax-free under Section 10(13A), and how much is taxable." steps={steps} faqs={faqs} badges={['🇮🇳 Old regime', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
+<ToolLayout presets={[{"label": "Metro: ₹50k basic", "href": "/hra-calculator?b=50000&h=20000&r=18000&m=1"}, {"label": "Non-metro: ₹30k basic", "href": "/hra-calculator?b=30000&h=12000&r=12000&m=0"}]} slug="hra-calculator" h1="HRA Exemption Calculator" lead="Find out how much of your House Rent Allowance is tax-free under Section 10(13A), and how much is taxable." steps={steps} faqs={faqs} badges={['🇮🇳 Old regime', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
   <div class="calc">
     <div class="stack-sm">
       <div class="grid-2">

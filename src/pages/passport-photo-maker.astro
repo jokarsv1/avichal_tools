@@ -20,7 +20,7 @@ const faqs = [
 ];
 const steps = ['Upload a front-facing photo taken against a plain light background.', 'Choose the photo size for your country or form.', 'Zoom and drag until your head is between the guide lines inside the oval.', 'Download a single photo, or a 4×6 / A4 print sheet (JPG or PDF).'];
 ---
-<ToolLayout slug="passport-photo-maker" h1="Passport Size Photo Maker" lead="Make passport and visa photos at home: crop to the official size (35 × 45 mm, 2 × 2 inch and more) and print 8 photos on a 4×6 sheet. Free, no upload." steps={steps} faqs={faqs} badges={['🖨️ 4×6 & A4 print sheets', '📏 300 DPI exact size', '🔒 No upload', '✅ No login']}>
+<ToolLayout presets={[{"label": "🇮🇳🇬🇧🇪🇺 35×45 mm", "set": {"#pp-size": "35x45"}}, {"label": "🇺🇸 2×2 inch", "set": {"#pp-size": "51x51"}}, {"label": "🇨🇦 50×70 mm", "set": {"#pp-size": "50x70"}}, {"label": "🇨🇳 33×48 mm", "set": {"#pp-size": "33x48"}}, {"label": "📮 Stamp size", "set": {"#pp-size": "20x25"}}, {"label": "⬜ White background", "set": {"#pp-white": true}}]} slug="passport-photo-maker" h1="Passport Size Photo Maker" lead="Make passport and visa photos at home: crop to the official size (35 × 45 mm, 2 × 2 inch and more) and print 8 photos on a 4×6 sheet. Free, no upload." steps={steps} faqs={faqs} badges={['🖨️ 4×6 & A4 print sheets', '📏 300 DPI exact size', '🔒 No upload', '✅ No login']}>
   <div class="stack">
     <Dropzone id="pp-drop" accept="image/*,.heic,.heif" title="Choose your photo" hint="Front-facing, plain light background · drag & drop" icon="🛂" />
     <div id="pp-panel" class="grid-2 hidden" style="align-items:start">

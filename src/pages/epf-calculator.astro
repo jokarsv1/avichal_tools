@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Enter your monthly basic + DA, age and current EPF balance.', 'Set the expected annual salary hike and the EPF interest rate.', 'See your retirement corpus and the year-by-year growth.'];
 ---
-<ToolLayout slug="epf-calculator" h1="EPF Calculator" lead="Estimate your Employees' Provident Fund corpus at retirement, with employer share, EPS split, salary hikes and the latest EPF interest rate." steps={steps} faqs={faqs} badges={['🇮🇳 EPFO rules', '📈 Salary hikes', '📤 Shareable link']}>
+<ToolLayout presets={[{"label": "₹25k basic, age 25", "href": "/epf-calculator?b=25000&a=25&bal=0&h=7&r=8.25&v=0"}, {"label": "₹50k basic, age 35", "href": "/epf-calculator?b=50000&a=35&bal=1000000&h=6&r=8.25&v=0"}, {"label": "With 10% VPF", "href": "/epf-calculator?b=40000&a=30&bal=300000&h=7&r=8.25&v=10"}]} slug="epf-calculator" h1="EPF Calculator" lead="Estimate your Employees' Provident Fund corpus at retirement, with employer share, EPS split, salary hikes and the latest EPF interest rate." steps={steps} faqs={faqs} badges={['🇮🇳 EPFO rules', '📈 Salary hikes', '📤 Shareable link']}>
   <div class="calc">
     <div class="stack">
       <SliderField id="b" key="b" label="Monthly basic + DA" unit="₹" min={5000} max={500000} step={500} value={30000} />

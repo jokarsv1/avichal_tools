@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Enter the deposit amount, interest rate and tenure.', 'Choose the compounding frequency (quarterly for most banks).', 'See the maturity amount and total interest.'];
 ---
-<ToolLayout slug="fd-calculator" h1="FD Calculator" lead="Calculate fixed deposit maturity value and interest with quarterly, monthly or yearly compounding, or payout FDs." steps={steps} faqs={faqs} badges={['⚡ Instant', '📤 Shareable link', '✅ No login']}>
+<ToolLayout presets={[{"label": "₹1L × 1 year", "href": "/fd-calculator?p=100000&r=7&m=12&c=4"}, {"label": "₹5L × 5 years (tax saver)", "href": "/fd-calculator?p=500000&r=6.5&m=60&c=4"}, {"label": "👴 Senior ₹10L × 3 yrs", "href": "/fd-calculator?p=1000000&r=7.75&m=36&c=4"}]} slug="fd-calculator" h1="FD Calculator" lead="Calculate fixed deposit maturity value and interest with quarterly, monthly or yearly compounding, or payout FDs." steps={steps} faqs={faqs} badges={['⚡ Instant', '📤 Shareable link', '✅ No login']}>
   <div class="calc">
     <div class="stack">
       <SliderField id="p" key="p" label="Deposit amount" unit="₹" min={1000} max={10000000} step={1000} value={100000} />

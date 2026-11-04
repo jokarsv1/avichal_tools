@@ -17,7 +17,7 @@ const steps = [
   'Wait for <b>✓ Pass</b>, then download and upload it to the portal.',
 ];
 ---
-<ToolLayout slug="exam-photo-resizer" h1="Exam Photo & Signature Resizer" lead="Resize your photo, signature, thumb impression and declaration to the exact KB and pixel size for SSC, IBPS, SBI, UPSC, NEET, JEE Main and PAN card forms." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "SSC photo", "set": {".kb-preset": "ssc-photo"}}, {"label": "SSC signature", "set": {".kb-preset": "ssc-sign"}}, {"label": "IBPS / SBI photo", "set": {".kb-preset": "ibps-photo"}}, {"label": "IBPS signature", "set": {".kb-preset": "ibps-sign"}}, {"label": "UPSC photo", "set": {".kb-preset": "upsc-photo"}}, {"label": "NEET photo", "set": {".kb-preset": "neet-passport"}}, {"label": "PAN photo", "set": {".kb-preset": "pan-photo"}}]} slug="exam-photo-resizer" h1="Exam Photo & Signature Resizer" lead="Resize your photo, signature, thumb impression and declaration to the exact KB and pixel size for SSC, IBPS, SBI, UPSC, NEET, JEE Main and PAN card forms." steps={steps} faqs={faqs}>
   <KbResizer groups={groups} defaultId="ibps-photo" />
   <Fragment slot="content">
     <h2>Photo and signature sizes for popular exams</h2>

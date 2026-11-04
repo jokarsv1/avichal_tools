@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Choose the type: link, text, Wi-Fi, contact card, email, phone or SMS.', 'Fill in the details.', 'Optionally pick colours, error correction and add a logo.', 'Download PNG or SVG, and test it with your phone camera.'];
 ---
-<ToolLayout slug="qr-code-generator" h1="QR Code Generator" lead="Create static QR codes for links, Wi-Fi, contacts, text, email, phone and SMS. They never expire and have no tracking. Add colours and a logo, then download PNG or SVG." steps={steps} faqs={faqs} badges={['♾️ Never expires', '🚫 No tracking', '🎨 Colours + logo', '✅ No login']}>
+<ToolLayout presets={[{"label": "🔗 Website link", "set": {"[data-type=url]": true}}, {"label": "📶 Wi-Fi password", "set": {"[data-type=wifi]": true}}, {"label": "👤 Contact card", "set": {"[data-type=vcard]": true}}, {"label": "💬 WhatsApp chat", "set": {"[data-type=url]": true, "#q-url": "https://wa.me/919876543210?text=Hi"}}, {"label": "💸 UPI payment", "href": "/upi-qr-code-generator"}]} slug="qr-code-generator" h1="QR Code Generator" lead="Create static QR codes for links, Wi-Fi, contacts, text, email, phone and SMS. They never expire and have no tracking. Add colours and a logo, then download PNG or SVG." steps={steps} faqs={faqs} badges={['♾️ Never expires', '🚫 No tracking', '🎨 Colours + logo', '✅ No login']}>
   <div class="calc">
     <div class="stack-sm">
       <div class="seg" role="group" aria-label="QR type" id="qr-types">

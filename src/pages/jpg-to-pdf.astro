@@ -10,7 +10,7 @@ const faqs = [
 ];
 const steps = ['Choose your images (JPG, PNG, WebP, HEIC).', 'Arrange the order; use <b>Sort A–Z</b> if your files are numbered.', 'Pick page size, orientation and margin.', 'Press <b>Convert to PDF</b>.'];
 ---
-<ToolLayout slug="jpg-to-pdf" h1="JPG to PDF" lead="Convert photos and scans (JPG, PNG, WebP, iPhone HEIC) into one PDF. Choose A4 or Letter, margins and order. Free, no watermark." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "📄 Scanned documents (A4)", "set": {"#jp-size": "a4", "#jp-margin": "18", "#jp-orient": "auto", "#jp-small": false}}, {"label": "📧 Small file for email", "set": {"#jp-size": "a4", "#jp-margin": "18", "#jp-small": true}}, {"label": "🖼️ Photo album (no margins)", "set": {"#jp-size": "fit", "#jp-margin": "0", "#jp-small": false}}, {"label": "🇺🇸 US Letter", "set": {"#jp-size": "letter", "#jp-margin": "18"}}]} slug="jpg-to-pdf" h1="JPG to PDF" lead="Turn phone photos and scans into one neat PDF (A4, straightened, in order), ready to email or upload." steps={steps} faqs={faqs}>
   <div class="stack">
     <Dropzone id="jp-drop" accept="image/*,.heic,.heif" multiple title="Choose images" hint="Add several at once · drag & drop or paste" icon="🖼️" />
     <div id="jp-panel" class="stack-sm hidden">

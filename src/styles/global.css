@@ -313,3 +313,22 @@ table.data tr.hl td { background: var(--primary-soft); font-weight: 700; }
 .ov-del { position: absolute; top: -12px; right: -12px; width: 24px; height: 24px; border-radius: 50%; border: 0; background: #e11d48; color: #fff; cursor: pointer; font-size: 12px; z-index: 2; }
 .ov-resize { position: absolute; right: -7px; bottom: -7px; width: 16px; height: 16px; background: #4f46e5; border-radius: 4px; cursor: nwse-resize; }
 .ov-pages.mode-draw .ov-page { cursor: crosshair; }
+
+/* One-click quick starts */
+.quick { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 12px; }
+.quick-label { white-space: nowrap; font-weight: 750; font-size: .9rem; color: var(--text); margin-right: 2px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border)); background: var(--surface); color: var(--text); font: inherit; font-size: .88rem; font-weight: 650; padding: 7px 12px; border-radius: 999px; cursor: pointer; text-decoration: none; min-height: 36px; }
+.chip:hover { background: var(--primary-soft); color: var(--primary); }
+.chip.active { background: var(--primary); border-color: var(--primary); color: var(--primary-ink); }
+
+/* Mobile: get users to the tool fast */
+@media (max-width: 640px) {
+  .trust { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-right: -16px; padding-right: 16px; }
+  .trust::-webkit-scrollbar { display: none; }
+  .trust span { white-space: nowrap; }
+  .tool-hero .lead { font-size: 1rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .tool-hero h1 { margin-bottom: .3em; }
+  .quick { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-right: -16px; padding-right: 16px; }
+  .quick::-webkit-scrollbar { display: none; }
+  .chip { white-space: nowrap; }
+}

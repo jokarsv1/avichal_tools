@@ -8,7 +8,7 @@ const faqs = [
 ];
 const steps = ['Enter the classes you have attended and the total classes held so far.', 'Set your required percentage (75% by default).', 'See your current percentage, how many classes you must attend, or how many you can safely miss.'];
 ---
-<ToolLayout slug="attendance-calculator" h1="Attendance Calculator" lead="Find your attendance percentage, how many classes you need to reach 75%, or how many you can safely skip." steps={steps} faqs={faqs} badges={['🎓 For students', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
+<ToolLayout presets={[{"label": "75% rule", "href": "/attendance-calculator?a=42&t=60&r=75"}, {"label": "80% rule", "href": "/attendance-calculator?a=42&t=60&r=80"}, {"label": "Can I bunk?", "href": "/attendance-calculator?a=55&t=65&r=75"}]} slug="attendance-calculator" h1="Attendance Calculator" lead="Find your attendance percentage, how many classes you need to reach 75%, or how many you can safely skip." steps={steps} faqs={faqs} badges={['🎓 For students', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
   <div class="calc">
     <div class="stack-sm">
       <div class="grid-2">

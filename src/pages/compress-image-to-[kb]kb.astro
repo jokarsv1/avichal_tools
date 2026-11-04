@@ -24,7 +24,7 @@ const steps = [
   'Press Download.',
 ];
 ---
-<ToolLayout slug="resize-image-to-kb" path={`/compress-image-to-${kb}kb`}
+<ToolLayout presets={[{ label: `Under ${kb} KB`, set: { '.kb-preset': `kb-${kb}` } }, { label: 'SSC photo', set: { '.kb-preset': 'ssc-photo' } }, { label: 'IBPS photo', set: { '.kb-preset': 'ibps-photo' } }, { label: 'Signature 10–20 KB', set: { '.kb-preset': 'ibps-sign' } }]} slug="resize-image-to-kb" path={`/compress-image-to-${kb}kb`}
   title={`Compress Image to ${kb} KB Online – JPG Under ${kb} KB Free`}
   description={`Reduce photo size to ${kb} KB (or less) instantly. Free, no upload, no login. Optional minimum KB, pixel size and DPI for exam and job forms.`}
   h1={`Compress Image to ${kb} KB`} crumb={`${kb} KB`}

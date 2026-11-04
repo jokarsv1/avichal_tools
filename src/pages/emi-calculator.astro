@@ -10,7 +10,7 @@ const faqs = [
 ];
 const steps = ['Enter the loan amount, interest rate and tenure.', 'Read your monthly EMI, total interest and total payment instantly.', 'Scroll to the year-by-year schedule to see how the balance falls.', 'Press <b>Share</b> to send the calculation.'];
 ---
-<ToolLayout slug="emi-calculator" h1="EMI Calculator" lead="Calculate the monthly EMI, total interest and full amortization schedule for a home, car, personal or education loan." steps={steps} faqs={faqs} badges={['⚡ Instant', '📤 Shareable link', '📅 Year-wise schedule', '✅ No login']}>
+<ToolLayout presets={[{"label": "🏠 Home loan ₹50L", "href": "/emi-calculator?p=5000000&r=8.5&y=20"}, {"label": "🚗 Car loan ₹8L", "href": "/emi-calculator?p=800000&r=9.5&y=5"}, {"label": "💳 Personal loan ₹5L", "href": "/emi-calculator?p=500000&r=12.5&y=3"}, {"label": "🎓 Education loan ₹10L", "href": "/emi-calculator?p=1000000&r=10&y=7"}, {"label": "🏍️ Bike loan ₹1.5L", "href": "/emi-calculator?p=150000&r=11&y=2"}]} slug="emi-calculator" h1="EMI Calculator" lead="Calculate the monthly EMI, total interest and full amortization schedule for a home, car, personal or education loan." steps={steps} faqs={faqs} badges={['⚡ Instant', '📤 Shareable link', '📅 Year-wise schedule', '✅ No login']}>
   <div class="calc">
     <div class="stack">
       <SliderField id="amount" key="p" label="Loan amount" unit="₹" min={10000} max={20000000} step={10000} value={2500000} />

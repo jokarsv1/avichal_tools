@@ -10,7 +10,7 @@ const faqs = [
 ];
 const steps = ['Enter your monthly SIP amount, expected annual return and duration.', 'Optionally add an annual step-up % and a one-time lump sum.', 'See invested amount, estimated gains and final value, plus a year-wise table.', 'Press <b>Share</b> to send the plan.'];
 ---
-<ToolLayout slug="sip-calculator" h1="SIP Calculator" lead="Estimate how much your monthly mutual fund SIP can grow to, with optional annual step-up and lump sum. Year-by-year table included." steps={steps} faqs={faqs} badges={['⚡ Instant', '📈 Step-up SIP', '📤 Shareable link', '✅ No login']}>
+<ToolLayout presets={[{"label": "₹5,000 × 20 years", "href": "/sip-calculator?m=5000&r=12&y=20&s=0&l=0"}, {"label": "₹10,000 + 10% step-up", "href": "/sip-calculator?m=10000&r=12&y=15&s=10&l=0"}, {"label": "₹25,000 × 10 years", "href": "/sip-calculator?m=25000&r=12&y=10&s=0&l=0"}, {"label": "🎯 ₹1 crore goal", "href": "/sip-calculator?m=20000&r=12&y=17&s=0&l=0"}]} slug="sip-calculator" h1="SIP Calculator" lead="Estimate how much your monthly mutual fund SIP can grow to, with optional annual step-up and lump sum. Year-by-year table included." steps={steps} faqs={faqs} badges={['⚡ Instant', '📈 Step-up SIP', '📤 Shareable link', '✅ No login']}>
   <div class="calc">
     <div class="stack">
       <SliderField id="sip" key="m" label="Monthly investment" unit="₹" min={500} max={500000} step={500} value={10000} />

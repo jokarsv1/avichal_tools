@@ -25,7 +25,7 @@ const steps = [
   `Download and upload it on <a href="${exam.officialSite}" rel="noopener nofollow">the official ${exam.name} site</a>.`,
 ];
 ---
-<ToolLayout slug="exam-photo-resizer" path={`/${exam.slug}-photo-resizer`} title={title} description={description}
+<ToolLayout presets={exam.specs.map((sp) => ({ label: sp.label.replace(exam.name + ' ', ''), set: { '.kb-preset': sp.id }, hint: sp.printed }))} slug="exam-photo-resizer" path={`/${exam.slug}-photo-resizer`} title={title} description={description}
   h1={`${exam.name} Photo & Signature Resizer`} crumb={exam.name}
   lead={`Resize your photo and signature to the exact size for <b>${exam.fullName}</b>. Pick a preset, frame the photo and download.`} steps={steps} faqs={faqs}>
   <KbResizer groups={[{ label: exam.name, specs: exam.specs }]} defaultId={exam.specs[0].id} />

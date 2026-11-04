@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Choose a PDF.', 'Type the watermark text and pick colour, opacity, angle and layout.', 'Press <b>Add watermark</b>.'];
 ---
-<ToolLayout slug="watermark-pdf" h1="Watermark PDF" lead="Stamp text such as CONFIDENTIAL, DRAFT or 'For KYC only' across every page. Supports any language. Free and private." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "🔒 CONFIDENTIAL", "set": {"#st-text": "CONFIDENTIAL", "#st-color": "#e11d48", "#st-layout": "center"}}, {"label": "🪪 For KYC only (ID copies)", "set": {"#st-text": "For KYC purpose only - not valid for any other use", "#st-color": "#1d4ed8", "#st-layout": "tile", "#st-opacity": "22"}}, {"label": "📝 DRAFT", "set": {"#st-text": "DRAFT", "#st-color": "#64748b", "#st-layout": "center"}}, {"label": "📄 COPY", "set": {"#st-text": "COPY", "#st-color": "#0f766e", "#st-layout": "tile"}}]} slug="watermark-pdf" h1="Watermark PDF" lead="Stamp text such as CONFIDENTIAL, DRAFT or 'For KYC only' across every page. Supports any language. Free and private." steps={steps} faqs={faqs}>
   <div class="stack" data-stamp data-mode="watermark">
     <Dropzone id="st-drop" accept=".pdf,application/pdf" title="Choose a PDF" icon="💧" />
     <div id="st-panel" class="stack-sm hidden">

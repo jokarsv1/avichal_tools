@@ -8,7 +8,7 @@ const faqs = [
 ];
 const steps = ['Enter the starting value, ending value and number of years.', 'Read the CAGR. Use the second box to project a value forward at a given CAGR.'];
 ---
-<ToolLayout slug="cagr-calculator" h1="CAGR Calculator" lead="Calculate the compound annual growth rate of an investment, stock, fund or business revenue, or project a future value from a CAGR." steps={steps} faqs={faqs} badges={['📊 Investments & business', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
+<ToolLayout presets={[{"label": "Doubled in 6 years", "href": "/cagr-calculator?s=100000&e=200000&y=6"}, {"label": "Stock 3× in 5 years", "href": "/cagr-calculator?s=100000&e=300000&y=5"}]} slug="cagr-calculator" h1="CAGR Calculator" lead="Calculate the compound annual growth rate of an investment, stock, fund or business revenue, or project a future value from a CAGR." steps={steps} faqs={faqs} badges={['📊 Investments & business', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
   <div class="calc">
     <div class="stack-sm">
       <div class="field"><label for="s">Starting value (₹)</label><input id="s" data-key="s" type="number" min="0" step="any" value="100000" /></div>

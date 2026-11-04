@@ -10,7 +10,7 @@ const faqs = [
 ];
 const steps = ['Choose a video (MP4, MOV, MKV or WebM).', 'Pick <b>Quality</b> (Balanced is recommended) or a <b>Target size</b> in MB, such as 16 MB for WhatsApp or 25 MB for email.', 'Choose a resolution; 720p is ideal for phones.', 'Press <b>Compress video</b> and download the MP4.'];
 ---
-<ToolLayout slug="compress-video" h1="Compress Video" lead="Reduce video size for WhatsApp, email, Discord or upload portals: choose a quality or an exact target size in MB. No watermark, no upload." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "💬 WhatsApp (16 MB)", "set": {"input[name=vt-by][value=size]": true, "#vt-mb": "16", "#vt-res": "720"}}, {"label": "📧 Email / Discord (25 MB)", "set": {"input[name=vt-by][value=size]": true, "#vt-mb": "25", "#vt-res": "720"}}, {"label": "📸 Instagram / YouTube (1080p)", "set": {"input[name=vt-by][value=quality]": true, "#vt-quality": "0.1", "#vt-res": "1080"}}, {"label": "🪶 Smallest (480p)", "set": {"input[name=vt-by][value=quality]": true, "#vt-quality": "0.025", "#vt-res": "480"}}]} slug="compress-video" h1="Compress Video" lead="Make any video small enough for WhatsApp, email or Discord: pick a target like 16 MB and press one button. No watermark, nothing uploaded." steps={steps} faqs={faqs}>
   <VideoTool mode="compress" />
   <Fragment slot="content">
     <h2>Compress videos without uploading them</h2>

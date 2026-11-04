@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Choose a video file.', 'Pick MP3, M4A or WAV and a bitrate.', 'Press <b>Extract audio</b> and download.'];
 ---
-<ToolLayout slug="video-to-mp3" h1="Video to MP3" lead="Extract the audio from MP4, MOV, MKV or WebM videos and save it as MP3, M4A or WAV. Free, fast and private." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "🎵 Music (MP3 192 kbps)", "set": {"#vt-afmt": "mp3", "#vt-abr": "192000"}}, {"label": "🎙️ Lecture / podcast (128 kbps)", "set": {"#vt-afmt": "mp3", "#vt-abr": "128000"}}, {"label": "🎚️ Lossless WAV", "set": {"#vt-afmt": "wav"}}]} slug="video-to-mp3" h1="Video to MP3" lead="Extract the audio from MP4, MOV, MKV or WebM videos and save it as MP3, M4A or WAV. Free, fast and private." steps={steps} faqs={faqs}>
   <VideoTool mode="audio" />
   <Fragment slot="content">
     <h2>Turn any video into an audio file</h2>

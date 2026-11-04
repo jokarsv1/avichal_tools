@@ -8,7 +8,7 @@ const faqs = [
 ];
 const steps = ['Choose a video (MP4, MOV, WebM).', 'Set start and end; use <b>Set to current time</b> while playing.', 'Choose frame rate and width.', 'Press <b>Create GIF</b> and download.'];
 ---
-<ToolLayout slug="video-to-gif" h1="Video to GIF Converter" lead="Turn a video clip into an animated GIF in your browser. Choose start, end, frame rate and size. No watermark, no upload." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "😂 Reaction GIF", "set": {"#gf-width": "320", "#gf-fps": "10"}}, {"label": "✨ High quality", "set": {"#gf-width": "480", "#gf-fps": "15"}}, {"label": "🪶 Tiny", "set": {"#gf-width": "240", "#gf-fps": "8"}}]} slug="video-to-gif" h1="Video to GIF Converter" lead="Turn a video clip into an animated GIF in your browser. Choose start, end, frame rate and size. No watermark, no upload." steps={steps} faqs={faqs}>
   <div class="stack">
     <Dropzone id="gf-drop" accept="video/*,.mov,.mkv,.webm,.mp4" title="Choose a video" icon="🎞️" />
     <div id="gf-panel" class="stack-sm hidden">

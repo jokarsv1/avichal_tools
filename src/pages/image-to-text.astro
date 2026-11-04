@@ -10,7 +10,7 @@ const faqs = [
 ];
 const steps = ['Pick the language (English, Hindi or both).', 'Choose, drop or paste (Ctrl+V) an image or scanned PDF.', 'Wait a few seconds while the text is read.', 'Copy the text or download it as a .txt file.'];
 ---
-<ToolLayout slug="image-to-text" h1="Image to Text (OCR)" lead="Extract text from images, screenshots, photos of documents and scanned PDFs, in English and Hindi. Free, private, and it runs on your device." steps={steps} faqs={faqs} badges={['🇮🇳 English + Hindi', '📋 Paste screenshots', '🔒 No upload', '✅ No login']}>
+<ToolLayout presets={[{"label": "English", "set": {"#ocr-lang": "eng"}}, {"label": "हिंदी Hindi", "set": {"#ocr-lang": "hin"}}, {"label": "English + Hindi", "set": {"#ocr-lang": "eng+hin"}}]} slug="image-to-text" h1="Image to Text (OCR)" lead="Extract text from images, screenshots, photos of documents and scanned PDFs, in English and Hindi. Free, private, and it runs on your device." steps={steps} faqs={faqs} badges={['🇮🇳 English + Hindi', '📋 Paste screenshots', '🔒 No upload', '✅ No login']}>
   <div class="stack">
     <div class="field" style="max-width:320px"><label for="ocr-lang">Language</label><select id="ocr-lang"><option value="eng">English</option><option value="hin">Hindi (हिंदी)</option><option value="eng+hin">English + Hindi</option></select></div>
     <Dropzone id="ocr-drop" accept="image/*,.heic,.heif,.pdf,application/pdf" title="Choose an image or scanned PDF" hint="JPG, PNG, WebP, HEIC, PDF · or paste a screenshot with Ctrl+V" icon="🔍" />

@@ -8,7 +8,7 @@ const faqs = [
 ];
 const steps = ['Enter the monthly deposit, interest rate and tenure in months.', 'See the maturity amount and the total interest.'];
 ---
-<ToolLayout slug="rd-calculator" h1="RD Calculator" lead="Calculate the maturity value of a recurring deposit with quarterly compounding, the way Indian banks and post offices do." steps={steps} faqs={faqs} badges={['🏦 Bank formula', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
+<ToolLayout presets={[{"label": "₹5,000 × 2 years", "href": "/rd-calculator?p=5000&r=7&m=24"}, {"label": "₹10,000 × 5 years", "href": "/rd-calculator?p=10000&r=6.7&m=60"}]} slug="rd-calculator" h1="RD Calculator" lead="Calculate the maturity value of a recurring deposit with quarterly compounding, the way Indian banks and post offices do." steps={steps} faqs={faqs} badges={['🏦 Bank formula', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
   <div class="calc">
     <div class="stack">
       <SliderField id="p" key="p" label="Monthly deposit" unit="₹" min={100} max={1000000} step={100} value={5000} />

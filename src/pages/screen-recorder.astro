@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Choose whether to include your microphone and system audio.', 'Press <b>Start recording</b> and pick a screen, window or tab to share.', 'Press <b>Stop</b> when you are done (or "Stop sharing" in the browser bar).', 'Preview the video and press <b>Download</b>.'];
 ---
-<ToolLayout slug="screen-recorder" h1="Free Online Screen Recorder" lead="Record your screen, a window or a browser tab with microphone and system audio. No install, no watermark, no time limit." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "🎓 Tutorial with my voice", "set": {"#sr-mic": true, "#sr-system": true, "#sr-fps": "30", "#sr-quality": "4000000"}}, {"label": "🤫 Silent demo", "set": {"#sr-mic": false, "#sr-system": false, "#sr-fps": "30"}}, {"label": "🎮 Smooth (60 fps, high)", "set": {"#sr-fps": "60", "#sr-quality": "8000000"}}, {"label": "🪶 Small file", "set": {"#sr-fps": "15", "#sr-quality": "1500000"}}]} slug="screen-recorder" h1="Free Online Screen Recorder" lead="Record your screen, a window or a browser tab with microphone and system audio. No install, no watermark, no time limit." steps={steps} faqs={faqs}>
   <div class="stack">
     <div class="grid-4">
       <label class="check"><input type="checkbox" id="sr-mic" checked /> Microphone</label>

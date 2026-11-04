@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Enter your investment (corpus), monthly withdrawal and expected return.', 'Optionally add an annual increase in withdrawals for inflation.', 'See the balance left, total withdrawn and whether the money runs out.'];
 ---
-<ToolLayout slug="swp-calculator" h1="SWP Calculator" lead="Plan a monthly income from your mutual fund corpus: see how long the money lasts, the total you withdraw and the balance left." steps={steps} faqs={faqs} badges={['🧓 Retirement income', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
+<ToolLayout presets={[{"label": "₹1 Cr → ₹60k/month", "href": "/swp-calculator?c=10000000&w=60000&r=8&y=25&s=0"}, {"label": "₹50L → ₹30k/month + inflation", "href": "/swp-calculator?c=5000000&w=30000&r=8&y=25&s=5"}]} slug="swp-calculator" h1="SWP Calculator" lead="Plan a monthly income from your mutual fund corpus: see how long the money lasts, the total you withdraw and the balance left." steps={steps} faqs={faqs} badges={['🧓 Retirement income', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
   <div class="calc">
     <div class="stack">
       <SliderField id="c" key="c" label="Total investment (corpus)" unit="₹" min={100000} max={100000000} step={50000} value={10000000} />

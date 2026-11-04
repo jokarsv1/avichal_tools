@@ -18,7 +18,7 @@ const steps = [
   'Check the green <b>✓ Pass</b> badge, then tap <b>Download</b>.',
 ];
 ---
-<ToolLayout slug="resize-image-to-kb" h1="Resize Image to KB (Exact Size)" lead="Compress a photo or signature to an exact file size like 20 KB, 50 KB or 100 KB, with an optional minimum size, exact pixel size and DPI, all in your browser." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "20 KB", "set": {".kb-preset": "kb-20"}}, {"label": "50 KB", "set": {".kb-preset": "kb-50"}}, {"label": "100 KB", "set": {".kb-preset": "kb-100"}}, {"label": "🪪 SSC photo", "set": {".kb-preset": "ssc-photo"}}, {"label": "🏦 IBPS photo", "set": {".kb-preset": "ibps-photo"}}, {"label": "🖊️ Signature 10–20 KB", "set": {".kb-preset": "ibps-sign"}}]} slug="resize-image-to-kb" h1="Resize Image to KB (Exact Size)" lead="Compress a photo or signature to an exact file size like 20 KB, 50 KB or 100 KB, with an optional minimum size, exact pixel size and DPI, all in your browser." steps={steps} faqs={faqs}>
   <KbResizer groups={groups} defaultId="kb-50" />
   <Fragment slot="content">
     <h2>Compress an image to any KB size</h2>

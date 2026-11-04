@@ -10,7 +10,7 @@ const faqs = [
 ];
 const steps = ['Choose your images.', 'Pick a preset (Instagram, YouTube, WhatsApp, passport…) or type a width, height or percentage.', 'Choose how to handle a different aspect ratio: crop, fit, pad or stretch.', 'Download each image or all of them as a ZIP.'];
 ---
-<ToolLayout slug="resize-image" h1="Resize Image" lead="Change image dimensions in pixels or percent, or use presets for Instagram, YouTube, WhatsApp, LinkedIn and passport photos. Bulk, private and free." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "📸 Instagram post", "set": {".bi-preset": "1080x1080"}}, {"label": "📱 Story / Reels", "set": {".bi-preset": "1080x1920"}}, {"label": "▶️ YouTube thumbnail", "set": {".bi-preset": "1280x720"}}, {"label": "💬 WhatsApp DP", "set": {".bi-preset": "500x500"}}, {"label": "💼 LinkedIn banner", "set": {".bi-preset": "1584x396"}}, {"label": "🛂 Passport 35×45", "set": {".bi-preset": "413x531"}}, {"label": "½ Half size", "set": {".bi-pct": "50"}}]} slug="resize-image" h1="Resize Image" lead="Change image dimensions in pixels or percent, or use presets for Instagram, YouTube, WhatsApp, LinkedIn and passport photos. Bulk, private and free." steps={steps} faqs={faqs}>
   <BatchImage mode="resize" dropTitle="Choose images to resize" />
   <Fragment slot="content">
     <h2>Common image sizes</h2>

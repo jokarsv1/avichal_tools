@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Choose your .heic or .heif photos (AirDrop or copy them from your iPhone first).', 'Keep JPG selected, or pick PNG.', 'Download each photo or all of them as a ZIP.'];
 ---
-<ToolLayout slug="heic-to-jpg" h1="HEIC to JPG Converter" lead="Convert iPhone HEIC/HEIF photos to JPG or PNG in bulk, privately in your browser. No app to install." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "Best quality JPG", "set": {".bi-fmt": "image/jpeg", ".bi-q": "92"}}, {"label": "Smaller JPG", "set": {".bi-fmt": "image/jpeg", ".bi-q": "75"}}, {"label": "PNG", "set": {".bi-fmt": "image/png"}}]} slug="heic-to-jpg" h1="HEIC to JPG Converter" lead="Convert iPhone HEIC/HEIF photos to JPG or PNG in bulk, privately in your browser. No app to install." steps={steps} faqs={faqs}>
   <BatchImage mode="convert" format="image/jpeg" accept=".heic,.heif,image/heic,image/heif,image/*" dropTitle="Choose HEIC photos" />
   <Fragment slot="content">
     <h2>Convert HEIC to JPG on Windows, Android or Mac</h2>

@@ -18,7 +18,7 @@ const faqs = [
 ];
 const steps = ['Type or paste your text.', 'Pick a handwriting font, ink colour, paper style and size.', 'Adjust messiness for a natural look.', 'Download as PNG images or as one PDF.'];
 ---
-<ToolLayout slug="text-to-handwriting" h1="Text to Handwriting Converter" lead="Turn typed text into realistic handwriting on lined paper. Choose fonts (including Hindi), ink colour and paper, then download PNG or PDF." steps={steps} faqs={faqs} badges={['✍️ 7 handwriting styles', '🇮🇳 Hindi support', '📄 PDF export', '✅ No login']}>
+<ToolLayout presets={[{"label": "📘 Assignment (blue, ruled)", "set": {"#hw-font": "Caveat", "#hw-ink": "#1a3d8f", "#hw-paper": "lined", "#hw-messy": "5"}}, {"label": "🖤 Neat black notes", "set": {"#hw-font": "Indie Flower", "#hw-ink": "#1b1b1b", "#hw-paper": "lined", "#hw-messy": "3"}}, {"label": "🇮🇳 Hindi (Kalam)", "set": {"#hw-font": "Kalam", "#hw-ink": "#1a3d8f", "#hw-paper": "lined"}}, {"label": "💌 Letter (cursive)", "set": {"#hw-font": "Homemade Apple", "#hw-ink": "#1b1b1b", "#hw-paper": "plain", "#hw-messy": "4"}}]} slug="text-to-handwriting" h1="Text to Handwriting Converter" lead="Turn typed text into realistic handwriting on lined paper. Choose fonts (including Hindi), ink colour and paper, then download PNG or PDF." steps={steps} faqs={faqs} badges={['✍️ 7 handwriting styles', '🇮🇳 Hindi support', '📄 PDF export', '✅ No login']}>
   <link slot="head" rel="preconnect" href="https://fonts.googleapis.com" />
   <link slot="head" rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link slot="head" rel="stylesheet" href={fontsUrl} />

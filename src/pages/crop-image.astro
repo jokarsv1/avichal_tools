@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Choose an image.', 'Pick a ratio (Free, 1:1, 4:5, 16:9…) and a shape (rectangle or circle).', 'Drag the box or its handles, or type the exact size in pixels.', 'Press <b>Download</b>.'];
 ---
-<ToolLayout slug="crop-image" h1="Crop Image" lead="Crop photos to any size or aspect ratio, or make a round profile picture. Fast, free and private." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "⭕ Round profile picture", "set": {"#crop-shape": "circle", "#crop-ratio": "1:1"}}, {"label": "⬜ Square 1:1", "set": {"#crop-shape": "rect", "#crop-ratio": "1:1"}}, {"label": "📸 Instagram 4:5", "set": {"#crop-shape": "rect", "#crop-ratio": "4:5"}}, {"label": "▶️ YouTube 16:9", "set": {"#crop-shape": "rect", "#crop-ratio": "16:9"}}, {"label": "🛂 Passport 35:45", "set": {"#crop-shape": "rect", "#crop-ratio": "35:45"}}]} slug="crop-image" h1="Crop Image" lead="Crop photos to any size or aspect ratio, or make a round profile picture. Fast, free and private." steps={steps} faqs={faqs}>
   <Dropzone id="crop-drop" accept="image/*,.heic,.heif" title="Choose an image to crop" hint="JPG, PNG, WebP, HEIC · drag & drop or paste" icon="✂️" />
   <div class="crop-editor stack hidden">
     <div class="grid-4">

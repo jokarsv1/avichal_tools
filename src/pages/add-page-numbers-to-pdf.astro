@@ -8,7 +8,7 @@ const faqs = [
 ];
 const steps = ['Choose a PDF.', 'Pick position, format and font size.', 'Optionally skip the first pages or change the starting number.', 'Press <b>Add page numbers</b>.'];
 ---
-<ToolLayout slug="add-page-numbers-to-pdf" h1="Add Page Numbers to PDF" lead="Number the pages of any PDF: choose position, format, size and starting number. Free and private." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "Page 1 of N (bottom centre)", "set": {"#st-fmt": "Page {n} of {total}", "#st-pos": "bottom-center", "#st-from": "1"}}, {"label": "Simple number (bottom right)", "set": {"#st-fmt": "{n}", "#st-pos": "bottom-right", "#st-from": "1"}}, {"label": "Skip the cover page", "set": {"#st-from": "2", "#st-start": "1", "#st-fmt": "{n}", "#st-pos": "bottom-center"}}]} slug="add-page-numbers-to-pdf" h1="Add Page Numbers to PDF" lead="Number the pages of any PDF: choose position, format, size and starting number. Free and private." steps={steps} faqs={faqs}>
   <div class="stack" data-stamp data-mode="numbers">
     <Dropzone id="st-drop" accept=".pdf,application/pdf" title="Choose a PDF" icon="🔢" />
     <div id="st-panel" class="stack-sm hidden">

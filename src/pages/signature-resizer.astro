@@ -24,7 +24,7 @@ const steps = [
   'Download when the badge shows <b>✓ Pass</b>.',
 ];
 ---
-<ToolLayout slug="signature-resizer" h1="Signature Resizer (10–20 KB, White Background)" lead="Turn a phone photo of your signature into a clean, scanned-looking JPG at the exact KB and pixel size your exam or bank form needs." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "SSC 10–20 KB", "set": {".kb-preset": "ssc-sign"}}, {"label": "IBPS 140×60", "set": {".kb-preset": "ibps-sign"}}, {"label": "NEET / JEE", "set": {".kb-preset": "neet-sign"}}, {"label": "PAN card", "set": {".kb-preset": "pan-sign"}}, {"label": "Any form 10–20 KB", "set": {".kb-preset": "sig-10-20"}}]} slug="signature-resizer" h1="Signature Resizer (10–20 KB, White Background)" lead="Turn a phone photo of your signature into a clean, scanned-looking JPG at the exact KB and pixel size your exam or bank form needs." steps={steps} faqs={faqs}>
   <KbResizer groups={groups} defaultId="ssc-sign" signature dropTitle="Choose a photo of your signature" />
   <Fragment slot="content">
     <h2>Why signatures get rejected and how this fixes it</h2>

@@ -19,7 +19,7 @@ const faqs = [
 ];
 const steps = ['Enter your CGPA (or SGPA).', 'Pick your board or university formula.', 'Read the percentage; use the reverse box to go from percentage to CGPA.'];
 ---
-<ToolLayout slug="cgpa-to-percentage" h1="CGPA to Percentage Converter" lead="Convert CGPA or SGPA to percentage with the CBSE formula (×9.5), university formulas or your own, and convert percentage back to CGPA." steps={steps} faqs={faqs} badges={['🎓 CBSE & universities', '⚡ Instant', '✅ No login']}>
+<ToolLayout presets={[{"label": "CBSE (×9.5)", "href": "/cgpa-to-percentage?c=8.4&f=cbse"}, {"label": "Most universities (×10)", "href": "/cgpa-to-percentage?c=8&f=x10"}, {"label": "VTU", "href": "/cgpa-to-percentage?c=8&f=vtu"}, {"label": "Mumbai University", "href": "/cgpa-to-percentage?c=8&f=mu"}]} slug="cgpa-to-percentage" h1="CGPA to Percentage Converter" lead="Convert CGPA or SGPA to percentage with the CBSE formula (×9.5), university formulas or your own, and convert percentage back to CGPA." steps={steps} faqs={faqs} badges={['🎓 CBSE & universities', '⚡ Instant', '✅ No login']}>
   <div class="calc" data-formulas={JSON.stringify(FORMULAS)}>
     <div class="stack-sm">
       <div class="field"><label for="cg">CGPA / SGPA</label><input id="cg" data-key="c" type="number" min="0" max="10" step="0.01" value="8.4" inputmode="decimal" style="font-size:1.3rem;font-weight:700" /></div>

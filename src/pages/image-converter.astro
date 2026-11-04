@@ -8,7 +8,7 @@ const faqs = [
 ];
 const steps = ['Choose your images.', 'Pick the output format and quality.', 'Download each file or all as a ZIP.'];
 ---
-<ToolLayout slug="image-converter" h1="Image Converter" lead="Convert images between JPG, PNG, WebP and HEIC in bulk, right in your browser." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "→ JPG", "set": {".bi-fmt": "image/jpeg"}}, {"label": "→ PNG", "set": {".bi-fmt": "image/png"}}, {"label": "→ WebP (smallest)", "set": {".bi-fmt": "image/webp"}}]} slug="image-converter" h1="Image Converter" lead="Convert images between JPG, PNG, WebP and HEIC in bulk, right in your browser." steps={steps} faqs={faqs}>
   <BatchImage mode="convert" format="image/jpeg" dropTitle="Choose images to convert" />
   <Fragment slot="content">
     <h2>Pick the right format</h2>

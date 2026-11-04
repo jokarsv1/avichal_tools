@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Choose an MP3, M4A, WAV or video file.', 'Drag on the waveform (or type start and end times) to select a part.', 'Add a fade in/out if you like, and pick MP3, M4A, M4R (iPhone) or WAV.', 'Press <b>Cut audio</b> and download.'];
 ---
-<ToolLayout slug="audio-cutter" h1="MP3 Cutter & Ringtone Maker" lead="Cut MP3 and other audio files, add fades and make ringtones for Android and iPhone, right in your browser. No upload, no watermark." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "🤖 Android ringtone (MP3)", "set": {"#ac-fmt": "mp3", "#ac-fadeout": "2"}}, {"label": "🍏 iPhone ringtone (M4R)", "set": {"#ac-fmt": "m4r", "#ac-fadeout": "2"}}, {"label": "🎚️ WAV (editing)", "set": {"#ac-fmt": "wav", "#ac-fadeout": "0"}}]} slug="audio-cutter" h1="MP3 Cutter & Ringtone Maker" lead="Cut MP3 and other audio files, add fades and make ringtones for Android and iPhone, right in your browser. No upload, no watermark." steps={steps} faqs={faqs}>
   <div class="stack">
     <Dropzone id="ac-drop" accept="audio/*,video/*,.mp3,.m4a,.wav,.ogg,.aac,.flac,.mp4,.mov" title="Choose an audio file" icon="🎶" />
     <div class="status" id="ac-status"></div>

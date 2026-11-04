@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Choose or drop your PNG images.', 'JPG is pre-selected; adjust quality if you like.', 'Download each image or all as a ZIP.'];
 ---
-<ToolLayout slug="png-to-jpg" h1="PNG to JPG Converter" lead="Convert PNG images to JPG in bulk. Free, instant and private. No upload and no sign-up." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "Best quality", "set": {".bi-q": "92"}}, {"label": "Smaller files", "set": {".bi-q": "75"}}, {"label": "White background", "set": {".bi-bg": "#ffffff"}}]} slug="png-to-jpg" h1="PNG to JPG Converter" lead="Convert PNG images to JPG in bulk. Free, instant and private. No upload and no sign-up." steps={steps} faqs={faqs}>
   <BatchImage mode="convert" format="image/jpeg" accept=".png,image/png" dropTitle="Choose PNG images" />
   <Fragment slot="content">
     <h2>Why convert PNG to JPG?</h2>

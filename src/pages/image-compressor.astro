@@ -10,7 +10,7 @@ const faqs = [
 ];
 const steps = ['Choose or drop your images (JPG, PNG, WebP, HEIC).', 'Adjust <b>Quality</b> (75% is a great default) and, optionally, a maximum width.', 'Check the savings for each file.', 'Download one by one or press <b>Download all (ZIP)</b>.'];
 ---
-<ToolLayout slug="image-compressor" h1="Image Compressor" lead="Compress JPG, PNG and WebP images in bulk with no visible quality loss. Unlimited files, no upload, no sign-up." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "⚖️ Balanced (recommended)", "set": {".bi-q": "75", ".bi-fmt": "keep", ".bi-max": "0"}}, {"label": "🌐 Website images (WebP, 1920 px)", "set": {".bi-q": "75", ".bi-fmt": "image/webp", ".bi-max": "1920"}}, {"label": "📧 Email photos (1280 px)", "set": {".bi-q": "70", ".bi-fmt": "image/jpeg", ".bi-max": "1280"}}, {"label": "🪶 Maximum savings", "set": {".bi-q": "50", ".bi-fmt": "image/webp", ".bi-max": "1280"}}]} slug="image-compressor" h1="Image Compressor" lead="Make photos and screenshots up to 80% smaller with no visible quality loss. Drop as many as you like and download a ZIP." steps={steps} faqs={faqs}>
   <BatchImage mode="compress" dropTitle="Choose images to compress" />
   <Fragment slot="content">
     <h2>Compress images online without uploading them</h2>

@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Enter your last drawn monthly basic + DA.', 'Enter your years and months of service.', 'Choose whether your employer is covered by the gratuity law.', 'See your gratuity and how much of it is tax-free.'];
 ---
-<ToolLayout slug="gratuity-calculator" h1="Gratuity Calculator" lead="Calculate your gratuity under the 15/26 formula, with the 6-month rounding rule, the labour code changes and the ₹20 lakh tax-free limit." steps={steps} faqs={faqs} badges={['🇮🇳 Labour code 2025', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
+<ToolLayout presets={[{"label": "5 years service", "href": "/gratuity-calculator?w=50000&y=5&m=0&c=1&t=perm"}, {"label": "10 years 7 months", "href": "/gratuity-calculator?w=60000&y=10&m=7&c=1&t=perm"}, {"label": "Fixed-term 2 years", "href": "/gratuity-calculator?w=40000&y=2&m=0&c=1&t=fixed"}]} slug="gratuity-calculator" h1="Gratuity Calculator" lead="Calculate your gratuity under the 15/26 formula, with the 6-month rounding rule, the labour code changes and the ₹20 lakh tax-free limit." steps={steps} faqs={faqs} badges={['🇮🇳 Labour code 2025', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
   <div class="calc">
     <div class="stack-sm">
       <div class="field"><label for="w">Last drawn monthly basic + DA (₹)</label><input id="w" data-key="w" type="number" min="0" step="500" value="50000" /></div>

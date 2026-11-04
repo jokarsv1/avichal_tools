@@ -10,7 +10,7 @@ const faqs = [
 ];
 const steps = ['Enter your yearly deposit (₹500 to ₹1.5 lakh).', 'Enter the current PPF rate.', 'Pick 15 years or an extension, and whether you keep contributing during extensions.', 'See the maturity value and a year-by-year balance.'];
 ---
-<ToolLayout slug="ppf-calculator" h1="PPF Calculator" lead="Calculate Public Provident Fund maturity value, total interest and year-by-year balance for 15 years or with 5-year extensions." steps={steps} faqs={faqs} badges={['⚡ Instant', '📅 Year-wise table', '📤 Shareable link', '✅ No login']}>
+<ToolLayout presets={[{"label": "Max ₹1.5L × 15 years", "href": "/ppf-calculator?d=150000&r=7.1&y=15&c=1"}, {"label": "₹50,000 × 15 years", "href": "/ppf-calculator?d=50000&r=7.1&y=15&c=1"}, {"label": "Extend to 25 years", "href": "/ppf-calculator?d=150000&r=7.1&y=25&c=1"}]} slug="ppf-calculator" h1="PPF Calculator" lead="Calculate Public Provident Fund maturity value, total interest and year-by-year balance for 15 years or with 5-year extensions." steps={steps} faqs={faqs} badges={['⚡ Instant', '📅 Year-wise table', '📤 Shareable link', '✅ No login']}>
   <div class="calc">
     <div class="stack">
       <SliderField id="dep" key="d" label="Yearly investment" unit="₹" min={500} max={150000} step={500} value={150000} />

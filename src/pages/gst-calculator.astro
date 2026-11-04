@@ -8,7 +8,7 @@ const faqs = [
 ];
 const steps = ['Enter the amount.', 'Pick <b>Add GST</b> (amount excludes GST) or <b>Remove GST</b> (amount includes GST).', 'Choose the rate: 5%, 18%, 40% or a custom rate.', 'Read the base price, GST and CGST/SGST or IGST split.'];
 ---
-<ToolLayout slug="gst-calculator" h1="GST Calculator" lead="Add GST to a price or extract GST from an inclusive amount, with CGST/SGST and IGST split. Updated for the GST 2.0 slabs." steps={steps} faqs={faqs} badges={['🇮🇳 GST 2.0 slabs', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
+<ToolLayout presets={[{"label": "➕ Add 18%", "href": "/gst-calculator?a=10000&m=add&r=18&t=intra"}, {"label": "➖ Remove 18%", "href": "/gst-calculator?a=11800&m=remove&r=18&t=intra"}, {"label": "➕ Add 5%", "href": "/gst-calculator?a=10000&m=add&r=5&t=intra"}, {"label": "🚬 40% (luxury)", "href": "/gst-calculator?a=10000&m=add&r=40&t=intra"}, {"label": "🚚 Inter-state IGST", "href": "/gst-calculator?a=10000&m=add&r=18&t=inter"}]} slug="gst-calculator" h1="GST Calculator" lead="Add GST to a price or extract GST from an inclusive amount, with CGST/SGST and IGST split. Updated for the GST 2.0 slabs." steps={steps} faqs={faqs} badges={['🇮🇳 GST 2.0 slabs', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
   <div class="calc">
     <div class="stack-sm">
       <div class="field"><label for="amt">Amount (₹)</label><input id="amt" data-key="a" type="number" min="0" step="0.01" value="10000" inputmode="decimal" style="font-size:1.3rem;font-weight:700" /></div>

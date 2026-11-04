@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Choose a PDF file.', 'Pick JPG or PNG and a resolution (DPI).', 'Optionally enter page numbers.', 'Press <b>Convert</b>, then save images individually or as a ZIP.'];
 ---
-<ToolLayout slug="pdf-to-jpg" h1="PDF to JPG" lead="Convert PDF pages to high-quality JPG or PNG images at the resolution you choose. Free, private, no watermark." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{"label": "📱 WhatsApp / sharing", "set": {"#pj-fmt": "image/jpeg", "#pj-dpi": "150"}}, {"label": "🖨️ Print quality (300 DPI)", "set": {"#pj-fmt": "image/jpeg", "#pj-dpi": "300"}}, {"label": "🎞️ Slides (PNG)", "set": {"#pj-fmt": "image/png", "#pj-dpi": "150"}}, {"label": "1️⃣ First page only", "set": {"#pj-pages": "1"}}]} slug="pdf-to-jpg" h1="PDF to JPG" lead="Convert PDF pages to high-quality JPG or PNG images at the resolution you choose. Free, private, no watermark." steps={steps} faqs={faqs}>
   <div class="stack">
     <Dropzone id="pj-drop" accept=".pdf,application/pdf" title="Choose a PDF" icon="🏞️" />
     <div id="pj-panel" class="stack-sm hidden">
