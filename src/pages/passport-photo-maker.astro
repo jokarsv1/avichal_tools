@@ -1,0 +1,61 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import Dropzone from '../components/Dropzone.astro';
+const SIZES = [
+  ['35x45', '35 × 45 mm: UK, Schengen/EU, Australia, India and most countries'],
+  ['51x51', '2 × 2 in (51 × 51 mm): USA, India visa/OCI'],
+  ['33x48', '33 × 48 mm: China visa'],
+  ['50x70', '50 × 70 mm: Canada passport'],
+  ['35x35', '35 × 35 mm'],
+  ['30x40', '30 × 40 mm'],
+  ['25x35', '25 × 35 mm: ID cards, some forms'],
+  ['20x25', '20 × 25 mm: stamp size (India forms)'],
+];
+const faqs = [
+  { q: 'How do I make passport size photos at home?', a: 'Take a photo against a plain white or light wall in daylight, facing the camera. Upload it here, choose your country\'s size, align your face with the guide, and download a 4×6 sheet. Print it at any photo shop or on a photo printer at 100% scale.' },
+  { q: 'How many photos fit on a 4×6 sheet?', a: '8 photos of 35 × 45 mm, or 2 photos of 2 × 2 inch (51 × 51 mm). On A4 you get about 30 photos of 35 × 45 mm.' },
+  { q: 'What background colour is required?', a: 'Most countries require a plain white or off-white background, no shadows. Stand about 1 metre from a white wall with light facing you. This tool doesn\'t replace the background, so start with a plain one.' },
+  { q: 'Will the print be the exact size?', a: 'Yes, if you print at 100% / "actual size". The files are 300 DPI and the DPI is written into the image, so photo labs print the exact millimetres.' },
+  { q: 'Is my photo uploaded?', a: 'No. Everything happens in your browser.' },
+];
+const steps = ['Upload a front-facing photo taken against a plain light background.', 'Choose the photo size for your country or form.', 'Zoom and drag until your head is between the guide lines inside the oval.', 'Download a single photo, or a 4×6 / A4 print sheet (JPG or PDF).'];
+---
+<ToolLayout slug="passport-photo-maker" h1="Passport Size Photo Maker" lead="Make passport and visa photos at home: crop to the official size (35 × 45 mm, 2 × 2 inch and more) and print 8 photos on a 4×6 sheet. Free, no upload." steps={steps} faqs={faqs} badges={['🖨️ 4×6 & A4 print sheets', '📏 300 DPI exact size', '🔒 No upload', '✅ No login']}>
+  <div class="stack">
+    <Dropzone id="pp-drop" accept="image/*,.heic,.heif" title="Choose your photo" hint="Front-facing, plain light background · drag & drop" icon="🛂" />
+    <div id="pp-panel" class="grid-2 hidden" style="align-items:start">
+      <div class="stack-sm">
+        <div class="preview-box" style="padding:10px"><canvas id="pp-view" style="touch-action:none;cursor:grab;max-width:100%" aria-label="Photo crop. Drag to move."></canvas></div>
+        <div class="row"><label class="field" style="flex:1">Zoom <input id="pp-zoom" type="range" min="1" max="5" step="0.01" value="1" /></label><button type="button" class="btn btn-sm" id="pp-rotate">⟳ Rotate</button></div>
+        <label class="check"><input type="checkbox" id="pp-guide" checked /> Show face guide</label>
+      </div>
+      <div class="stack-sm">
+        <div class="field"><label for="pp-size">Photo size</label><select id="pp-size">{SIZES.map(([v, l]) => <option value={v}>{l}</option>)}</select></div>
+        <div class="grid-2">
+          <div class="field"><label for="pp-bright">Brightness</label><input id="pp-bright" type="range" min="70" max="140" value="100" /></div>
+          <div class="field"><label for="pp-contrast">Contrast</label><input id="pp-contrast" type="range" min="70" max="140" value="100" /></div>
+          <div class="field"><label for="pp-sheet">Print sheet</label><select id="pp-sheet"><option value="4x6">4 × 6 in (photo lab)</option><option value="5x7">5 × 7 in</option><option value="a4">A4</option></select></div>
+          <div class="field"><label for="pp-count">Photos on sheet</label><input id="pp-count" type="number" min="1" max="60" placeholder="max" /></div>
+        </div>
+        <div class="status" id="pp-status"></div>
+        <div class="btn-row">
+          <button type="button" class="btn btn-primary" id="pp-dl-sheet">⬇ Print sheet (JPG)</button>
+          <button type="button" class="btn" id="pp-dl-pdf">⬇ Print sheet (PDF)</button>
+          <button type="button" class="btn" id="pp-dl-one">⬇ Single photo</button>
+        </div>
+        <p class="hint">Print at 100% / "actual size". Photo sizes vary by country and change over time; check the official requirements before applying.</p>
+      </div>
+    </div>
+  </div>
+  <script>import '../tools/passport-photo';</script>
+  <Fragment slot="content">
+    <h2>Passport photo checklist</h2>
+    <ul>
+      <li>Recent colour photo, plain white or light background, no shadows on the face or background.</li>
+      <li>Face the camera directly with a neutral expression and mouth closed; eyes open and visible.</li>
+      <li>No glasses (most countries), hats or head coverings except for religious reasons.</li>
+      <li>Head (chin to crown) should take up about 70–80% of the photo height; the guide shows this.</li>
+    </ul>
+    <p>Need a digital photo for an online form with a KB limit? Use the <a href="/exam-photo-resizer">exam photo resizer</a> or <a href="/resize-image-to-kb">resize image to KB</a>.</p>
+  </Fragment>
+</ToolLayout>

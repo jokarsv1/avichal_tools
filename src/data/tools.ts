@@ -279,7 +279,10 @@ export const TOOLS: Tool[] = [
   // ---------- Planned (shown on /roadmap only) ----------
   { slug: 'background-remover', name: 'Background Remover', category: 'image', icon: '🪄', status: 'planned', title: '', description: '', short: 'AI background removal on your device (MIT/Apache models).' },
   { slug: 'resume-builder', name: 'Resume Builder', category: 'student', icon: '📃', status: 'planned', title: '', description: '', short: 'ATS-friendly resume, free PDF download.' },
-  { slug: 'passport-photo-maker', name: 'Passport Photo Maker', category: 'exam', icon: '🛂', status: 'planned', title: '', description: '', short: 'Passport/visa photo sheet with white background.' },
+  { slug: 'passport-photo-maker', name: 'Passport Photo Maker', category: 'exam', icon: '🛂', status: 'live', popular: true,
+    title: 'Passport Size Photo Maker – 4x6 Print Sheet, Free',
+    description: 'Make passport and visa photos at home: 35x45 mm, 2x2 inch and more. Face guide, 300 DPI, 8 photos on a 4x6 sheet. Free, no upload.',
+    short: 'Passport photos + 4×6 print sheet.', keywords: 'passport size photo visa photo 35x45 2x2 photo print' },
   { slug: 'image-to-text', name: 'Image to Text (OCR)', category: 'image', icon: '🔍', status: 'planned', title: '', description: '', short: 'Extract text from images and scans (Tesseract.js).' },
   { slug: 'pdf-to-word', name: 'PDF to Word', category: 'pdf', icon: '📝', status: 'planned', title: '', description: '', short: 'Editable DOCX from PDF.' },
   { slug: 'word-to-pdf', name: 'Word to PDF', category: 'pdf', icon: '📄', status: 'planned', title: '', description: '', short: 'DOCX to PDF.' },
@@ -332,7 +335,8 @@ export function toolsIn(id: CategoryId): Tool[] {
 /** Related tools: same category first, then hand-picked cross-links. */
 const CROSS_LINKS: Record<string, string[]> = {
   'resize-image-to-kb': ['exam-photo-resizer', 'signature-resizer', 'image-compressor'],
-  'exam-photo-resizer': ['signature-resizer', 'resize-image-to-kb', 'age-calculator'],
+  'exam-photo-resizer': ['signature-resizer', 'passport-photo-maker', 'resize-image-to-kb'],
+  'passport-photo-maker': ['exam-photo-resizer', 'resize-image-to-kb', 'crop-image'],
   'jpg-to-pdf': ['compress-pdf', 'merge-pdf', 'image-compressor'],
   'compress-pdf': ['merge-pdf', 'jpg-to-pdf', 'resize-image-to-kb'],
   'edit-pdf': ['sign-pdf', 'organize-pdf', 'compress-pdf'],
