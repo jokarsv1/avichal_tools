@@ -67,6 +67,9 @@ const cfBeacon = ANALYTICS.cloudflareToken ? JSON.stringify({ token: ANALYTICS.c
         </nav>
         <a class="header-cta" href="/support">☕ Support</a>
       </div>
+      <script is:inline>
+        (function () { var n = document.querySelector('.cat-nav'), a = n && n.querySelector('[aria-current]'); if (a && n.scrollWidth > n.clientWidth) n.scrollLeft = a.offsetLeft - (n.clientWidth - a.offsetWidth) / 2; })();
+      </script>
     </header>
 
     <main id="main">

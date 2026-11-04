@@ -1,0 +1,60 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'How do I calculate attendance percentage?', a: 'Attendance % = classes attended ÷ total classes held × 100. For example, 45 out of 60 classes is 75%.' },
+  { q: 'How many classes do I need to attend to reach 75%?', a: 'If you have attended A of T classes, you need x more consecutive classes where (A + x) ÷ (T + x) ≥ 0.75, which gives x ≥ (0.75T − A) ÷ 0.25. The calculator works this out for any target.' },
+  { q: 'How many classes can I bunk and still stay above 75%?', a: 'You can miss y more classes as long as A ÷ (T + y) ≥ 0.75, so y ≤ A ÷ 0.75 − T. The calculator shows the safe number.' },
+  { q: 'Why is 75% the rule?', a: 'Many Indian universities and boards (and UGC/AICTE-affiliated colleges) require at least 75% attendance to sit end-semester exams. Some allow condonation down to 65% for medical reasons. Check your institution\'s rules.' },
+];
+const steps = ['Enter the classes you have attended and the total classes held so far.', 'Set your required percentage (75% by default).', 'See your current percentage, how many classes you must attend, or how many you can safely miss.'];
+---
+<ToolLayout slug="attendance-calculator" h1="Attendance Calculator" lead="Find your attendance percentage, how many classes you need to reach 75%, or how many you can safely skip." steps={steps} faqs={faqs} badges={['🎓 For students', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
+  <div class="calc">
+    <div class="stack-sm">
+      <div class="grid-2">
+        <div class="field"><label for="att">Classes attended</label><input id="att" data-key="a" type="number" min="0" value="42" inputmode="numeric" /></div>
+        <div class="field"><label for="tot">Total classes held</label><input id="tot" data-key="t" type="number" min="1" value="60" inputmode="numeric" /></div>
+      </div>
+      <div class="field"><label for="tgt">Required attendance (%)</label><input id="tgt" data-key="r" type="number" min="1" max="100" value="75" inputmode="numeric" /></div>
+      <div class="row"><button type="button" class="btn btn-sm" data-t="75">75%</button><button type="button" class="btn btn-sm" data-t="80">80%</button><button type="button" class="btn btn-sm" data-t="85">85%</button><button type="button" class="btn btn-sm" data-t="65">65%</button></div>
+      <div class="field"><label for="left">Classes remaining this semester (optional)</label><input id="left" data-key="l" type="number" min="0" placeholder="e.g. 30" inputmode="numeric" /></div>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Current attendance</span><div class="big-number" id="o-pct">–</div></div>
+      <div class="status" id="o-msg"></div>
+      <p class="hint" id="o-future"></p>
+      <button type="button" class="btn btn-sm" data-share="My attendance">📤 Share</button>
+    </div>
+  </div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { attendance } from '../lib/finance';
+    const get = (id: string) => document.getElementById(id) as HTMLInputElement;
+    const inputs = Object.fromEntries(['att', 'tot', 'tgt', 'left'].map((id) => [get(id).dataset.key!, get(id)]));
+    function update() {
+      const A = val('att'), T = val('tot'), R = val('tgt'), left = val('left');
+      const msg = document.getElementById('o-msg')!;
+      if (T <= 0 || A > T) { setText('o-pct', '–'); msg.className = 'status warn'; msg.textContent = 'Attended classes cannot be more than total classes.'; return; }
+      const r = attendance(A, T, R);
+      setText('o-pct', `${r.pct.toFixed(2)}%`);
+      if (r.pct >= R) {
+        msg.className = 'status ok';
+        msg.textContent = r.skip > 0 ? `🎉 You are above ${R}%. You can miss the next ${r.skip} class${r.skip === 1 ? '' : 'es'} and still stay at or above ${R}%.` : `You are exactly at the limit. Don't miss the next class!`;
+      } else {
+        msg.className = 'status err';
+        msg.textContent = Number.isFinite(r.need) ? `⚠️ Attend the next ${r.need} class${r.need === 1 ? '' : 'es'} in a row to reach ${R}%.` : `A ${R}% target can't be reached.`;
+      }
+      if (left > 0) {
+        const best = ((A + left) / (T + left)) * 100;
+        setText('o-future', `If you attend all ${left} remaining classes, you will finish at ${best.toFixed(1)}%.${best < R ? ` That is still below ${R}%; talk to your department about condonation.` : ''}`);
+      } else setText('o-future', '');
+    }
+    document.querySelectorAll<HTMLButtonElement>('[data-t]').forEach((b) => b.addEventListener('click', () => { get('tgt').value = b.dataset.t!; get('tgt').dispatchEvent(new Event('input')); }));
+    initCalculator(update, inputs);
+  </script>
+  <Fragment slot="content">
+    <h2>Plan your attendance, not just track it</h2>
+    <p>Check your attendance after every week so a short illness or a trip home does not push you below the limit near exams. Add the classes remaining in the semester to see the best percentage you can still reach.</p>
+    <p>Other student tools: <a href="/cgpa-to-percentage">CGPA to percentage</a> · <a href="/text-to-handwriting">text to handwriting</a> · <a href="/percentage-calculator">percentage calculator</a></p>
+  </Fragment>
+</ToolLayout>

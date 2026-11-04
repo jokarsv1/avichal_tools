@@ -1,0 +1,120 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'What are the new regime tax slabs for FY 2026-27?', a: 'Up to ₹4 lakh: nil; ₹4–8 lakh: 5%; ₹8–12 lakh: 10%; ₹12–16 lakh: 15%; ₹16–20 lakh: 20%; ₹20–24 lakh: 25%; above ₹24 lakh: 30%. Budget 2026 kept the slabs unchanged from FY 2025-26.' },
+  { q: 'Is income up to ₹12 lakh tax-free?', a: 'Yes, under the new regime the Section 87A rebate (up to ₹60,000) makes taxable income up to ₹12 lakh tax-free. For salaried people the ₹75,000 standard deduction lifts this to a salary of ₹12.75 lakh. Just above the limit, marginal relief ensures your tax is never more than the income above ₹12 lakh.' },
+  { q: 'Which regime is better for me?', a: 'The new regime is usually better unless you claim large deductions (80C, 80D, HRA, home loan interest). The calculator shows both and tells you how many extra deductions you would need for the old regime to break even.' },
+  { q: 'What changed with the Income-tax Act, 2025?', a: 'From 1 April 2026 the Income-tax Act, 2025 replaces the 1961 Act and uses the term "tax year". The rates and limits used here are those announced for FY 2026-27; we use familiar section names (80C, 87A) for clarity.' },
+  { q: 'Does this include capital gains?', a: 'No. Capital gains on shares and mutual funds are taxed at special rates and the 87A rebate does not apply to them. This calculator covers salary and other normal income.' },
+];
+const steps = ['Enter your annual gross salary and any other income (interest, rent received after 30% deduction, etc.).', 'Choose your age group.', 'For the old regime, enter your deductions (80C, 80D, NPS, home loan interest, HRA exemption).', 'Compare the tax under both regimes and see which one saves you more.'];
+---
+<ToolLayout slug="income-tax-calculator" h1="Income Tax Calculator FY 2026-27" lead="Compare your tax under the <b>new</b> and <b>old</b> regime for FY 2026-27 (AY 2027-28), with standard deduction, 87A rebate and marginal relief, surcharge and 4% cess." steps={steps} faqs={faqs} badges={['🇮🇳 FY 2026-27', '⚖️ New vs old', '📤 Shareable link', '✅ No login']}>
+  <div class="calc">
+    <div class="stack-sm">
+      <div class="grid-2">
+        <div class="field"><label for="salary">Annual gross salary (₹)</label><input id="salary" data-key="s" type="number" min="0" step="1000" value="1500000" inputmode="numeric" /></div>
+        <div class="field"><label for="other">Other income (₹)</label><input id="other" data-key="o" type="number" min="0" step="1000" value="0" inputmode="numeric" /></div>
+      </div>
+      <div class="field"><label for="age">Age</label><select id="age" data-key="a"><option value="below60">Below 60</option><option value="60to80">60 to 80 (senior)</option><option value="above80">Above 80 (super senior)</option></select></div>
+      <div class="field"><label for="enps">Employer NPS contribution, 80CCD(2) (₹)</label><input id="enps" data-key="e" type="number" min="0" step="1000" value="0" /><small class="hint">Allowed in both regimes (up to 14% of basic in the new regime).</small></div>
+      <details class="card" style="box-shadow:none;padding:12px 14px" open>
+        <summary style="cursor:pointer;font-weight:700">Old regime deductions</summary>
+        <div class="grid-2" style="margin-top:10px">
+          <div class="field"><label for="d80c">80C (PF, PPF, ELSS, LIC…) max 1.5L</label><input id="d80c" data-key="c" type="number" min="0" step="1000" value="150000" /></div>
+          <div class="field"><label for="d80d">80D health insurance</label><input id="d80d" data-key="d" type="number" min="0" step="1000" value="25000" /></div>
+          <div class="field"><label for="dnps">80CCD(1B) NPS, max 50K</label><input id="dnps" data-key="n" type="number" min="0" step="1000" value="0" /></div>
+          <div class="field"><label for="dhl">Home loan interest 24(b), max 2L</label><input id="dhl" data-key="h" type="number" min="0" step="1000" value="0" /></div>
+          <div class="field"><label for="dhra">HRA exemption</label><input id="dhra" data-key="x" type="number" min="0" step="1000" value="0" /><small><a href="#hra">Calculate HRA ↓</a></small></div>
+          <div class="field"><label for="doth">Other (80E, 80G, 80TTA…)</label><input id="doth" data-key="t" type="number" min="0" step="1000" value="0" /></div>
+          <div class="field"><label for="pt">Professional tax (max 2,500)</label><input id="pt" data-key="pt" type="number" min="0" step="100" value="2400" /></div>
+        </div>
+      </details>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div class="status ok" id="o-verdict"></div>
+      <div class="grid-2">
+        <div class="result"><span class="hint">New regime</span><div class="big-number" id="o-new">–</div><span class="hint" id="o-new-m"></span></div>
+        <div class="result"><span class="hint">Old regime</span><div class="big-number" id="o-old">–</div><span class="hint" id="o-old-m"></span></div>
+      </div>
+      <p class="hint" id="o-breakeven"></p>
+      <div class="table-wrap"><table class="data"><thead><tr><th></th><th>New</th><th>Old</th></tr></thead><tbody id="o-table"></tbody></table></div>
+      <button type="button" class="btn btn-sm" data-share="My income tax: new vs old regime">📤 Share this comparison</button>
+    </div>
+  </div>
+
+  <section id="hra" class="card" style="box-shadow:none;margin-top:24px">
+    <h2 style="margin-top:0">HRA exemption calculator</h2>
+    <div class="grid-4">
+      <div class="field"><label for="h-basic">Annual basic + DA</label><input id="h-basic" type="number" min="0" step="1000" value="600000" /></div>
+      <div class="field"><label for="h-hra">Annual HRA received</label><input id="h-hra" type="number" min="0" step="1000" value="240000" /></div>
+      <div class="field"><label for="h-rent">Annual rent paid</label><input id="h-rent" type="number" min="0" step="1000" value="240000" /></div>
+      <div class="field"><label for="h-metro">City</label><select id="h-metro"><option value="1">Metro (Delhi, Mumbai, Kolkata, Chennai)</option><option value="0">Non-metro</option></select></div>
+    </div>
+    <p style="margin:12px 0 8px">Exempt HRA: <b id="h-out">–</b> <button type="button" class="btn btn-sm" id="h-use">Use in old regime</button></p>
+    <p class="hint">Least of: HRA received, rent paid − 10% of basic, 50% (metro) or 40% of basic.</p>
+  </section>
+
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { incomeTax, breakEvenDeductions, hraExemption, type TaxInput, type TaxResult } from '../lib/finance';
+    import { rupees } from '../lib/format';
+    const ids = ['salary', 'other', 'age', 'enps', 'd80c', 'd80d', 'dnps', 'dhl', 'dhra', 'doth', 'pt'];
+    const inputs = Object.fromEntries(ids.map((id) => { const e = document.getElementById(id) as HTMLInputElement; return [e.dataset.key!, e]; }));
+    function update() {
+      const inp: TaxInput = {
+        salary: val('salary'), otherIncome: val('other'), age: (document.getElementById('age') as HTMLSelectElement).value as TaxInput['age'],
+        d80c: val('d80c'), d80d: val('d80d'), dNps: val('dnps'), dHomeLoan: val('dhl'), dHra: val('dhra'), dOther: val('doth'), profTax: val('pt'), employerNps: val('enps'),
+      };
+      const n = incomeTax(inp, 'new'), o = incomeTax(inp, 'old');
+      setText('o-new', rupees(n.total)); setText('o-old', rupees(o.total));
+      setText('o-new-m', `${rupees(n.total / 12)} / month`); setText('o-old-m', `${rupees(o.total / 12)} / month`);
+      const v = document.getElementById('o-verdict')!;
+      const diff = Math.abs(n.total - o.total);
+      v.textContent = diff < 10 ? 'Both regimes cost the same.' : n.total < o.total ? `✅ New regime saves you ${rupees(diff)} a year.` : `✅ Old regime saves you ${rupees(diff)} a year.`;
+      const be = breakEvenDeductions(inp);
+      setText('o-breakeven', be === 0 ? 'With your deductions, the old regime is already at least as good.' : be == null ? '' : `The old regime would need about ${rupees(be)} more in deductions to match the new regime.`);
+      const row = (label: string, f: (r: TaxResult) => number, neg = false) => `<tr><td>${label}</td><td>${neg && f(n) ? '−' : ''}${rupees(f(n))}</td><td>${neg && f(o) ? '−' : ''}${rupees(f(o))}</td></tr>`;
+      document.getElementById('o-table')!.innerHTML = [
+        row('Gross income', (r) => r.gross),
+        row('Standard deduction', (r) => r.standardDeduction, true),
+        row('Deductions', (r) => r.deductions, true),
+        `<tr class="hl"><td>Taxable income</td><td>${rupees(n.taxable)}</td><td>${rupees(o.taxable)}</td></tr>`,
+        row('Tax on slabs', (r) => r.slabTax),
+        row('87A rebate / relief', (r) => r.rebate, true),
+        row('Surcharge', (r) => r.surcharge),
+        row('Health & education cess (4%)', (r) => r.cess),
+        `<tr class="hl"><td>Total tax</td><td>${rupees(n.total)}</td><td>${rupees(o.total)}</td></tr>`,
+        `<tr><td>Effective rate</td><td>${n.gross ? ((n.total / n.gross) * 100).toFixed(1) : 0}%</td><td>${o.gross ? ((o.total / o.gross) * 100).toFixed(1) : 0}%</td></tr>`,
+      ].join('');
+    }
+    initCalculator(update, inputs);
+    const hraIds = ['h-basic', 'h-hra', 'h-rent', 'h-metro'];
+    const hra = () => { const x = hraExemption(val('h-basic'), val('h-hra'), val('h-rent'), val('h-metro') === 1); setText('h-out', rupees(x)); return x; };
+    hraIds.forEach((id) => document.getElementById(id)!.addEventListener('input', hra));
+    hra();
+    document.getElementById('h-use')!.addEventListener('click', () => { const e = document.getElementById('dhra') as HTMLInputElement; e.value = String(Math.round(hra())); e.dispatchEvent(new Event('input')); e.scrollIntoView({ block: 'center' }); });
+  </script>
+
+  <Fragment slot="content">
+    <h2>Income tax slabs for FY 2026-27 (AY 2027-28)</h2>
+    <div class="grid-2">
+      <table><thead><tr><th>New regime (default)</th><th>Rate</th></tr></thead><tbody>
+        <tr><td>Up to ₹4,00,000</td><td>Nil</td></tr><tr><td>₹4,00,001 – ₹8,00,000</td><td>5%</td></tr><tr><td>₹8,00,001 – ₹12,00,000</td><td>10%</td></tr>
+        <tr><td>₹12,00,001 – ₹16,00,000</td><td>15%</td></tr><tr><td>₹16,00,001 – ₹20,00,000</td><td>20%</td></tr><tr><td>₹20,00,001 – ₹24,00,000</td><td>25%</td></tr><tr><td>Above ₹24,00,000</td><td>30%</td></tr>
+      </tbody></table>
+      <table><thead><tr><th>Old regime (below 60)</th><th>Rate</th></tr></thead><tbody>
+        <tr><td>Up to ₹2,50,000</td><td>Nil</td></tr><tr><td>₹2,50,001 – ₹5,00,000</td><td>5%</td></tr><tr><td>₹5,00,001 – ₹10,00,000</td><td>20%</td></tr><tr><td>Above ₹10,00,000</td><td>30%</td></tr>
+        <tr><td colspan="2" class="hint">Exemption limit ₹3 lakh for 60–80 and ₹5 lakh for 80+.</td></tr>
+      </tbody></table>
+    </div>
+    <h3>Key rules used</h3>
+    <ul>
+      <li><b>Standard deduction:</b> ₹75,000 (new) and ₹50,000 (old) for salaried employees and pensioners.</li>
+      <li><b>Rebate u/s 87A:</b> up to ₹60,000 if taxable income ≤ ₹12 lakh (new), with marginal relief just above; up to ₹12,500 if ≤ ₹5 lakh (old).</li>
+      <li><b>Surcharge:</b> 10% above ₹50 lakh, 15% above ₹1 crore, 25% above ₹2 crore (the new regime is capped at 25%; the old regime has 37% above ₹5 crore), with marginal relief.</li>
+      <li><b>Cess:</b> 4% health and education cess on tax plus surcharge.</li>
+    </ul>
+    <p class="callout">This calculator is for estimation and planning. It does not cover capital gains, agricultural income or business income. Confirm with a tax professional or the Income Tax Department's e-filing portal before filing.</p>
+  </Fragment>
+</ToolLayout>

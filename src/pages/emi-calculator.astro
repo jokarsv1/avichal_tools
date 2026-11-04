@@ -1,0 +1,90 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+const faqs = [
+  { q: 'What is the EMI formula?', a: 'EMI = P × r × (1 + r)<sup>n</sup> ÷ ((1 + r)<sup>n</sup> − 1), where P is the loan amount, r is the monthly interest rate (annual rate ÷ 12 ÷ 100) and n is the number of monthly instalments.' },
+  { q: 'What is the EMI for a ₹10 lakh loan at 8.5% for 20 years?', a: 'About ₹8,678 per month. You would pay about ₹10.83 lakh in interest over 20 years. Use the sliders above to try your own numbers.' },
+  { q: 'How can I reduce my total interest?', a: 'Choose a shorter tenure, make part-prepayments early in the loan (when most of each EMI is interest), or refinance at a lower rate. A 5-year shorter tenure often saves lakhs.' },
+  { q: 'Is processing fee included?', a: 'No. This shows principal and interest only. Add processing fees, insurance and GST on fees separately when comparing loans.' },
+  { q: 'Can I share these results?', a: 'Yes. The page address updates as you type, so press <b>Share</b> (or copy the URL) to send the exact calculation on WhatsApp or email.' },
+];
+const steps = ['Enter the loan amount, interest rate and tenure.', 'Read your monthly EMI, total interest and total payment instantly.', 'Scroll to the year-by-year schedule to see how the balance falls.', 'Press <b>Share</b> to send the calculation.'];
+---
+<ToolLayout slug="emi-calculator" h1="EMI Calculator" lead="Calculate the monthly EMI, total interest and full amortization schedule for a home, car, personal or education loan." steps={steps} faqs={faqs} badges={['⚡ Instant', '📤 Shareable link', '📅 Year-wise schedule', '✅ No login']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="amount" key="p" label="Loan amount" unit="₹" min={10000} max={20000000} step={10000} value={2500000} />
+      <SliderField id="rate" key="r" label="Interest rate (p.a.)" unit="%" min={1} max={30} step={0.05} value={8.5} />
+      <SliderField id="years" key="y" label="Tenure" unit="years" min={1} max={30} step={0.5} value={20} />
+      <div class="grid-3">
+        <button type="button" class="btn btn-sm" data-preset="home">🏠 Home</button>
+        <button type="button" class="btn btn-sm" data-preset="car">🚗 Car</button>
+        <button type="button" class="btn btn-sm" data-preset="personal">💳 Personal</button>
+      </div>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Monthly EMI</span><div class="big-number" id="o-emi">–</div></div>
+      <div class="result-rows">
+        <div><span>Principal</span><b id="o-principal">–</b></div>
+        <div><span>Total interest</span><b id="o-interest">–</b></div>
+        <div><span>Total amount payable</span><b id="o-total">–</b></div>
+      </div>
+      <div id="o-split"></div>
+      <button type="button" class="btn btn-sm" data-share="My loan EMI calculation">📤 Share this calculation</button>
+    </div>
+  </div>
+  <h2 style="margin-top:28px">Balance and payments by year</h2>
+  <div id="o-chart" class="chart"></div>
+  <div class="table-wrap" style="margin-top:14px"><table class="data"><thead><tr><th>Year</th><th>Principal paid</th><th>Interest paid</th><th>Balance</th></tr></thead><tbody id="o-table"></tbody></table></div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { amortization } from '../lib/finance';
+    import { rupees, rupeesShort } from '../lib/format';
+    import { splitBar, stackedColumns } from '../lib/charts';
+    const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    function update() {
+      const P = val('amount'), r = val('rate'), y = val('years');
+      const n = Math.round(y * 12);
+      if (P <= 0 || n <= 0) return;
+      const a = amortization(P, r, n);
+      setText('o-emi', rupees(a.emi));
+      setText('o-principal', rupees(P));
+      setText('o-interest', rupees(a.totalInterest));
+      setText('o-total', rupees(a.totalPaid));
+      splitBar(document.getElementById('o-split')!, [
+        { name: 'Principal', color: css('--series-1'), value: P },
+        { name: 'Interest', color: css('--series-2'), value: a.totalInterest },
+      ], rupeesShort);
+      stackedColumns(document.getElementById('o-chart')!, a.years.map((x) => `Y${x.year}`), [
+        { name: 'Principal paid', color: css('--series-1'), values: a.years.map((x) => x.a) },
+        { name: 'Interest paid', color: css('--series-2'), values: a.years.map((x) => x.b) },
+      ], rupeesShort, { title: 'Principal and interest paid each year' });
+      document.getElementById('o-table')!.innerHTML = a.years.map((x) => `<tr><td>Year ${x.year}</td><td>${rupees(x.a)}</td><td>${rupees(x.b)}</td><td>${rupees(x.balance)}</td></tr>`).join('');
+    }
+    const presets: Record<string, [number, number, number]> = { home: [5000000, 8.5, 20], car: [800000, 9.5, 5], personal: [500000, 12.5, 3] };
+    document.querySelectorAll<HTMLButtonElement>('[data-preset]').forEach((b) => b.addEventListener('click', () => {
+      const [p, r, y] = presets[b.dataset.preset!];
+      for (const [id, v] of [['amount', p], ['rate', r], ['years', y]] as const) {
+        const el = document.getElementById(id) as HTMLInputElement;
+        el.value = String(v);
+        el.dispatchEvent(new Event('input'));
+      }
+    }));
+    initCalculator(update);
+  </script>
+  <Fragment slot="content">
+    <h2>How EMI works</h2>
+    <p>An EMI (equated monthly instalment) stays the same every month, but what it pays for changes. Early EMIs are mostly interest, because the outstanding balance is large. As the balance falls, more of each EMI goes towards the principal. That is why prepaying in the first few years saves the most interest.</p>
+    <h3>Typical interest rates in India (indicative)</h3>
+    <table>
+      <thead><tr><th>Loan type</th><th>Typical rate</th><th>Typical tenure</th></tr></thead>
+      <tbody>
+        <tr><td>Home loan</td><td>8–10%</td><td>15–30 years</td></tr>
+        <tr><td>Car loan</td><td>8.5–12%</td><td>3–7 years</td></tr>
+        <tr><td>Personal loan</td><td>10.5–24%</td><td>1–5 years</td></tr>
+        <tr><td>Education loan</td><td>8–14%</td><td>5–15 years</td></tr>
+      </tbody>
+    </table>
+    <p class="hint">Rates vary by lender, credit score and RBI policy. Check your lender's sanction letter for exact terms.</p>
+  </Fragment>
+</ToolLayout>

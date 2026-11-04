@@ -1,0 +1,17 @@
+---
+/** Number input + range slider kept in sync by src/lib/calc-ui.ts. `key` is used in the shareable URL. */
+interface Props { id: string; label: string; min: number; max: number; step: number; value: number; unit?: string; hint?: string; key?: string }
+const { id, label, min, max, step, value, unit = '', hint, key = id } = Astro.props;
+---
+<div class="slider-field">
+  <div class="top">
+    <label for={id}>{label}</label>
+    <span class="row" style="gap:6px;flex-wrap:nowrap">
+      {unit === '₹' && <span aria-hidden="true">₹</span>}
+      <input id={id} type="number" min={min} step={step} value={value} inputmode="decimal" data-key={key} data-slider-num />
+      {unit && unit !== '₹' && <span class="hint" style="white-space:nowrap">{unit}</span>}
+    </span>
+  </div>
+  <input type="range" min={min} max={max} step={step} value={value} aria-label={label} data-slider-range />
+  {hint && <small class="hint">{hint}</small>}
+</div>

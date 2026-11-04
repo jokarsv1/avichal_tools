@@ -136,6 +136,7 @@ input[type="color"] { width: 48px; height: 40px; border: 1px solid var(--border)
 .tool-layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
 @media (max-width: 1060px) { .tool-layout { grid-template-columns: minmax(0, 1fr); } .tool-aside { display: none; } }
 .tool-aside { position: sticky; top: 76px; }
+.tool-layout.no-aside { grid-template-columns: minmax(0, 1fr); max-width: 980px; }
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; }
 @media (max-width: 520px) { .card { padding: 14px; border-radius: 12px; } }
 .tool-card { min-height: 220px; }
@@ -267,3 +268,25 @@ table.data tr.hl td { background: var(--primary-soft); font-weight: 700; }
 .badge.err { background: var(--err-soft); color: var(--err); }
 .hidden { display: none !important; }
 @media print { .site-header, .site-footer, .ad-slot, .tool-aside, .no-print, .support { display: none !important; } body { background: #fff; } }
+
+/* ---------- Charts (palette validated with the dataviz validator: CVD + contrast, light & dark) ---------- */
+:root { --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --viz-grid: #e6e6e3; --viz-axis: #6b6a66; }
+@media (prefers-color-scheme: dark) { :root { --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --viz-grid: #2c2f45; --viz-axis: #a3a8c3; } }
+.viz-split { display: flex; gap: 2px; height: 22px; border-radius: 6px; overflow: hidden; margin: 6px 0 10px; }
+.viz-split span { display: block; min-width: 2px; }
+.viz-split span:first-child { border-radius: 4px 0 0 4px; }
+.viz-split span:last-child { border-radius: 0 4px 4px 0; }
+.viz-wrap { position: relative; margin-top: 8px; }
+.viz-wrap svg { width: 100%; height: auto; display: block; overflow: visible; }
+.viz-grid { stroke: var(--viz-grid); stroke-width: 1; }
+.viz-axis { fill: var(--viz-axis); font-size: 11px; font-family: var(--font); }
+.viz-col:focus { outline: none; }
+.viz-col:hover path, .viz-col:focus path { filter: brightness(1.08); }
+.viz-tip { position: absolute; top: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; font-size: .82rem; box-shadow: var(--shadow); pointer-events: none; min-width: 150px; }
+.viz-tip i, .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.calc-out .big-number { color: var(--text); }
+.result-rows { display: grid; gap: 6px; }
+.result-rows div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px dashed var(--border); padding: 4px 0; }
+.result-rows div b { font-variant-numeric: tabular-nums; }
+
+.result .big-number { font-size: clamp(1.35rem, 2.8vw, 1.9rem); overflow-wrap: anywhere; }

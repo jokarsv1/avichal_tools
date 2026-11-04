@@ -1,0 +1,65 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+const faqs = [
+  { q: 'What is the current PPF interest rate?', a: 'The PPF rate is set by the Government every quarter. It has been 7.1% p.a. for several quarters; check the latest rate on the National Savings Institute or your bank\'s website and enter it above.' },
+  { q: 'How much can I invest in PPF?', a: 'Minimum ₹500 and maximum ₹1,50,000 per financial year. Deposits qualify for Section 80C deduction under the old regime.' },
+  { q: 'When should I deposit to earn maximum interest?', a: 'Interest is calculated on the lowest balance between the 5th and the last day of each month. Depositing the full year\'s amount before 5 April earns interest for the whole year, which is what this calculator assumes.' },
+  { q: 'Can I extend PPF after 15 years?', a: 'Yes, in blocks of 5 years, with or without fresh contributions. Choose 20, 25 or 30 years above and whether you keep contributing.' },
+  { q: 'Is PPF interest taxable?', a: 'No. PPF is EEE: deposits (under old regime), interest and maturity are all tax-free.' },
+];
+const steps = ['Enter your yearly deposit (₹500 to ₹1.5 lakh).', 'Enter the current PPF rate.', 'Pick 15 years or an extension, and whether you keep contributing during extensions.', 'See the maturity value and a year-by-year balance.'];
+---
+<ToolLayout slug="ppf-calculator" h1="PPF Calculator" lead="Calculate Public Provident Fund maturity value, total interest and year-by-year balance for 15 years or with 5-year extensions." steps={steps} faqs={faqs} badges={['⚡ Instant', '📅 Year-wise table', '📤 Shareable link', '✅ No login']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="dep" key="d" label="Yearly investment" unit="₹" min={500} max={150000} step={500} value={150000} />
+      <SliderField id="rate" key="r" label="Interest rate" unit="%" min={5} max={10} step={0.05} value={7.1} />
+      <div class="grid-2">
+        <div class="field"><label for="yrs">Duration</label><select id="yrs" data-key="y"><option value="15">15 years</option><option value="20">20 years (1 extension)</option><option value="25">25 years (2 extensions)</option><option value="30">30 years (3 extensions)</option></select></div>
+        <div class="field"><label for="contrib">During extensions</label><select id="contrib" data-key="c"><option value="1">Keep contributing</option><option value="0">Stop contributing</option></select></div>
+      </div>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Maturity value (tax-free)</span><div class="big-number" id="o-mat">–</div></div>
+      <div class="result-rows">
+        <div><span>Total invested</span><b id="o-inv">–</b></div>
+        <div><span>Total interest</span><b id="o-int">–</b></div>
+      </div>
+      <div id="o-split"></div>
+      <button type="button" class="btn btn-sm" data-share="PPF calculation">📤 Share</button>
+    </div>
+  </div>
+  <h2 style="margin-top:28px">Balance by year</h2>
+  <div id="o-chart" class="chart"></div>
+  <div class="table-wrap" style="margin-top:14px"><table class="data"><thead><tr><th>Year</th><th>Invested</th><th>Interest this year</th><th>Balance</th></tr></thead><tbody id="o-table"></tbody></table></div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { ppf } from '../lib/finance';
+    import { rupees, rupeesShort } from '../lib/format';
+    import { splitBar, stackedColumns } from '../lib/charts';
+    const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    const get = (id: string) => document.getElementById(id) as HTMLSelectElement;
+    function update() {
+      const years = val('yrs');
+      const r = ppf(Math.min(150000, val('dep')), val('rate'), years, val('contrib') ? years : 15);
+      setText('o-mat', rupees(r.maturity)); setText('o-inv', rupees(r.invested)); setText('o-int', rupees(r.interest));
+      splitBar(document.getElementById('o-split')!, [{ name: 'Invested', color: css('--series-1'), value: r.invested }, { name: 'Interest', color: css('--series-3'), value: r.interest }], rupeesShort);
+      stackedColumns(document.getElementById('o-chart')!, r.rows.map((x) => `Y${x.year}`), [
+        { name: 'Invested', color: css('--series-1'), values: r.rows.map((x) => x.a) },
+        { name: 'Interest earned', color: css('--series-3'), values: r.rows.map((x) => x.b) },
+      ], rupeesShort, { title: 'PPF balance by year' });
+      document.getElementById('o-table')!.innerHTML = r.rows.map((x) => `<tr><td>Year ${x.year}</td><td>${rupees(x.a)}</td><td>${rupees(x.extra ?? 0)}</td><td>${rupees(x.balance)}</td></tr>`).join('');
+    }
+    initCalculator(update, { y: get('yrs'), c: get('contrib') });
+  </script>
+  <Fragment slot="content">
+    <h2>PPF in brief</h2>
+    <ul>
+      <li><b>Lock-in:</b> 15 years; partial withdrawals allowed from year 7; loans against PPF from year 3 to 6.</li>
+      <li><b>Safety:</b> Government-backed, so the capital is safe.</li>
+      <li><b>Tax:</b> EEE status. Interest and maturity are tax-free, and deposits count under 80C (old regime).</li>
+    </ul>
+    <p>Compare with <a href="/sip-calculator">equity SIPs</a> for higher (but market-linked) long-term growth, or <a href="/fd-calculator">fixed deposits</a> for shorter goals.</p>
+  </Fragment>
+</ToolLayout>

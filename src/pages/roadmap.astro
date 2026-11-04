@@ -1,0 +1,20 @@
+---
+import Page from '../layouts/Page.astro';
+import { SITE } from '../config/site';
+import { TOOLS, LIVE_TOOLS, getCategory } from '../data/tools';
+const planned = TOOLS.filter((t) => t.status === 'planned');
+const vote = (name: string) => `${SITE.github}/issues/new?title=${encodeURIComponent('Tool request: ' + name)}&labels=tool-request`;
+---
+<Page title="Roadmap & tool requests" description={`What's coming next to ${SITE.name}, and how to request a tool.`} path="/roadmap" h1="Roadmap & tool requests">
+  <p>We have <b>{LIVE_TOOLS.length} tools</b> live today. These are next, roughly in order. Upvote one on GitHub, or email <a href={`mailto:${SITE.email}`}>{SITE.email}</a> with your idea.</p>
+  <div class="tool-grid" style="margin:18px 0">
+    {planned.map((t) => (
+      <a class="tool-tile" href={vote(t.name)} rel="noopener nofollow">
+        <span class="ti" aria-hidden="true">{t.icon}</span>
+        <span><b>{t.name}</b><span>{t.short} · {getCategory(t.category).label}</span></span>
+      </a>
+    ))}
+  </div>
+  <h2>Request something else</h2>
+  <p><a class="btn btn-primary" href={vote('')} rel="noopener">Request a tool on GitHub</a> <a class="btn" href={`mailto:${SITE.email}?subject=${encodeURIComponent('Tool request')}`}>Email a request</a></p>
+</Page>

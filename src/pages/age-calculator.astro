@@ -1,0 +1,75 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const year = new Date().getFullYear();
+const faqs = [
+  { q: 'How do I calculate my age as on a specific date?', a: 'Enter your date of birth and change "Age as on" to the cut-off date in your exam notification (for example 1 August). The result shows your exact age in years, months and days on that date.' },
+  { q: 'How is age calculated for government exams?', a: 'Notifications state a cut-off date, such as "age as on 01-08-' + year + '". Your age must be within the limits on that date. Relaxations for SC/ST/OBC/PwD categories are added to the upper limit.' },
+  { q: 'What if I was born on 29 February?', a: 'In non-leap years, we count your birthday on 1 March, which is how most legal systems treat it.' },
+];
+const steps = ['Enter your date of birth.', 'Keep "Age as on" as today, or set a cut-off date for an exam.', 'Read your exact age, total days and your next birthday.'];
+---
+<ToolLayout slug="age-calculator" h1="Age Calculator" lead="Calculate your exact age in years, months and days, or your age as on a specific date for exam and job eligibility." steps={steps} faqs={faqs} badges={['📅 Exam cut-off dates', '⚡ Instant', '✅ No login']}>
+  <div class="calc">
+    <div class="stack-sm">
+      <div class="field"><label for="dob">Date of birth</label><input id="dob" data-key="d" type="date" value="2000-01-15" /></div>
+      <div class="field"><label for="ason">Age as on</label><input id="ason" data-key="o" type="date" /></div>
+      <div class="row">
+        <button type="button" class="btn btn-sm" data-on="today">Today</button>
+        <button type="button" class="btn btn-sm" data-on={`${year}-01-01`}>1 Jan {year}</button>
+        <button type="button" class="btn btn-sm" data-on={`${year}-08-01`}>1 Aug {year}</button>
+        <button type="button" class="btn btn-sm" data-on={`${year + 1}-01-01`}>1 Jan {year + 1}</button>
+      </div>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Age</span><div class="big-number" id="o-age">–</div></div>
+      <div class="result-rows">
+        <div><span>Total months</span><b id="o-months">–</b></div>
+        <div><span>Total weeks</span><b id="o-weeks">–</b></div>
+        <div><span>Total days</span><b id="o-days">–</b></div>
+        <div><span>Born on a</span><b id="o-dow">–</b></div>
+        <div><span>Next birthday</span><b id="o-next">–</b></div>
+      </div>
+      <button type="button" class="btn btn-sm" data-share="Age calculation">📤 Share</button>
+    </div>
+  </div>
+  <script>
+    import { initCalculator, setText } from '../lib/calc-ui';
+    const dob = document.getElementById('dob') as HTMLInputElement, on = document.getElementById('ason') as HTMLInputElement;
+    const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    if (!on.value) on.value = iso(new Date());
+    const parse = (s: string) => { const [y, m, d] = s.split('-').map(Number); return { y, m, d }; };
+    const dim = (y: number, m: number) => new Date(Date.UTC(y, m, 0)).getUTCDate(); // m is 1-based
+    function update() {
+      if (!dob.value || !on.value) return;
+      const a = parse(dob.value), b = parse(on.value);
+      const ta = Date.UTC(a.y, a.m - 1, a.d), tb = Date.UTC(b.y, b.m - 1, b.d);
+      if (tb < ta) { setText('o-age', 'Date of birth is after the "as on" date'); return; }
+      let y = b.y - a.y, m = b.m - a.m, d = b.d - a.d;
+      if (d < 0) { m--; d += dim(b.y, b.m - 1 || 12); }
+      if (m < 0) { y--; m += 12; }
+      setText('o-age', `${y} years, ${m} months, ${d} days`);
+      const days = Math.round((tb - ta) / 86400000);
+      setText('o-days', days.toLocaleString('en-IN'));
+      setText('o-weeks', `${Math.floor(days / 7).toLocaleString('en-IN')} weeks ${days % 7} days`);
+      setText('o-months', (y * 12 + m).toLocaleString('en-IN'));
+      setText('o-dow', new Date(ta).toLocaleDateString('en-IN', { weekday: 'long', timeZone: 'UTC' }));
+      let ny = b.y;
+      const bday = (yy: number) => (a.m === 2 && a.d === 29 && dim(yy, 2) === 28 ? Date.UTC(yy, 2, 1) : Date.UTC(yy, a.m - 1, a.d));
+      if (bday(ny) <= tb) ny++;
+      const left = Math.round((bday(ny) - tb) / 86400000);
+      setText('o-next', `${new Date(bday(ny)).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })} · in ${left} day${left === 1 ? '' : 's'} (turning ${ny - a.y})`);
+    }
+    document.querySelectorAll<HTMLButtonElement>('[data-on]').forEach((btn) => btn.addEventListener('click', () => { on.value = btn.dataset.on === 'today' ? iso(new Date()) : btn.dataset.on!; on.dispatchEvent(new Event('input')); }));
+    initCalculator(update, { d: dob, o: on });
+  </script>
+  <Fragment slot="content">
+    <h2>Age limits for popular exams (general category, indicative)</h2>
+    <table><thead><tr><th>Exam</th><th>Typical age limit</th></tr></thead><tbody>
+      <tr><td>UPSC Civil Services</td><td>21–32 years</td></tr>
+      <tr><td>SSC CGL</td><td>18–32 years (varies by post)</td></tr>
+      <tr><td>IBPS PO</td><td>20–30 years</td></tr>
+      <tr><td>NDA</td><td>16.5–19.5 years</td></tr>
+    </tbody></table>
+    <p class="hint">Limits and cut-off dates change with every notification; category relaxations apply. Check the official notification. Need a photo for the form too? Try the <a href="/exam-photo-resizer">exam photo resizer</a>.</p>
+  </Fragment>
+</ToolLayout>

@@ -1,0 +1,74 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const LIMITS: [string, number][] = [['X / Twitter post', 280], ['Instagram caption', 2200], ['LinkedIn post', 3000], ['Google meta description', 155], ['SEO title', 60], ['SMS', 160], ['YouTube title', 100]];
+const faqs = [
+  { q: 'How are words counted?', a: 'A word is any run of letters or numbers separated by spaces or punctuation. Hyphenated words ("well-known") count as one. Hindi and other scripts are counted too.' },
+  { q: 'How is reading time calculated?', a: 'Reading time assumes 238 words per minute (the average silent reading speed for adults); speaking time assumes 140 words per minute.' },
+  { q: 'Is my text saved or uploaded?', a: 'It is never uploaded. It is kept only in your browser (local storage) so you don\'t lose it if you refresh. Press Clear to remove it.' },
+];
+const steps = ['Type or paste your text.', 'See words, characters, sentences, paragraphs and reading time update instantly.', 'Check the platform limits and the most-used keywords.'];
+---
+<ToolLayout slug="word-counter" h1="Word Counter" lead="Count words, characters, sentences and paragraphs, with reading time, keyword density and limits for X, Instagram, LinkedIn and SEO." steps={steps} faqs={faqs} badges={['⚡ Live counts', '🔒 Text stays on your device', '✅ No login']}>
+  <div class="stack">
+    <div class="stat-row" aria-live="polite">
+      <div class="stat accent"><b id="w-words">0</b><span>Words</span></div>
+      <div class="stat"><b id="w-chars">0</b><span>Characters</span></div>
+      <div class="stat"><b id="w-nospace">0</b><span>Without spaces</span></div>
+      <div class="stat"><b id="w-sent">0</b><span>Sentences</span></div>
+      <div class="stat"><b id="w-para">0</b><span>Paragraphs</span></div>
+      <div class="stat"><b id="w-read">0 min</b><span>Reading time</span></div>
+    </div>
+    <textarea id="w-text" rows="12" placeholder="Start typing or paste your text here…" aria-label="Text to count"></textarea>
+    <div class="row"><button type="button" class="btn btn-sm" id="w-clear">Clear</button><button type="button" class="btn btn-sm" id="w-copy">Copy</button><button type="button" class="btn btn-sm" id="w-upper">UPPERCASE</button><button type="button" class="btn btn-sm" id="w-lower">lowercase</button><button type="button" class="btn btn-sm" id="w-title">Title Case</button><button type="button" class="btn btn-sm" id="w-sentence">Sentence case</button><span class="spacer"></span><span class="hint" id="w-speak"></span></div>
+    <div class="grid-2">
+      <div><h3 style="margin-top:0">Platform limits</h3><div class="result-rows" id="w-limits" data-limits={JSON.stringify(LIMITS)}></div></div>
+      <div><h3 style="margin-top:0">Top keywords</h3><div class="result-rows" id="w-keys"><div><span class="hint">Type some text…</span></div></div></div>
+    </div>
+  </div>
+  <script>
+    import { store } from '../lib/ui';
+    const t = document.getElementById('w-text') as HTMLTextAreaElement;
+    const set = (id: string, v: string) => (document.getElementById(id)!.textContent = v);
+    const LIMITS: [string, number][] = JSON.parse(document.getElementById('w-limits')!.dataset.limits!);
+    const STOP = new Set('a an and are as at be but by for from has have he her his i in is it its me my of on or our she so that the their them they this to was we were what when which who will with you your'.split(' '));
+    t.value = store.get('wc-text', '');
+    function update() {
+      const s = t.value;
+      store.set('wc-text', s);
+      const words = s.match(/[\p{L}\p{N}]+(?:[-'’][\p{L}\p{N}]+)*/gu) || [];
+      const chars = Array.from(s).length;
+      set('w-words', words.length.toLocaleString('en-IN'));
+      set('w-chars', chars.toLocaleString('en-IN'));
+      set('w-nospace', Array.from(s.replace(/\s/g, '')).length.toLocaleString('en-IN'));
+      set('w-sent', String((s.match(/[^.!?।\n]+[.!?।]+/g) || []).length || (words.length ? 1 : 0)));
+      set('w-para', String(s.split(/\n\s*\n/).filter((p) => p.trim()).length));
+      const mins = words.length / 238;
+      set('w-read', mins < 1 ? `${Math.max(0, Math.round(mins * 60))} sec` : `${Math.round(mins)} min`);
+      set('w-speak', `Speaking time ≈ ${Math.max(1, Math.round(words.length / 140))} min`);
+      document.getElementById('w-limits')!.innerHTML = LIMITS.map(([n, l]) => `<div><span>${n}</span><b style="color:${chars > l ? 'var(--err)' : 'inherit'}">${chars} / ${l}${chars > l ? ' ✗' : ''}</b></div>`).join('');
+      const freq = new Map<string, number>();
+      for (const w of words) { const k = w.toLowerCase(); if (k.length > 2 && !STOP.has(k)) freq.set(k, (freq.get(k) || 0) + 1); }
+      const top = [...freq].sort((a, b) => b[1] - a[1]).slice(0, 8);
+      document.getElementById('w-keys')!.innerHTML = top.length ? top.map(([k, c]) => `<div><span>${k.replace(/</g, '&lt;')}</span><b>${c} · ${((c / words.length) * 100).toFixed(1)}%</b></div>`).join('') : '<div><span class="hint">Type some text…</span></div>';
+    }
+    t.addEventListener('input', update);
+    const transform = (fn: (s: string) => string) => () => { t.value = fn(t.value); update(); };
+    document.getElementById('w-clear')!.addEventListener('click', transform(() => ''));
+    document.getElementById('w-upper')!.addEventListener('click', transform((s) => s.toUpperCase()));
+    document.getElementById('w-lower')!.addEventListener('click', transform((s) => s.toLowerCase()));
+    document.getElementById('w-title')!.addEventListener('click', transform((s) => s.toLowerCase().replace(/(^|[\s(“"'-])(\p{L})/gu, (_, a, b) => a + b.toUpperCase())));
+    document.getElementById('w-sentence')!.addEventListener('click', transform((s) => s.toLowerCase().replace(/(^\s*|[.!?]\s+)(\p{L})/gu, (_, a, b) => a + b.toUpperCase())));
+    document.getElementById('w-copy')!.addEventListener('click', () => navigator.clipboard.writeText(t.value).catch(() => {}));
+    update();
+  </script>
+  <Fragment slot="content">
+    <h2>Word count guidelines</h2>
+    <table><thead><tr><th>Writing</th><th>Typical length</th></tr></thead><tbody>
+      <tr><td>Tweet / X post</td><td>under 280 characters</td></tr>
+      <tr><td>Meta description</td><td>140–155 characters</td></tr>
+      <tr><td>College application essay</td><td>500–650 words</td></tr>
+      <tr><td>Blog post that ranks well</td><td>1,200–2,000 words</td></tr>
+      <tr><td>Cover letter</td><td>250–400 words</td></tr>
+    </tbody></table>
+  </Fragment>
+</ToolLayout>

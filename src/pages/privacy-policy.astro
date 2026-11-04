@@ -1,0 +1,40 @@
+---
+import Page from '../layouts/Page.astro';
+import { SITE, ADS, ANALYTICS } from '../config/site';
+const updated = 'November 2026';
+---
+<Page title="Privacy Policy" description={`How ${SITE.name} handles your data: files are processed in your browser and never uploaded. Details on cookies, ads and analytics.`} path="/privacy-policy">
+  <p><i>Last updated: {updated}</i></p>
+  <h2>The short version</h2>
+  <ul>
+    <li><b>Your files never leave your device.</b> PDFs, images, videos and the text you type are processed by code running in your own browser. We do not upload, store or see them.</li>
+    <li><b>No account, no login.</b> We do not ask for your name, email or phone number to use any tool.</li>
+    <li><b>Advertising and analytics</b> may use cookies, as explained below. You can control them.</li>
+  </ul>
+
+  <h2>1. Files and content you process</h2>
+  <p>All tools on {SITE.name} run locally using JavaScript, WebAssembly and WebCodecs in your browser. The files you choose are read into your device's memory, processed there and handed back to you as a download. They are not transmitted to our servers or any third party. Some tools download helper code (for example a PDF engine or an image decoder) from our own website the first time you use them; this is code coming <i>to</i> you, not your data going out.</p>
+  <p>Some tools remember your settings or unsent text (for example the word counter) in your browser's local storage so they survive a page refresh. This stays on your device and you can clear it at any time by clearing site data in your browser.</p>
+
+  <h2>2. Information collected automatically</h2>
+  <p>Like every website, our hosting provider (Cloudflare) processes technical information such as IP address, browser type and the pages requested, in order to deliver the site and protect it from abuse.</p>
+  {ANALYTICS.cloudflareToken && <p>We use Cloudflare Web Analytics, which counts page views without cookies and without tracking individuals across sites.</p>}
+  {ANALYTICS.ga4Id && <p>We use Google Analytics 4 to understand which tools are useful. It may set cookies; in the EEA/UK it runs only after you consent.</p>}
+  <p>We may record anonymous usage events (for example "a PDF was compressed") to improve the tools. These events never contain file names or file contents.</p>
+
+  <h2>3. Advertising</h2>
+  <p>To keep the tools free, we {ADS.client ? 'show' : 'may show'} ads served by Google AdSense. Google and its partners may use cookies or similar technologies to show ads based on your visits to this and other websites. You can opt out of personalised advertising at <a href="https://adssettings.google.com" rel="noopener nofollow">Google Ads Settings</a> or <a href="https://www.aboutads.info/choices/" rel="noopener nofollow">aboutads.info</a>. Learn more in <a href="https://policies.google.com/technologies/partner-sites" rel="noopener nofollow">how Google uses information from sites that use its services</a>.</p>
+  <p>Visitors in the European Economic Area, the UK and Switzerland are shown a consent message (a Google-certified consent management platform) before personalised ads or non-essential cookies are used.</p>
+
+  <h2>4. Your rights</h2>
+  <p>Under India's Digital Personal Data Protection Act, 2023, the GDPR (EU/UK) and similar laws, you may have the right to access, correct or delete personal data and to withdraw consent. Because we do not collect your files or account details, there is usually nothing for us to delete; cookie data can be cleared in your browser and ad preferences changed through the links above. For any request, email <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>
+
+  <h2>5. Children</h2>
+  <p>The tools are suitable for students. We do not knowingly collect personal data from children. Advertising on pages for students is configured to avoid personalised ads where required.</p>
+
+  <h2>6. Donations</h2>
+  <p>If you choose to support us, the payment is handled by the provider you pick (your UPI app, Buy Me a Coffee, Ko-fi, GitHub Sponsors or PayPal) under their privacy policy. We receive only what that provider shares with us (usually your name and amount).</p>
+
+  <h2>7. Changes and contact</h2>
+  <p>We will update this page if our practices change. Questions? Email <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>
+</Page>

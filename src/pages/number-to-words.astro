@@ -1,0 +1,49 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'How do I write an amount in words for a cheque?', a: 'Type the amount and choose <b>Indian (lakh, crore)</b> and <b>Rupees</b>. For example, 125000 becomes "Rupees One Lakh Twenty-Five Thousand Only". Write "Only" at the end so nothing can be added.' },
+  { q: 'What is the difference between lakh/crore and million?', a: '1 lakh = 100,000 (1,00,000); 10 lakh = 1 million; 1 crore = 10 million (1,00,00,000); 100 crore = 1 billion.' },
+  { q: 'Does it handle paise?', a: 'Yes. 1250.50 becomes "Rupees One Thousand Two Hundred Fifty and Fifty Paise Only".' },
+];
+const steps = ['Type the number or amount.', 'Choose the Indian or international system and the currency.', 'Copy the words.'];
+---
+<ToolLayout slug="number-to-words" h1="Number to Words Converter" lead="Convert numbers and amounts to words in the Indian (lakh, crore) or international (million, billion) system, with rupees and paise for cheques." steps={steps} faqs={faqs} badges={['🇮🇳 Lakh & crore', '🧾 Cheque format', '✅ No login']}>
+  <div class="stack-sm">
+    <div class="field"><label for="n-in">Number or amount</label><input id="n-in" data-key="n" type="text" inputmode="decimal" value="1250000.50" style="font-size:1.4rem;font-weight:700" /></div>
+    <div class="grid-2">
+      <div class="field"><label for="n-sys">Number system</label><select id="n-sys" data-key="s"><option value="indian">Indian (lakh, crore)</option><option value="international">International (million, billion)</option></select></div>
+      <div class="field"><label for="n-cur">Currency</label><select id="n-cur" data-key="c"><option value="inr">Rupees</option><option value="none">None (plain number)</option><option value="usd">US Dollars</option></select></div>
+    </div>
+    <div class="result" aria-live="polite">
+      <p class="hint" id="n-grouped" style="margin:0 0 6px"></p>
+      <p id="n-out" style="font-size:1.25rem;font-weight:650;margin:0"></p>
+    </div>
+    <div class="btn-row"><button type="button" class="btn btn-primary" id="n-copy">Copy</button><button type="button" class="btn" id="n-upper">UPPERCASE</button></div>
+  </div>
+  <script>
+    import { initCalculator } from '../lib/calc-ui';
+    import { numberToWords, indianGrouping } from '../lib/format';
+    const $ = (id: string) => document.getElementById(id) as any;
+    let upper = false;
+    function update() {
+      const raw = $('n-in').value;
+      const sys = $('n-sys').value, cur = $('n-cur').value;
+      const words = numberToWords(raw, sys, cur);
+      const digits = raw.replace(/[,\s₹$]/g, '');
+      $('n-grouped').textContent = /^-?\d+(\.\d+)?$/.test(digits) ? (sys === 'indian' ? indianGrouping(digits) : Number(digits.split('.')[0]).toLocaleString('en-US') + (digits.includes('.') ? '.' + digits.split('.')[1] : '')) : '';
+      $('n-out').textContent = words ? (upper ? words.toUpperCase() : words) : 'Enter a valid number.';
+    }
+    $('n-copy').addEventListener('click', async () => { try { await navigator.clipboard.writeText($('n-out').textContent); $('n-copy').textContent = 'Copied!'; setTimeout(() => ($('n-copy').textContent = 'Copy'), 1200); } catch {} });
+    $('n-upper').addEventListener('click', () => { upper = !upper; update(); });
+    initCalculator(update, { n: $('n-in'), s: $('n-sys'), c: $('n-cur') });
+  </script>
+  <Fragment slot="content">
+    <h2>Indian vs international place values</h2>
+    <table><thead><tr><th>Number</th><th>Indian</th><th>International</th></tr></thead><tbody>
+      <tr><td>1,00,000</td><td>One Lakh</td><td>One Hundred Thousand</td></tr>
+      <tr><td>10,00,000</td><td>Ten Lakh</td><td>One Million</td></tr>
+      <tr><td>1,00,00,000</td><td>One Crore</td><td>Ten Million</td></tr>
+      <tr><td>1,00,00,00,000</td><td>One Hundred Crore</td><td>One Billion</td></tr>
+    </tbody></table>
+  </Fragment>
+</ToolLayout>

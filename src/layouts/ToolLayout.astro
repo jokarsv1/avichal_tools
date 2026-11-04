@@ -10,7 +10,7 @@ import Base from './Base.astro';
 import AdSlot from '../components/AdSlot.astro';
 import ToolTile from '../components/ToolTile.astro';
 import SupportBox from '../components/SupportBox.astro';
-import { SITE } from '../config/site';
+import { SITE, ADS } from '../config/site';
 import { getTool, getCategory, relatedTools } from '../data/tools';
 
 export interface Faq { q: string; a: string }
@@ -46,6 +46,7 @@ const {
 const strip = (s: string) => s.replace(/<[^>]+>/g, '');
 const url = SITE.url + path;
 const related = relatedTools(tool.slug);
+const hasSidebar = !!(ADS.client && ADS.slots.sidebar) || (import.meta.env.DEV && ADS.showPlaceholdersInDev);
 
 const schema: Record<string, unknown>[] = [
   {
@@ -85,7 +86,7 @@ if (faqs.length) {
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <a href="/">Home</a> › <a href={cat.path}>{cat.label} tools</a> › {crumb ? <><a href={`/${tool.slug}`}>{tool.name}</a> › {crumb}</> : <span>{h1}</span>}
     </nav>
-    <div class="tool-layout">
+    <div class={`tool-layout${hasSidebar ? '' : ' no-aside'}`}>
       <div>
         <header class="tool-hero">
           <h1>{h1}</h1>
@@ -138,9 +139,11 @@ if (faqs.length) {
         )}
         <SupportBox />
       </div>
-      <aside class="tool-aside" aria-label="Sidebar">
-        <AdSlot slot="sidebar" />
-      </aside>
+      {hasSidebar && (
+        <aside class="tool-aside" aria-label="Sidebar">
+          <AdSlot slot="sidebar" />
+        </aside>
+      )}
     </div>
   </div>
 </Base>

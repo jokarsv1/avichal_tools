@@ -1,0 +1,21 @@
+---
+import Page from '../layouts/Page.astro';
+import { SITE } from '../config/site';
+import { LIVE_TOOLS } from '../data/tools';
+---
+<Page title={`About ${SITE.name}`} description={`${SITE.name} is a free, open-source collection of ${LIVE_TOOLS.length}+ browser-based tools with no login, no upload and no watermark.`} path="/about" h1={`About ${SITE.name}`}>
+  <p>{SITE.name} is a collection of {LIVE_TOOLS.length}+ free tools for the everyday jobs that shouldn't need an account: compressing a PDF, resizing a photo for an exam form, trimming a video or checking your EMI.</p>
+  <h2>Why we built it</h2>
+  <p>Most "free" tool sites make you sign up, limit you to two files a day, add a watermark or ask you to pay right at the download button. That's because they upload your files to their servers, and servers cost money. We took a different approach: every tool runs inside your browser, using modern web technology (WebAssembly and WebCodecs). Your device does the work, so:</p>
+  <ul>
+    <li><b>It's private.</b> Your documents and photos are never uploaded.</li>
+    <li><b>It's free, for real.</b> No credits, no daily limit, no watermark.</li>
+    <li><b>It's fast.</b> No upload or download wait, and it often works offline.</li>
+  </ul>
+  <h2>Open source</h2>
+  <p>The code is public on <a href={SITE.github} rel="noopener">GitHub</a> under the MIT licence, so anyone can check that files are never uploaded, report bugs or contribute new tools. We build on excellent open-source projects including pdf-lib, Mozilla pdf.js, Mediabunny, libheif and qrcode.</p>
+  <h2>How we keep it running</h2>
+  <p>The site shows a few clearly-labelled ads and accepts optional <a href="/support">donations</a>. Ads never block a tool and never pretend to be download buttons.</p>
+  <h2>Contact</h2>
+  <p>Ideas, bug reports or partnership questions: <a href={`mailto:${SITE.email}`}>{SITE.email}</a>. Want a new tool? See the <a href="/roadmap">roadmap</a>.</p>
+</Page>

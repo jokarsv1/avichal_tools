@@ -1,0 +1,91 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'How do I create a UPI QR code?', a: 'Enter your UPI ID (VPA, like <code>name@okhdfcbank</code>) and the name shown to payers. Add an amount only if you want a fixed-amount QR. Download the poster or the plain QR.' },
+  { q: 'Which apps can scan it?', a: 'Any UPI app: Google Pay, PhonePe, Paytm, BHIM, Amazon Pay, bank apps and more. The code uses the standard NPCI <code>upi://pay</code> format.' },
+  { q: 'Is it safe? Can someone take money using my QR?', a: 'A UPI QR can only <b>receive</b> money. Nobody can withdraw from your account by scanning it. Remember: you never need to scan a QR or enter your PIN to receive money.' },
+  { q: 'Do I pay any fee?', a: 'No. The QR is free and UPI payments to individuals are free. We never see your UPI ID because the code is generated on your device.' },
+  { q: 'Should I add an amount?', a: 'Leave it empty for a shop counter QR (customers type the amount). Add an amount for invoices, fees or a fixed-price item.' },
+];
+const steps = ['Enter your UPI ID and name.', 'Optionally add a fixed amount and a note (e.g. invoice number).', 'Check the preview, then download the printable poster or the plain QR.', 'Test it by scanning with your own UPI app before sharing.'];
+---
+<ToolLayout slug="upi-qr-code-generator" h1="UPI QR Code Generator" lead="Create a free UPI payment QR code for your shop, invoice or fees. Works with every UPI app. Download a printable poster." steps={steps} faqs={faqs} badges={['🇮🇳 Any UPI app', '🖨️ Printable poster', '🔒 Generated on your device', '✅ No login']}>
+  <div class="calc">
+    <div class="stack-sm">
+      <div class="field"><label for="u-vpa">UPI ID (VPA)</label><input id="u-vpa" type="text" placeholder="yourname@okicici" autocomplete="off" autocapitalize="none" /><small class="hint" id="u-vpa-hint">Find it in your UPI app under Profile.</small></div>
+      <div class="field"><label for="u-name">Payee name</label><input id="u-name" type="text" placeholder="Shop or your name" /></div>
+      <div class="grid-2">
+        <div class="field"><label for="u-amt">Amount (optional)</label><input id="u-amt" type="number" min="0" step="0.01" placeholder="Customer enters" /></div>
+        <div class="field"><label for="u-note">Note (optional)</label><input id="u-note" type="text" maxlength="60" placeholder="e.g. Invoice #102" /></div>
+      </div>
+      <div class="field"><label for="u-title">Poster heading</label><input id="u-title" type="text" value="Scan & Pay" maxlength="40" /></div>
+      <p class="callout">Safety: you never need to scan a QR or enter your UPI PIN to <b>receive</b> money. Share this tip with your customers too.</p>
+    </div>
+    <div class="stack-sm">
+      <div class="preview-box" style="background:var(--surface-2)"><canvas id="u-poster" style="width:min(340px,100%);height:auto" aria-label="UPI QR poster preview"></canvas></div>
+      <div class="status" id="u-status"></div>
+      <div class="btn-row"><button type="button" class="btn btn-primary" id="u-dl-poster" disabled>⬇ Poster</button><button type="button" class="btn" id="u-dl-qr" disabled>⬇ QR only</button><button type="button" class="btn" id="u-print" disabled>🖨 Print</button></div>
+      <p class="hint" id="u-link" style="word-break:break-all"></p>
+    </div>
+  </div>
+  <script>
+    import { qrCanvas, upiPayload, isVpa } from '../lib/qr';
+    import { downloadBlob, setStatus } from '../lib/ui';
+    const $ = (id: string) => document.getElementById(id) as any;
+    const poster = $('u-poster') as HTMLCanvasElement;
+    let qr: HTMLCanvasElement | null = null;
+    async function render() {
+      const vpa = $('u-vpa').value.trim(), name = $('u-name').value.trim(), amt = $('u-amt').value, note = $('u-note').value;
+      const st = $('u-status');
+      const btns = ['u-dl-poster', 'u-dl-qr', 'u-print'].map($);
+      if (!isVpa(vpa)) {
+        setStatus(st, vpa ? 'That does not look like a UPI ID (format: name@bank).' : 'Enter your UPI ID to create the QR.', vpa ? 'warn' : 'info');
+        btns.forEach((b: HTMLButtonElement) => (b.disabled = true));
+        drawPoster(null, name, vpa, amt);
+        return;
+      }
+      const link = upiPayload(vpa, name, amt, note);
+      qr = await qrCanvas(link, 760, { fg: '#111111', bg: '#ffffff', ecc: 'M', margin: 1 });
+      drawPoster(qr, name, vpa, amt);
+      $('u-link').textContent = link;
+      setStatus(st, 'Ready. Scan it with your own UPI app to test before printing.', 'ok');
+      btns.forEach((b: HTMLButtonElement) => (b.disabled = false));
+    }
+    function drawPoster(code: HTMLCanvasElement | null, name: string, vpa: string, amt: string) {
+      const W = 1000, H = 1400;
+      poster.width = W; poster.height = H;
+      const c = poster.getContext('2d')!;
+      const g = c.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#4f46e5'); g.addColorStop(1, '#0891b2');
+      c.fillStyle = g; c.fillRect(0, 0, W, H);
+      c.fillStyle = '#fff'; c.beginPath(); c.roundRect(60, 220, W - 120, 1060, 40); c.fill();
+      c.textAlign = 'center'; c.fillStyle = '#fff'; c.font = '800 76px system-ui, sans-serif';
+      c.fillText($('u-title').value || 'Scan & Pay', W / 2, 140);
+      c.font = '500 34px system-ui, sans-serif'; c.fillText('Pay with any UPI app', W / 2, 192);
+      if (code) c.drawImage(code, 120, 270, 760, 760);
+      else { c.fillStyle = '#e5e7eb'; c.fillRect(120, 270, 760, 760); c.fillStyle = '#6b7280'; c.font = '500 36px system-ui'; c.fillText('Your QR appears here', W / 2, 660); }
+      c.fillStyle = '#111'; c.font = '800 52px system-ui, sans-serif'; c.fillText(name || 'Your name', W / 2, 1110, W - 200);
+      c.fillStyle = '#4b5563'; c.font = '500 36px system-ui, sans-serif'; c.fillText(vpa || 'yourname@bank', W / 2, 1165, W - 200);
+      if (amt && +amt > 0) { c.fillStyle = '#047857'; c.font = '800 44px system-ui, sans-serif'; c.fillText(`₹ ${(+amt).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, W / 2, 1235); }
+      c.fillStyle = '#fff'; c.font = '500 28px system-ui, sans-serif'; c.fillText('Never scan a QR to receive money', W / 2, 1350);
+    }
+    ['u-vpa', 'u-name', 'u-amt', 'u-note', 'u-title'].forEach((id) => $(id).addEventListener('input', render));
+    $('u-dl-poster').addEventListener('click', () => poster.toBlob((b) => b && downloadBlob(b, 'upi-qr-poster.png'), 'image/png'));
+    $('u-dl-qr').addEventListener('click', () => qr?.toBlob((b) => b && downloadBlob(b, 'upi-qr.png'), 'image/png'));
+    $('u-print').addEventListener('click', () => {
+      const w = window.open('', '_blank');
+      if (!w) return;
+      w.document.write(`<title>UPI QR</title><img src="${poster.toDataURL('image/png')}" style="width:100%;max-width:600px;display:block;margin:auto" onload="print()">`);
+      w.document.close();
+    });
+    render();
+  </script>
+  <Fragment slot="content">
+    <h2>A free payment QR for shops, tutors and freelancers</h2>
+    <p>Print the poster for your counter, add it to invoices, or share it on WhatsApp. Because the QR uses the standard UPI format, money goes straight to your bank account through your UPI app, with no middleman and no commission.</p>
+    <h3>Fixed amount or open amount?</h3>
+    <ul>
+      <li><b>Open amount</b> (leave blank): best for shops; the customer types the amount.</li>
+      <li><b>Fixed amount</b>: best for invoices, school or coaching fees and event tickets; add the invoice number as the note so you can match payments.</li>
+    </ul>
+  </Fragment>
+</ToolLayout>

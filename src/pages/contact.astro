@@ -1,0 +1,24 @@
+---
+import Page from '../layouts/Page.astro';
+import { SITE } from '../config/site';
+const issues = `${SITE.github}/issues/new`;
+---
+<Page title="Contact" description={`Contact ${SITE.name}: email ${SITE.email} for feedback, bug reports, tool requests and partnerships.`} path="/contact" h1="Contact us">
+  <p>We read every message. The fastest way to reach us:</p>
+  <div class="card stack-sm" style="max-width:560px">
+    <div><span class="hint">Email</span><div style="font-size:1.25rem;font-weight:700"><a href={`mailto:${SITE.email}`}>{SITE.email}</a></div></div>
+    <div class="btn-row">
+      <a class="btn btn-primary" href={`mailto:${SITE.email}?subject=${encodeURIComponent(SITE.name + ' feedback')}`}>✉️ Send feedback</a>
+      <a class="btn" href={`mailto:${SITE.email}?subject=${encodeURIComponent('Bug report: ')}`}>🐞 Report a bug</a>
+      <a class="btn" href={issues} rel="noopener">GitHub issue</a>
+    </div>
+  </div>
+  <h2>When reporting a problem, please include</h2>
+  <ul>
+    <li>The tool's address (for example <code>/compress-pdf</code>).</li>
+    <li>Your device and browser (for example "Android, Chrome").</li>
+    <li>What you expected and what happened. Please <b>don't attach private files</b>; describe them instead (size, type, number of pages).</li>
+  </ul>
+  <h2>Requests and partnerships</h2>
+  <p>Need a preset for a new exam or a tool we don't have yet? Email us or vote on the <a href="/roadmap">roadmap</a>. Coaching institutes, colleges and NGOs are welcome to link to or embed our tools for free.</p>
+</Page>

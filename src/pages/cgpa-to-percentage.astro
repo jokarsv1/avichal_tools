@@ -1,0 +1,68 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+// Formulas commonly published by boards/universities. Sources disagree for some universities, so the
+// tool always shows the formula and lets students enter their own (multiplier and offset).
+const FORMULAS = [
+  { id: 'cbse', name: 'CBSE (Class 10/12)', mul: 9.5, sub: 0, add: 0, note: 'Percentage = CGPA × 9.5' },
+  { id: 'x10', name: 'Most universities (AICTE/UGC, Anna University, AKTU and others)', mul: 10, sub: 0, add: 0, note: 'Percentage = CGPA × 10' },
+  { id: 'vtu', name: 'VTU (older schemes)', mul: 10, sub: 0.75, add: 0, note: 'Percentage = (CGPA − 0.75) × 10' },
+  { id: 'mu', name: 'Mumbai University (engineering)', mul: 7.1, sub: 0, add: 11, note: 'Percentage = 7.1 × CGPA + 11' },
+  { id: 'gpa4', name: '4-point GPA (US style)', mul: 25, sub: 0, add: 0, note: 'Percentage ≈ GPA ÷ 4 × 100' },
+  { id: 'custom', name: 'Custom formula', mul: 10, sub: 0, add: 0, note: 'Percentage = (CGPA − a) × m + b' },
+];
+const faqs = [
+  { q: 'How do I convert CGPA to percentage?', a: 'For CBSE, multiply by 9.5 (8.4 CGPA = 79.8%). Most universities following AICTE/UGC guidelines multiply by 10. Some use their own formula; always use the formula printed on your marksheet or published by your university.' },
+  { q: 'Why does CBSE multiply by 9.5?', a: 'CBSE found that the average marks of students in the 91–100 band was about 95, so one grade point ≈ 9.5%.' },
+  { q: 'What is the difference between SGPA and CGPA?', a: 'SGPA is the grade point average for one semester. CGPA is the average across all semesters, weighted by credits. Convert CGPA for your overall percentage.' },
+  { q: 'Which formula does my university use?', a: 'Sources online disagree for several universities (e.g. VTU, SPPU, Mumbai). Check your grade card or the university circular. You can type any formula into "Custom".' },
+  { q: 'How do I convert percentage back to CGPA?', a: 'Use the reverse box: CGPA = percentage ÷ 9.5 for CBSE, or ÷ 10 for most universities.' },
+];
+const steps = ['Enter your CGPA (or SGPA).', 'Pick your board or university formula.', 'Read the percentage; use the reverse box to go from percentage to CGPA.'];
+---
+<ToolLayout slug="cgpa-to-percentage" h1="CGPA to Percentage Converter" lead="Convert CGPA or SGPA to percentage with the CBSE formula (×9.5), university formulas or your own, and convert percentage back to CGPA." steps={steps} faqs={faqs} badges={['🎓 CBSE & universities', '⚡ Instant', '✅ No login']}>
+  <div class="calc" data-formulas={JSON.stringify(FORMULAS)}>
+    <div class="stack-sm">
+      <div class="field"><label for="cg">CGPA / SGPA</label><input id="cg" data-key="c" type="number" min="0" max="10" step="0.01" value="8.4" inputmode="decimal" style="font-size:1.3rem;font-weight:700" /></div>
+      <div class="field"><label for="fm">Formula</label><select id="fm" data-key="f">{FORMULAS.map((f) => <option value={f.id}>{f.name}</option>)}</select></div>
+      <div class="grid-3 hidden" id="custom">
+        <div class="field"><label for="ca">Subtract a</label><input id="ca" type="number" step="0.01" value="0" /></div>
+        <div class="field"><label for="cm">Multiply m</label><input id="cm" type="number" step="0.01" value="10" /></div>
+        <div class="field"><label for="cb">Add b</label><input id="cb" type="number" step="0.01" value="0" /></div>
+      </div>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Percentage</span><div class="big-number" id="o-pct">–</div><span class="hint" id="o-formula"></span></div>
+      <hr class="divider" />
+      <div class="field"><label for="rev">Percentage → CGPA</label><input id="rev" type="number" min="0" max="100" step="0.01" placeholder="e.g. 76" /></div>
+      <p><b id="o-rev"></b></p>
+    </div>
+  </div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    const F = JSON.parse(document.querySelector<HTMLElement>('[data-formulas]')!.dataset.formulas!);
+    const get = (id: string) => document.getElementById(id) as HTMLInputElement;
+    const cur = () => {
+      const f = F.find((x: any) => x.id === get('fm').value) || F[0];
+      return f.id === 'custom' ? { ...f, sub: val('ca'), mul: val('cm'), add: val('cb') } : f;
+    };
+    function update() {
+      const f = cur();
+      document.getElementById('custom')!.classList.toggle('hidden', f.id !== 'custom');
+      const c = val('cg');
+      const pct = Math.max(0, Math.min(100, (c - f.sub) * f.mul + f.add));
+      setText('o-pct', `${pct.toFixed(2)}%`);
+      setText('o-formula', f.id === 'custom' ? `(${c} − ${f.sub}) × ${f.mul} + ${f.add}` : f.note);
+      const p = parseFloat(get('rev').value);
+      setText('o-rev', Number.isFinite(p) ? `CGPA ≈ ${((p - f.add) / f.mul + f.sub).toFixed(2)}` : '');
+    }
+    ['ca', 'cm', 'cb', 'rev'].forEach((id) => get(id).addEventListener('input', update));
+    initCalculator(update, { c: get('cg'), f: get('fm') as any });
+  </script>
+  <Fragment slot="content">
+    <h2>CGPA to percentage formulas</h2>
+    <table><thead><tr><th>Board / university</th><th>Formula</th><th>Example (8.0 CGPA)</th></tr></thead><tbody>
+      {FORMULAS.filter((f) => f.id !== 'custom').map((f) => <tr><td>{f.name}</td><td>{f.note}</td><td>{((8 - f.sub) * f.mul + f.add).toFixed(1)}%</td></tr>)}
+    </tbody></table>
+    <p class="callout">Formulas vary between universities and even between batches. Websites often disagree (for example for VTU, SPPU and Mumbai University), so treat this as a guide and use the formula on your grade card for official purposes.</p>
+  </Fragment>
+</ToolLayout>

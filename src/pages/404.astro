@@ -1,0 +1,15 @@
+---
+import Base from '../layouts/Base.astro';
+import ToolTile from '../components/ToolTile.astro';
+import { LIVE_TOOLS } from '../data/tools';
+const popular = LIVE_TOOLS.filter((t) => t.popular);
+---
+<Base title="Page not found" description="This page does not exist." path="/404" noindex>
+  <div class="container">
+    <section class="hero">
+      <h1>404: page not found</h1>
+      <p>The page may have moved. Try one of our popular tools, or <a href="/">search all tools</a>.</p>
+    </section>
+    <div class="tool-grid">{popular.map((t) => <ToolTile tool={t} />)}</div>
+  </div>
+</Base>

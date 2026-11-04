@@ -1,0 +1,19 @@
+---
+import Page from '../layouts/Page.astro';
+import { SITE } from '../config/site';
+---
+<Page title="Terms of Use" description={`Terms for using ${SITE.name}'s free online tools.`} path="/terms" h1="Terms of Use">
+  <p><i>Last updated: November 2026</i></p>
+  <h2>Use of the tools</h2>
+  <p>{SITE.name} provides free tools that run in your browser. You may use them for personal and commercial purposes. You are responsible for the files you process and for having the right to use them. Do not use the tools for anything unlawful, including infringing copyright or forging documents.</p>
+  <h2>No warranty</h2>
+  <p>The tools are provided "as is", without warranty of any kind. Calculators (tax, EMI, SIP and others) give estimates for planning only and are not financial, tax or legal advice. Exam photo specifications can change; always check the official notification. Keep a copy of your original files.</p>
+  <h2>Limitation of liability</h2>
+  <p>To the maximum extent permitted by law, we are not liable for any loss arising from the use of the tools, including data loss, rejected applications or financial decisions made using the calculators.</p>
+  <h2>Open source</h2>
+  <p>The source code is available under the MIT licence at <a href={SITE.github} rel="noopener">{SITE.github}</a>. Third-party libraries keep their own licences (listed in the repository).</p>
+  <h2>Trademarks</h2>
+  <p>Names of exams, apps and organisations (such as SSC, UPSC, IBPS, NTA, UPI, WhatsApp or Instagram) belong to their owners and are used only to describe compatibility. We are not affiliated with them.</p>
+  <h2>Contact</h2>
+  <p><a href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
+</Page>

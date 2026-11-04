@@ -1,0 +1,72 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'What are the GST rates in 2026?', a: 'Since GST 2.0 (22 September 2025) most goods and services fall under two main slabs, 5% and 18%, with 40% for luxury and "sin" goods. Some items are exempt (0%), and special rates such as 3% (gold) and 0.25% (rough diamonds) remain. Check the CBIC rate notification for a specific item.' },
+  { q: 'How do I remove GST from a price (reverse GST)?', a: 'Choose <b>Remove GST</b>. Base price = inclusive price ÷ (1 + rate/100). For example, ₹1,180 including 18% GST has a base price of ₹1,000 and GST of ₹180.' },
+  { q: 'What is CGST, SGST and IGST?', a: 'For a sale within the same state, GST is split equally into CGST (central) and SGST (state). For a sale to another state, the full GST is charged as IGST.' },
+  { q: 'How do I add 18% GST?', a: 'Choose <b>Add GST</b> and 18%: total = amount × 1.18. ₹10,000 + 18% GST = ₹11,800.' },
+];
+const steps = ['Enter the amount.', 'Pick <b>Add GST</b> (amount excludes GST) or <b>Remove GST</b> (amount includes GST).', 'Choose the rate: 5%, 18%, 40% or a custom rate.', 'Read the base price, GST and CGST/SGST or IGST split.'];
+---
+<ToolLayout slug="gst-calculator" h1="GST Calculator" lead="Add GST to a price or extract GST from an inclusive amount, with CGST/SGST and IGST split. Updated for the GST 2.0 slabs." steps={steps} faqs={faqs} badges={['🇮🇳 GST 2.0 slabs', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
+  <div class="calc">
+    <div class="stack-sm">
+      <div class="field"><label for="amt">Amount (₹)</label><input id="amt" data-key="a" type="number" min="0" step="0.01" value="10000" inputmode="decimal" style="font-size:1.3rem;font-weight:700" /></div>
+      <div class="field"><label for="mode">Calculation</label><select id="mode" data-key="m"><option value="add">Add GST (amount is before tax)</option><option value="remove">Remove GST (amount includes tax)</option></select></div>
+      <div class="field"><label for="rate">GST rate</label>
+        <select id="rate" data-key="r"><option value="5">5%</option><option value="18" selected>18%</option><option value="40">40%</option><option value="3">3% (gold, silver)</option><option value="0.25">0.25%</option><option value="12">12% (old slab)</option><option value="28">28% (old slab)</option><option value="custom">Custom…</option></select></div>
+      <div class="field hidden" id="custom-wrap"><label for="custom">Custom rate (%)</label><input id="custom" data-key="c" type="number" min="0" step="0.01" value="18" /></div>
+      <div class="field"><label for="supply">Supply</label><select id="supply" data-key="t"><option value="intra">Within the state (CGST + SGST)</option><option value="inter">To another state (IGST)</option></select></div>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Total (incl. GST)</span><div class="big-number" id="o-total">–</div></div>
+      <div class="result-rows">
+        <div><span>Base price (excl. GST)</span><b id="o-base">–</b></div>
+        <div><span>Total GST</span><b id="o-tax">–</b></div>
+        <div id="r-cgst"><span>CGST</span><b id="o-cgst">–</b></div>
+        <div id="r-sgst"><span>SGST / UTGST</span><b id="o-sgst">–</b></div>
+        <div id="r-igst" class="hidden"><span>IGST</span><b id="o-igst">–</b></div>
+      </div>
+      <button type="button" class="btn btn-sm" data-share="GST calculation">📤 Share</button>
+    </div>
+  </div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { gst } from '../lib/finance';
+    import { rupees } from '../lib/format';
+    const get = (id: string) => document.getElementById(id) as HTMLInputElement | HTMLSelectElement;
+    const inputs = Object.fromEntries(['amt', 'mode', 'rate', 'custom', 'supply'].map((id) => [get(id).dataset.key!, get(id)]));
+    function update() {
+      const isCustom = get('rate').value === 'custom';
+      document.getElementById('custom-wrap')!.classList.toggle('hidden', !isCustom);
+      const rate = isCustom ? val('custom') : val('rate');
+      const r = gst(val('amt'), rate, get('mode').value as 'add' | 'remove');
+      const inter = get('supply').value === 'inter';
+      setText('o-total', rupees(r.total, true));
+      setText('o-base', rupees(r.base, true));
+      setText('o-tax', `${rupees(r.tax, true)} (${rate}%)`);
+      setText('o-cgst', `${rupees(r.tax / 2, true)} (${rate / 2}%)`);
+      setText('o-sgst', `${rupees(r.tax / 2, true)} (${rate / 2}%)`);
+      setText('o-igst', `${rupees(r.tax, true)} (${rate}%)`);
+      ['r-cgst', 'r-sgst'].forEach((id) => document.getElementById(id)!.classList.toggle('hidden', inter));
+      document.getElementById('r-igst')!.classList.toggle('hidden', !inter);
+    }
+    initCalculator(update, inputs);
+  </script>
+  <Fragment slot="content">
+    <h2>GST formulas</h2>
+    <ul>
+      <li><b>Add GST:</b> GST = amount × rate ÷ 100; total = amount + GST.</li>
+      <li><b>Remove GST:</b> base = total ÷ (1 + rate ÷ 100); GST = total − base.</li>
+      <li><b>Intra-state:</b> CGST = SGST = GST ÷ 2. <b>Inter-state:</b> IGST = GST.</li>
+    </ul>
+    <h3>GST 2.0 slabs at a glance</h3>
+    <table><thead><tr><th>Rate</th><th>Typical items</th></tr></thead><tbody>
+      <tr><td>0%</td><td>Fresh food, milk, education, healthcare services, many life-saving drugs</td></tr>
+      <tr><td>5%</td><td>Daily essentials, many packaged foods, some medicines, small hotels</td></tr>
+      <tr><td>18%</td><td>Most goods and services: electronics, appliances, restaurants in hotels, professional services</td></tr>
+      <tr><td>40%</td><td>Luxury and sin goods such as tobacco, aerated drinks, large cars and bikes above 350 cc</td></tr>
+    </tbody></table>
+    <p class="hint">Examples are indicative. The legally applicable rate depends on the HSN/SAC code; check the CBIC notification.</p>
+  </Fragment>
+</ToolLayout>

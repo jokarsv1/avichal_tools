@@ -1,0 +1,148 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'Do these QR codes expire?', a: 'Never. These are <b>static</b> QR codes: the link or text is stored inside the code itself, so it works forever without our website. Many "free" generators create dynamic codes that redirect through their servers and stop working when a trial ends.' },
+  { q: 'Is there any tracking?', a: 'No. Scans go straight to your link. We cannot see or count them, and we never see what you encode.' },
+  { q: 'Can I add my logo?', a: 'Yes. Upload a logo and it is placed in the centre. Error correction switches to "High" automatically so the code still scans. Test it with your phone before printing.' },
+  { q: 'Which format should I download?', a: 'SVG for printing (it scales to any size without blurring), PNG for websites, WhatsApp and documents.' },
+  { q: 'How do I make a Wi-Fi QR code?', a: 'Choose <b>Wi-Fi</b>, enter the network name and password. Guests can scan it with their phone camera to join without typing.' },
+];
+const steps = ['Choose the type: link, text, Wi-Fi, contact card, email, phone or SMS.', 'Fill in the details.', 'Optionally pick colours, error correction and add a logo.', 'Download PNG or SVG, and test it with your phone camera.'];
+---
+<ToolLayout slug="qr-code-generator" h1="QR Code Generator" lead="Create static QR codes for links, Wi-Fi, contacts, text, email, phone and SMS. They never expire and have no tracking. Add colours and a logo, then download PNG or SVG." steps={steps} faqs={faqs} badges={['♾️ Never expires', '🚫 No tracking', '🎨 Colours + logo', '✅ No login']}>
+  <div class="calc">
+    <div class="stack-sm">
+      <div class="seg" role="group" aria-label="QR type" id="qr-types">
+        <button type="button" data-type="url" aria-pressed="true">Link</button>
+        <button type="button" data-type="text" aria-pressed="false">Text</button>
+        <button type="button" data-type="wifi" aria-pressed="false">Wi-Fi</button>
+        <button type="button" data-type="vcard" aria-pressed="false">Contact</button>
+        <button type="button" data-type="email" aria-pressed="false">Email</button>
+        <button type="button" data-type="tel" aria-pressed="false">Phone</button>
+        <button type="button" data-type="sms" aria-pressed="false">SMS</button>
+      </div>
+      <div data-form="url" class="field"><label for="q-url">Website or link</label><input id="q-url" type="url" value="https://example.com" /></div>
+      <div data-form="text" class="field hidden"><label for="q-text">Text</label><textarea id="q-text" rows="4">Hello!</textarea></div>
+      <div data-form="wifi" class="stack-sm hidden">
+        <div class="field"><label for="q-ssid">Network name (SSID)</label><input id="q-ssid" type="text" /></div>
+        <div class="field"><label for="q-pass">Password</label><input id="q-pass" type="text" autocomplete="off" /></div>
+        <div class="grid-2"><div class="field"><label for="q-sec">Security</label><select id="q-sec"><option value="WPA">WPA/WPA2/WPA3</option><option value="WEP">WEP</option><option value="nopass">None</option></select></div><label class="check" style="align-self:end"><input type="checkbox" id="q-hidden" /> Hidden network</label></div>
+      </div>
+      <div data-form="vcard" class="grid-2 hidden">
+        <div class="field"><label for="v-first">First name</label><input id="v-first" type="text" /></div>
+        <div class="field"><label for="v-last">Last name</label><input id="v-last" type="text" /></div>
+        <div class="field"><label for="v-phone">Phone</label><input id="v-phone" type="tel" /></div>
+        <div class="field"><label for="v-email">Email</label><input id="v-email" type="email" /></div>
+        <div class="field"><label for="v-org">Company</label><input id="v-org" type="text" /></div>
+        <div class="field"><label for="v-title">Job title</label><input id="v-title" type="text" /></div>
+        <div class="field"><label for="v-url">Website</label><input id="v-url" type="url" /></div>
+        <div class="field"><label for="v-addr">Address</label><input id="v-addr" type="text" /></div>
+      </div>
+      <div data-form="email" class="stack-sm hidden">
+        <div class="field"><label for="e-to">Email address</label><input id="e-to" type="email" /></div>
+        <div class="field"><label for="e-sub">Subject</label><input id="e-sub" type="text" /></div>
+        <div class="field"><label for="e-body">Message</label><textarea id="e-body" rows="3"></textarea></div>
+      </div>
+      <div data-form="tel" class="field hidden"><label for="t-num">Phone number (with country code)</label><input id="t-num" type="tel" placeholder="+91 98765 43210" /></div>
+      <div data-form="sms" class="stack-sm hidden">
+        <div class="field"><label for="s-num">Phone number</label><input id="s-num" type="tel" /></div>
+        <div class="field"><label for="s-msg">Message</label><textarea id="s-msg" rows="3"></textarea></div>
+      </div>
+      <p class="hint">For payment QR codes, use the <a href="/upi-qr-code-generator">UPI QR code generator</a>.</p>
+      <details class="card" style="box-shadow:none;padding:12px 14px">
+        <summary style="cursor:pointer;font-weight:700">Style</summary>
+        <div class="grid-2" style="margin-top:10px">
+          <div class="field"><label for="q-fg">Foreground</label><input id="q-fg" type="color" value="#000000" /></div>
+          <div class="field"><label for="q-bg">Background</label><input id="q-bg" type="color" value="#ffffff" /></div>
+          <div class="field"><label for="q-ecc">Error correction</label><select id="q-ecc"><option value="L">Low (7%)</option><option value="M" selected>Medium (15%)</option><option value="Q">Quartile (25%)</option><option value="H">High (30%)</option></select></div>
+          <div class="field"><label for="q-size">PNG size</label><select id="q-size"><option value="512">512 px</option><option value="1024" selected>1024 px</option><option value="2048">2048 px (print)</option></select></div>
+          <div class="field"><label for="q-logo">Logo (optional)</label><input id="q-logo" type="file" accept="image/*" /></div>
+          <button type="button" class="btn btn-sm" id="q-logo-rm" style="align-self:end">Remove logo</button>
+        </div>
+      </details>
+    </div>
+    <div class="stack-sm" style="align-content:start">
+      <div class="preview-box" style="background:var(--surface-2)"><canvas id="q-canvas" style="width:min(320px,100%);height:auto;image-rendering:pixelated" aria-label="QR code preview"></canvas></div>
+      <div class="status" id="q-status"></div>
+      <div class="btn-row"><button type="button" class="btn btn-primary" id="q-png">⬇ PNG</button><button type="button" class="btn" id="q-svg">⬇ SVG</button><button type="button" class="btn" id="q-copy">Copy image</button></div>
+      <p class="hint" id="q-payload" style="word-break:break-all"></p>
+    </div>
+  </div>
+  <script>
+    import { qrCanvas, qrSvg, contrast, wifiPayload, vcardPayload, type QrStyle } from '../lib/qr';
+    import { downloadBlob, setStatus } from '../lib/ui';
+    const $ = (id: string) => document.getElementById(id) as any;
+    let type = 'url';
+    let logo: HTMLImageElement | null = null, logoUrl = '';
+    const style = (): QrStyle => ({ fg: $('q-fg').value, bg: $('q-bg').value, ecc: $('q-ecc').value, margin: 2, logo });
+    function payload(): string {
+      switch (type) {
+        case 'url': return $('q-url').value.trim();
+        case 'text': return $('q-text').value;
+        case 'wifi': return $('q-ssid').value ? wifiPayload($('q-ssid').value, $('q-pass').value, $('q-sec').value, $('q-hidden').checked) : '';
+        case 'vcard': return vcardPayload({ first: $('v-first').value, last: $('v-last').value, org: $('v-org').value, title: $('v-title').value, phone: $('v-phone').value, email: $('v-email').value, url: $('v-url').value, address: $('v-addr').value });
+        case 'email': { const p = new URLSearchParams(); if ($('e-sub').value) p.set('subject', $('e-sub').value); if ($('e-body').value) p.set('body', $('e-body').value); const q = p.toString().replace(/\+/g, '%20'); return $('e-to').value ? `mailto:${$('e-to').value}${q ? '?' + q : ''}` : ''; }
+        case 'tel': return $('t-num').value ? `tel:${$('t-num').value.replace(/\s/g, '')}` : '';
+        case 'sms': return $('s-num').value ? `SMSTO:${$('s-num').value.replace(/\s/g, '')}:${$('s-msg').value}` : '';
+      }
+      return '';
+    }
+    async function render() {
+      const text = payload();
+      const st = document.getElementById('q-status')!;
+      if (!text) { setStatus(st, 'Fill in the details to create your QR code.', 'info'); return; }
+      try {
+        const c = await qrCanvas(text, 640, style());
+        const view = $('q-canvas') as HTMLCanvasElement;
+        view.width = c.width; view.height = c.height;
+        view.getContext('2d')!.drawImage(c, 0, 0);
+        const cr = contrast(style().fg, style().bg);
+        if (cr < 3) setStatus(st, 'Low contrast between colours: some phones may not scan this. Use a darker foreground.', 'warn');
+        else setStatus(st, logo ? 'Logo added. Test-scan with your phone before printing.' : 'Ready. This code never expires.', 'ok');
+        $('q-payload').textContent = text.length > 160 ? text.slice(0, 160) + '…' : text;
+      } catch (e: any) {
+        setStatus(st, /too big|data/i.test(String(e?.message)) ? 'Too much data for one QR code. Shorten the text.' : String(e?.message || e), 'err');
+      }
+    }
+    document.querySelectorAll<HTMLButtonElement>('#qr-types button').forEach((b) => b.addEventListener('click', () => {
+      type = b.dataset.type!;
+      document.querySelectorAll('#qr-types button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      document.querySelectorAll<HTMLElement>('[data-form]').forEach((f) => f.classList.toggle('hidden', f.dataset.form !== type));
+      render();
+    }));
+    let t: number | undefined;
+    document.querySelectorAll('input, textarea, select').forEach((el) => el.addEventListener('input', () => { clearTimeout(t); t = window.setTimeout(render, 150); }));
+    $('q-logo').addEventListener('change', async () => {
+      const f = ($('q-logo') as HTMLInputElement).files?.[0];
+      if (!f) return;
+      logoUrl = await new Promise<string>((r) => { const fr = new FileReader(); fr.onload = () => r(String(fr.result)); fr.readAsDataURL(f); });
+      logo = new Image(); logo.src = logoUrl; await logo.decode();
+      render();
+    });
+    $('q-logo-rm').addEventListener('click', () => { logo = null; logoUrl = ''; ($('q-logo') as HTMLInputElement).value = ''; render(); });
+    $('q-png').addEventListener('click', async () => {
+      const text = payload(); if (!text) return;
+      const c = await qrCanvas(text, +$('q-size').value, style());
+      c.toBlob((b) => b && downloadBlob(b, 'qr-code.png'), 'image/png');
+    });
+    $('q-svg').addEventListener('click', async () => {
+      const text = payload(); if (!text) return;
+      downloadBlob(new Blob([await qrSvg(text, style(), logoUrl || undefined)], { type: 'image/svg+xml' }), 'qr-code.svg');
+    });
+    $('q-copy').addEventListener('click', async () => {
+      const c = $('q-canvas') as HTMLCanvasElement;
+      c.toBlob(async (b) => { try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': b! })]); $('q-copy').textContent = 'Copied!'; } catch { $('q-copy').textContent = 'Copy not supported'; } setTimeout(() => ($('q-copy').textContent = 'Copy image'), 1500); });
+    });
+    render();
+  </script>
+  <Fragment slot="content">
+    <h2>Static vs dynamic QR codes</h2>
+    <p>A <b>static</b> QR code contains your data directly. It works offline, forever, and nobody can switch it off. A <b>dynamic</b> QR code contains a short link to a company's server, which then redirects to your link. That lets them track scans, but if you stop paying (or the company shuts down) every printed code breaks. For menus, posters, business cards and Wi-Fi, static codes are the safer choice.</p>
+    <h3>Printing tips</h3>
+    <ul>
+      <li>Print at least 2 × 2 cm; larger if people will scan from far away (size ≈ distance ÷ 10).</li>
+      <li>Keep a quiet zone (white border) around the code, and keep the foreground dark on a light background.</li>
+      <li>Always test-scan the final print with two different phones.</li>
+    </ul>
+  </Fragment>
+</ToolLayout>

@@ -1,0 +1,67 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'How do I calculate a percentage?', a: 'Percentage = (part ÷ whole) × 100. For example, 45 out of 60 = 45 ÷ 60 × 100 = 75%.' },
+  { q: 'How do I calculate percentage increase?', a: 'Percentage change = (new − old) ÷ old × 100. From 80 to 100 is a 25% increase; from 100 to 80 is a 20% decrease.' },
+  { q: 'How do I calculate marks percentage?', a: 'Add the marks you got in all subjects, divide by the total maximum marks and multiply by 100. Use the "Marks" box below.' },
+  { q: 'What is 20% of 500?', a: '20 ÷ 100 × 500 = 100.' },
+];
+const steps = ['Pick the calculation you need.', 'Type the two numbers.', 'The answer and the formula appear instantly.'];
+---
+<ToolLayout slug="percentage-calculator" h1="Percentage Calculator" lead="Work out X% of Y, what percent one number is of another, percentage increase or decrease, and exam marks percentage." steps={steps} faqs={faqs} badges={['⚡ Instant', '🧮 Formula shown', '✅ No login']}>
+  <div class="stack">
+    <div class="card pc" style="box-shadow:none" data-pc="of">
+      <div class="row"><span>What is</span><input type="number" step="any" value="20" aria-label="Percent" style="width:110px" /><span>% of</span><input type="number" step="any" value="500" aria-label="Number" style="width:140px" /><span>?</span><b class="big-number pc-out" style="font-size:1.6rem">–</b></div>
+      <p class="hint pc-f"></p>
+    </div>
+    <div class="card pc" style="box-shadow:none" data-pc="is">
+      <div class="row"><input type="number" step="any" value="45" aria-label="Part" style="width:120px" /><span>is what % of</span><input type="number" step="any" value="60" aria-label="Whole" style="width:140px" /><span>?</span><b class="big-number pc-out" style="font-size:1.6rem">–</b></div>
+      <p class="hint pc-f"></p>
+    </div>
+    <div class="card pc" style="box-shadow:none" data-pc="change">
+      <div class="row"><span>% change from</span><input type="number" step="any" value="80" aria-label="Old value" style="width:120px" /><span>to</span><input type="number" step="any" value="100" aria-label="New value" style="width:120px" /><b class="big-number pc-out" style="font-size:1.6rem">–</b></div>
+      <p class="hint pc-f"></p>
+    </div>
+    <div class="card pc" style="box-shadow:none" data-pc="adj">
+      <div class="row"><input type="number" step="any" value="1200" aria-label="Number" style="width:130px" /><select aria-label="Increase or decrease" style="width:auto"><option value="1">increased by</option><option value="-1">decreased by</option></select><input type="number" step="any" value="15" aria-label="Percent" style="width:100px" /><span>%</span><b class="big-number pc-out" style="font-size:1.6rem">–</b></div>
+      <p class="hint pc-f"></p>
+    </div>
+    <div class="card pc" style="box-shadow:none" data-pc="marks">
+      <div class="row"><span>Marks obtained</span><input type="number" step="any" value="432" aria-label="Marks obtained" style="width:120px" /><span>out of</span><input type="number" step="any" value="500" aria-label="Maximum marks" style="width:120px" /><b class="big-number pc-out" style="font-size:1.6rem">–</b></div>
+      <p class="hint pc-f"></p>
+    </div>
+  </div>
+  <script>
+    const fmt = (n: number) => (Number.isFinite(n) ? (+n.toFixed(4)).toLocaleString('en-IN') : '–');
+    document.querySelectorAll<HTMLElement>('.pc').forEach((card) => {
+      const ins = Array.from(card.querySelectorAll<HTMLInputElement>('input'));
+      const sel = card.querySelector('select');
+      const out = card.querySelector('.pc-out')!, f = card.querySelector('.pc-f')!;
+      const calc = () => {
+        const [a, b] = ins.map((i) => parseFloat(i.value));
+        let r = NaN, formula = '';
+        switch (card.dataset.pc) {
+          case 'of': r = (a / 100) * b; formula = `${a} ÷ 100 × ${b} = ${fmt(r)}`; break;
+          case 'is': r = (a / b) * 100; formula = `${a} ÷ ${b} × 100 = ${fmt(r)}%`; break;
+          case 'change': r = ((b - a) / Math.abs(a)) * 100; formula = `(${b} − ${a}) ÷ ${a} × 100 = ${fmt(r)}% ${r >= 0 ? 'increase' : 'decrease'}`; break;
+          case 'adj': { const s = +(sel as HTMLSelectElement).value; r = a * (1 + (s * b) / 100); formula = `${a} × (1 ${s > 0 ? '+' : '−'} ${b}/100) = ${fmt(r)}`; break; }
+          case 'marks': r = (a / b) * 100; formula = `${a} ÷ ${b} × 100 = ${fmt(r)}%`; break;
+        }
+        out.textContent = card.dataset.pc === 'of' || card.dataset.pc === 'adj' ? fmt(r) : `${fmt(r)}%`;
+        f.textContent = formula;
+      };
+      ins.forEach((i) => i.addEventListener('input', calc));
+      sel?.addEventListener('change', calc);
+      calc();
+    });
+  </script>
+  <Fragment slot="content">
+    <h2>Percentage shortcuts</h2>
+    <ul>
+      <li><b>10%</b> of a number: move the decimal point one place left (10% of 450 = 45).</li>
+      <li><b>5%</b> is half of 10%; <b>20%</b> is double 10%; <b>25%</b> is a quarter; <b>50%</b> is half.</li>
+      <li><b>X% of Y = Y% of X</b>: 8% of 50 is the same as 50% of 8 = 4.</li>
+      <li>A rise of 20% followed by a fall of 20% leaves you <b>4% lower</b>, not where you started.</li>
+    </ul>
+  </Fragment>
+</ToolLayout>

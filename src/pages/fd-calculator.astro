@@ -1,0 +1,53 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+const faqs = [
+  { q: 'How is FD interest calculated?', a: 'Most Indian banks compound FD interest quarterly: A = P × (1 + r/4)<sup>4t</sup>, where r is the annual rate and t is the tenure in years. Choose another compounding frequency if your bank uses one.' },
+  { q: 'Is FD interest taxable?', a: 'Yes. FD interest is added to your income and taxed at your slab rate. Banks deduct TDS if interest exceeds the threshold in a year; submit Form 15G/15H if your total income is below the taxable limit.' },
+  { q: 'What about senior citizen rates?', a: 'Most banks offer senior citizens an extra 0.25–0.75% on FDs. Enter the senior citizen rate shown by your bank.' },
+  { q: 'Cumulative or payout FD?', a: 'A cumulative FD reinvests interest (higher maturity value). A payout FD pays interest monthly or quarterly, which suits regular income needs; choose "Simple interest (payout)" to see total interest received.' },
+];
+const steps = ['Enter the deposit amount, interest rate and tenure.', 'Choose the compounding frequency (quarterly for most banks).', 'See the maturity amount and total interest.'];
+---
+<ToolLayout slug="fd-calculator" h1="FD Calculator" lead="Calculate fixed deposit maturity value and interest with quarterly, monthly or yearly compounding, or payout FDs." steps={steps} faqs={faqs} badges={['⚡ Instant', '📤 Shareable link', '✅ No login']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="p" key="p" label="Deposit amount" unit="₹" min={1000} max={10000000} step={1000} value={100000} />
+      <SliderField id="r" key="r" label="Interest rate (p.a.)" unit="%" min={1} max={12} step={0.05} value={7} />
+      <SliderField id="m" key="m" label="Tenure" unit="months" min={1} max={120} step={1} value={36} />
+      <div class="field"><label for="c">Compounding</label><select id="c" data-key="c"><option value="4">Quarterly (most banks)</option><option value="12">Monthly</option><option value="2">Half-yearly</option><option value="1">Yearly</option><option value="0">Simple interest (payout FD)</option></select></div>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Maturity amount</span><div class="big-number" id="o-mat">–</div></div>
+      <div class="result-rows">
+        <div><span>Invested</span><b id="o-p">–</b></div>
+        <div><span>Total interest</span><b id="o-i">–</b></div>
+        <div><span>Effective annual yield</span><b id="o-y">–</b></div>
+      </div>
+      <div id="o-split"></div>
+      <button type="button" class="btn btn-sm" data-share="FD calculation">📤 Share</button>
+    </div>
+  </div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { fd } from '../lib/finance';
+    import { rupees, rupeesShort } from '../lib/format';
+    import { splitBar } from '../lib/charts';
+    const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    function update() {
+      const P = val('p'), r = val('r'), m = val('m'), c = val('c');
+      const out = fd(P, r, m, c);
+      setText('o-mat', rupees(out.maturity));
+      setText('o-p', rupees(P));
+      setText('o-i', rupees(out.interest));
+      const eff = c ? (Math.pow(1 + r / 100 / c, c) - 1) * 100 : r;
+      setText('o-y', `${eff.toFixed(2)}%`);
+      splitBar(document.getElementById('o-split')!, [{ name: 'Deposit', color: css('--series-1'), value: P }, { name: 'Interest', color: css('--series-3'), value: out.interest }], rupeesShort);
+    }
+    initCalculator(update, { c: document.getElementById('c') as HTMLSelectElement });
+  </script>
+  <Fragment slot="content">
+    <h2>FD vs other safe investments</h2>
+    <p>Fixed deposits offer guaranteed returns and deposit insurance (DICGC covers up to ₹5 lakh per bank per depositor). Compare the post-tax return with <a href="/ppf-calculator">PPF</a> (tax-free) or debt funds, especially if you are in a high tax bracket. For long-term goals, see how a <a href="/sip-calculator">SIP</a> could grow.</p>
+  </Fragment>
+</ToolLayout>

@@ -1,0 +1,15 @@
+---
+/** Simple content page layout (about, privacy, terms…). */
+import Base from './Base.astro';
+interface Props { title: string; description: string; path: string; h1?: string; noindex?: boolean }
+const { title, description, path, h1 = title, noindex } = Astro.props;
+---
+<Base title={title} description={description} path={path} noindex={noindex}>
+  <div class="container">
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> › {h1}</nav>
+    <article class="prose" style="margin-top:8px">
+      <h1>{h1}</h1>
+      <slot />
+    </article>
+  </div>
+</Base>

@@ -1,0 +1,68 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+const faqs = [
+  { q: 'How is SIP return calculated?', a: 'We use the standard formula used by most Indian calculators: FV = P × [((1 + i)<sup>n</sup> − 1) ÷ i] × (1 + i), where P is the monthly SIP, i is the monthly rate (annual ÷ 12) and n is the number of months. With step-up, the monthly amount rises every 12 months.' },
+  { q: 'What will ₹10,000 per month become in 10 years at 12%?', a: 'About ₹23.2 lakh, on an investment of ₹12 lakh. Over 20 years it grows to about ₹99.9 lakh on ₹24 lakh invested.' },
+  { q: 'What is a step-up SIP?', a: 'A step-up (top-up) SIP increases your monthly investment by a fixed percentage every year, usually in line with salary hikes. A 10% annual step-up can nearly double the final corpus over 20 years.' },
+  { q: 'Are SIP returns guaranteed?', a: 'No. Mutual fund returns depend on markets. Historical equity returns of 10–14% are not a promise. Use conservative rates for planning.' },
+  { q: 'Is the result before tax?', a: 'Yes. Equity fund gains above ₹1.25 lakh per year are taxed as long-term capital gains when held for over a year. Check current tax rules.' },
+];
+const steps = ['Enter your monthly SIP amount, expected annual return and duration.', 'Optionally add an annual step-up % and a one-time lump sum.', 'See invested amount, estimated gains and final value, plus a year-wise table.', 'Press <b>Share</b> to send the plan.'];
+---
+<ToolLayout slug="sip-calculator" h1="SIP Calculator" lead="Estimate how much your monthly mutual fund SIP can grow to, with optional annual step-up and lump sum. Year-by-year table included." steps={steps} faqs={faqs} badges={['⚡ Instant', '📈 Step-up SIP', '📤 Shareable link', '✅ No login']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="sip" key="m" label="Monthly investment" unit="₹" min={500} max={500000} step={500} value={10000} />
+      <SliderField id="ret" key="r" label="Expected return (p.a.)" unit="%" min={1} max={30} step={0.5} value={12} />
+      <SliderField id="yrs" key="y" label="Time period" unit="years" min={1} max={40} step={1} value={15} />
+      <SliderField id="step" key="s" label="Annual step-up" unit="%" min={0} max={50} step={1} value={0} hint="Increase your SIP every year (e.g. 10% with salary hikes)." />
+      <SliderField id="lump" key="l" label="One-time lump sum (optional)" unit="₹" min={0} max={10000000} step={5000} value={0} />
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Estimated value</span><div class="big-number" id="o-value">–</div><span class="hint" id="o-words"></span></div>
+      <div class="result-rows">
+        <div><span>Total invested</span><b id="o-inv">–</b></div>
+        <div><span>Estimated gains</span><b id="o-gain">–</b></div>
+        <div><span>Final monthly SIP</span><b id="o-last">–</b></div>
+      </div>
+      <div id="o-split"></div>
+      <button type="button" class="btn btn-sm" data-share="My SIP plan">📤 Share this plan</button>
+    </div>
+  </div>
+  <h2 style="margin-top:28px">Growth year by year</h2>
+  <div id="o-chart" class="chart"></div>
+  <div class="table-wrap" style="margin-top:14px"><table class="data"><thead><tr><th>Year</th><th>Monthly SIP</th><th>Invested</th><th>Gains</th><th>Value</th></tr></thead><tbody id="o-table"></tbody></table></div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { sip } from '../lib/finance';
+    import { rupees, rupeesShort } from '../lib/format';
+    import { splitBar, stackedColumns } from '../lib/charts';
+    const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    function update() {
+      const r = sip(val('sip'), val('ret'), val('yrs'), val('step'), val('lump'));
+      setText('o-value', rupees(r.value));
+      setText('o-words', `≈ ${rupeesShort(r.value)}`);
+      setText('o-inv', rupees(r.invested));
+      setText('o-gain', rupees(r.gains));
+      setText('o-last', rupees(r.rows[r.rows.length - 1]?.extra ?? val('sip')));
+      splitBar(document.getElementById('o-split')!, [
+        { name: 'Invested', color: css('--series-1'), value: r.invested },
+        { name: 'Gains', color: css('--series-3'), value: r.gains },
+      ], rupeesShort);
+      stackedColumns(document.getElementById('o-chart')!, r.rows.map((x) => `Y${x.year}`), [
+        { name: 'Invested', color: css('--series-1'), values: r.rows.map((x) => x.a) },
+        { name: 'Gains', color: css('--series-3'), values: r.rows.map((x) => x.b) },
+      ], rupeesShort, { title: 'Invested amount and gains by year' });
+      document.getElementById('o-table')!.innerHTML = r.rows.map((x) => `<tr><td>Year ${x.year}</td><td>${rupees(x.extra ?? 0)}</td><td>${rupees(x.a)}</td><td>${rupees(x.b)}</td><td>${rupees(x.balance)}</td></tr>`).join('');
+    }
+    initCalculator(update);
+  </script>
+  <Fragment slot="content">
+    <h2>The power of starting early</h2>
+    <p>Compounding rewards time more than amount. ₹5,000 a month for 30 years at 12% grows to about ₹1.76 crore, while ₹10,000 a month for 15 years grows to about ₹50 lakh, even though both invest a similar total. Starting five years earlier can matter more than doubling your SIP later.</p>
+    <h3>SIP vs lump sum</h3>
+    <p>A SIP spreads your investment over time (rupee-cost averaging), which reduces the risk of investing everything at a market peak. A lump sum invested early has more time to compound. You can model both together with the lump sum field.</p>
+    <p>Related: <a href="/ppf-calculator">PPF calculator</a> · <a href="/fd-calculator">FD calculator</a> · <a href="/income-tax-calculator">income tax calculator</a></p>
+  </Fragment>
+</ToolLayout>

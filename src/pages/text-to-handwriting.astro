@@ -1,0 +1,52 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const FONTS = ['Caveat', 'Kalam', 'Homemade Apple', 'Indie Flower', 'Shadows Into Light', 'Gloria Hallelujah', 'Reenie Beanie'];
+const fontsUrl = 'https://fonts.googleapis.com/css2?' + FONTS.map((f) => `family=${f.replace(/ /g, '+')}`).join('&') + '&display=swap';
+const sample = `Photosynthesis
+
+Photosynthesis is the process by which green plants use sunlight, water and carbon dioxide to make glucose and release oxygen. It takes place mainly in the leaves, inside tiny structures called chloroplasts that contain the green pigment chlorophyll.
+
+The overall equation is:
+6CO2 + 6H2O + light energy → C6H12O6 + 6O2
+
+हिंदी में भी लिख सकते हैं (Kalam font).`;
+const faqs = [
+  { q: 'How do I convert typed text into handwriting?', a: 'Type or paste your text, choose a handwriting style, ink colour and paper, and download the pages as PNG images or a PDF.' },
+  { q: 'Can I write in Hindi?', a: 'Yes. Choose the <b>Kalam</b> font, which supports Devanagari as well as English.' },
+  { q: 'How do I make it look more real?', a: 'Increase <b>Messiness</b> for uneven letters and baselines, pick blue ink and lined paper, and use a slightly larger font size. Printing on real paper makes it even more convincing.' },
+  { q: 'Is it okay to submit this as an assignment?', a: 'Check your teacher\'s or school\'s rules. Many teachers want handwritten work to practise writing; use this tool for notes, templates, cards, journaling and creative projects.' },
+];
+const steps = ['Type or paste your text.', 'Pick a handwriting font, ink colour, paper style and size.', 'Adjust messiness for a natural look.', 'Download as PNG images or as one PDF.'];
+---
+<ToolLayout slug="text-to-handwriting" h1="Text to Handwriting Converter" lead="Turn typed text into realistic handwriting on lined paper. Choose fonts (including Hindi), ink colour and paper, then download PNG or PDF." steps={steps} faqs={faqs} badges={['✍️ 7 handwriting styles', '🇮🇳 Hindi support', '📄 PDF export', '✅ No login']}>
+  <link slot="head" rel="preconnect" href="https://fonts.googleapis.com" />
+  <link slot="head" rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link slot="head" rel="stylesheet" href={fontsUrl} />
+  <div class="stack">
+    <div class="field"><label for="hw-text">Your text</label><textarea id="hw-text" rows="9">{sample}</textarea></div>
+    <div class="grid-3">
+      <div class="field"><label for="hw-font">Handwriting</label><select id="hw-font">{FONTS.map((f) => <option value={f} style={`font-family:'${f}'`}>{f}</option>)}</select></div>
+      <div class="field"><label for="hw-ink">Ink</label><select id="hw-ink"><option value="#1a3d8f">Blue</option><option value="#1b1b1b">Black</option><option value="#b42318">Red</option><option value="#1f6f3f">Green</option></select></div>
+      <div class="field"><label for="hw-paper">Paper</label><select id="hw-paper"><option value="lined">Ruled with margin</option><option value="yellow">Yellow legal pad</option><option value="grid">Grid</option><option value="plain">Plain</option></select></div>
+      <div class="field"><label for="hw-size">Size</label><input id="hw-size" type="range" min="28" max="70" value="44" /></div>
+      <div class="field"><label for="hw-gap">Line spacing</label><input id="hw-gap" type="range" min="1.2" max="2.4" step="0.05" value="1.6" /></div>
+      <div class="field"><label for="hw-messy">Messiness</label><input id="hw-messy" type="range" min="0" max="10" value="5" /></div>
+    </div>
+    <div class="row">
+      <div class="status" id="hw-status"></div><span class="spacer"></span>
+      <button type="button" class="btn" id="hw-png">⬇ PNG</button>
+      <button type="button" class="btn btn-primary" id="hw-pdf">⬇ PDF</button>
+    </div>
+    <div id="hw-pages" class="hw-pages"></div>
+  </div>
+  <style is:global>
+    .hw-pages { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+    .hw-page { margin: 0; }
+    .hw-page canvas { width: 100%; height: auto; box-shadow: 0 2px 12px rgba(0,0,0,.18); border-radius: 4px; display: block; }
+  </style>
+  <script>import '../tools/handwriting';</script>
+  <Fragment slot="content">
+    <h2>Realistic handwriting from typed text</h2>
+    <p>Each letter is drawn with a tiny random wobble, slant and ink variation, so the page looks written by hand rather than printed in a font. Long text flows onto as many A4 pages as needed. Your text never leaves your device; it is saved only in your browser so you don't lose it on refresh.</p>
+  </Fragment>
+</ToolLayout>
