@@ -1,5 +1,5 @@
 // Unit tests for pure finance/format functions. Run: node tests/unit.mjs (Node 22.18+ strips TS types natively).
-import { emi, sip, fd, ppf, gst, incomeTax, breakEvenDeductions, hraExemption, attendance, salaryBreakup, prepayment, lumpsum, cagr, swp, rd, gratuity, epf, ssy, outstanding, aprWithFees, balanceTransfer, eligibility, nps, npsExitRule, retirement, corpusNeeded } from '../src/lib/finance.ts';
+import { emi, sip, fd, ppf, gst, incomeTax, breakEvenDeductions, hraExemption, attendance, salaryBreakup, prepayment, lumpsum, cagr, swp, rd, gratuity, epf, ssy, outstanding, aprWithFees, balanceTransfer, eligibility, nps, npsExitRule, retirement, corpusNeeded, compoundInterest, simpleInterest, inflation, discount } from '../src/lib/finance.ts';
 import { numberToWords, indianGrouping, rupeesShort } from '../src/lib/format.ts';
 import { COUNTRIES, foreignTax, livingCosts, equivalentIndianCtc, INDIA_CITIES } from '../src/lib/abroad.ts';
 
@@ -117,6 +117,18 @@ eq('Plan path ends near zero at 85', rp.path[rp.path.length - 1].balance < rp.ne
 const rp2 = retirement({ age: 30, retireAge: 60, lifeAge: 85, monthlyExpense: 50000, inflationPct: 6, preReturnPct: 12, postReturnPct: 7, existing: 0, currentMonthly: 10000, stepUpPct: 0 });
 eq('Current savings shortfall positive', rp2.shortfall > 0 ? 1 : 0, 1);
 eq('Lasts until is before 85', rp2.projectedLasts < 85 && rp2.projectedLasts > 60 ? 1 : 0, 1);
+
+// Compound / simple interest, inflation, discount
+eq('CI 1L @10% 5y yearly', Math.round(compoundInterest(100000, 10, 5, 1).maturity), 161051);
+eq('CI 1L @8% 10y quarterly', Math.round(compoundInterest(100000, 8, 10, 4).maturity), 220804, 2);
+eq('CI effective rate monthly 12%', +compoundInterest(1, 12, 1, 12).effectiveRatePct.toFixed(2), 12.68, 0.001);
+eq('CI with monthly 0 top-up = invested P', compoundInterest(50000, 7, 3, 4).invested, 50000);
+eq('SI 1L @8% 3y', simpleInterest(100000, 8, 3).interest, 24000);
+eq('Inflation 1L @6% 10y cost', Math.round(inflation(100000, 6, 10).futureCost), 179085);
+eq('Inflation worth later', Math.round(inflation(100000, 6, 10).worthLater), 55839);
+eq('Discount 1000 -20% -10%', discount(1000, 20, 10).afterExtra, 720);
+eq('Discount effective %', Math.round(discount(1000, 20, 10).effectivePct), 28);
+eq('Discount + 18% GST', discount(1000, 20, 0, 18).final, 944);
 
 // Words
 eq('Words 1,25,00,050 INR', numberToWords('12500050', 'indian', 'inr'), 'Rupees One Crore Twenty-Five Lakh Fifty Only');

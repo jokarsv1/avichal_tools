@@ -1,0 +1,50 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+const faqs = [
+  { q: 'What will ₹1 lakh be worth in 10 years?', a: 'At 6% inflation, ₹1 lakh in 10 years will buy what about ₹55,800 buys today. Put the other way, something costing ₹1 lakh today will cost about ₹1.79 lakh.' },
+  { q: 'What inflation rate should I use for India?', a: 'Retail (CPI) inflation in India has averaged roughly 5–6% over the last decade. Education and healthcare costs often rise faster, around 8–10% a year, so use a higher rate for those goals.' },
+  { q: 'Why does inflation matter for savings?', a: 'If your savings earn less than inflation, they lose buying power. A savings account at 3% with 6% inflation loses about 3% of real value every year.' },
+];
+const steps = ['Enter an amount in today\'s rupees.', 'Choose the inflation rate and the number of years.', 'See the future cost and what today\'s money will be worth then.'];
+---
+<ToolLayout slug="inflation-calculator" h1="Inflation Calculator (India)" lead="See what things will cost in the future and how much buying power your money loses to inflation, for a car, a wedding, your child's education or retirement."
+  presets={[{ label: '₹1 lakh in 10 years', href: '/inflation-calculator?a=100000&r=6&y=10' }, { label: '🎓 Engineering fees ₹15L, 15 yrs', href: '/inflation-calculator?a=1500000&r=9&y=15' }, { label: '💍 Wedding ₹20L, 20 yrs', href: '/inflation-calculator?a=2000000&r=7&y=20' }, { label: '🏥 Health cost ₹5L, 25 yrs', href: '/inflation-calculator?a=500000&r=10&y=25' }]}
+  steps={steps} faqs={faqs} badges={['📉 Real value', '🎯 Goal planning']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="a" key="a" label="Amount today" unit="₹" min={100} max={100000000} step={100} value={100000} />
+      <SliderField id="r" key="r" label="Inflation rate (per year)" unit="%" min={1} max={20} step={0.5} value={6} />
+      <SliderField id="y" key="y" label="Years from now" unit="years" min={1} max={50} step={1} value={10} />
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Cost in the future</span><div class="big-number" id="o-cost">–</div><span class="hint" id="o-words"></span></div>
+      <div class="result-rows">
+        <div><span>Today's amount will be worth</span><b id="o-worth">–</b></div>
+        <div><span>Buying power lost</span><b id="o-lost">–</b></div>
+      </div>
+      <p class="callout" id="o-msg" style="margin:0"></p>
+      <button type="button" class="btn btn-sm" data-share="Inflation">📤 Share</button>
+    </div>
+  </div>
+  <div class="table-wrap" style="margin-top:20px"><table class="data"><thead><tr><th>Year</th><th>Cost of the same thing</th><th>Value of today's amount</th></tr></thead><tbody id="o-table"></tbody></table></div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { inflation } from '../lib/finance';
+    import { rupees, rupeesShort } from '../lib/format';
+    function update() {
+      const a = val('a'), r = inflation(a, val('r'), val('y'));
+      setText('o-cost', rupees(r.futureCost));
+      setText('o-words', `≈ ${rupeesShort(r.futureCost)} in ${val('y')} years`);
+      setText('o-worth', rupees(r.worthLater));
+      setText('o-lost', `${r.lostPct.toFixed(1)}%`);
+      const yrs = Math.log(2) / Math.log(1 + val('r') / 100);
+      setText('o-msg', `💡 At ${val('r')}% inflation, prices double about every ${yrs.toFixed(1)} years. To keep up, your savings need to earn more than ${val('r')}% a year after tax.`);
+      document.getElementById('o-table')!.innerHTML = r.rows.map((x) => `<tr><td>${x.year}</td><td>${rupees(x.cost)}</td><td>${rupees(x.worth)}</td></tr>`).join('');
+    }
+    initCalculator(update);
+  </script>
+  <Fragment slot="content">
+    <p>Related: <a href="/retirement-planner">Retirement planner</a> · <a href="/sip-calculator">SIP calculator</a> · <a href="/compound-interest-calculator">Compound interest</a> · <a href="/cagr-calculator">CAGR calculator</a></p>
+  </Fragment>
+</ToolLayout>

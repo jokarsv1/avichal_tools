@@ -508,3 +508,37 @@ export function retirement(o: RetirementInput) {
   }
   return { yearsToGo, yearsInRetirement, monthlyAtRetirement, needed, existingFv, gap, sipNeeded, lumpSumToday, projected, projectedLasts, shortfall: Math.max(0, needed - projected), path };
 }
+
+// ---------------- Compound / simple interest, inflation ----------------
+/** Compound interest with n compounding periods a year and an optional monthly top-up (added at month end). */
+export function compoundInterest(principal: number, ratePct: number, years: number, perYear: number, monthlyAdd = 0) {
+  const rows: YearRow[] = [];
+  let bal = principal, invested = principal;
+  const months = Math.round(years * 12);
+  // Effective monthly growth that matches the chosen compounding frequency.
+  const gm = Math.pow(1 + ratePct / 100 / perYear, perYear / 12);
+  for (let m = 1; m <= months; m++) {
+    bal = bal * gm + monthlyAdd;
+    invested += monthlyAdd;
+    if (m % 12 === 0 || m === months) rows.push({ year: Math.ceil(m / 12), a: invested, b: bal - invested, balance: bal });
+  }
+  return { maturity: bal, invested, interest: bal - invested, effectiveRatePct: (Math.pow(1 + ratePct / 100 / perYear, perYear) - 1) * 100, rows };
+}
+export function simpleInterest(principal: number, ratePct: number, years: number) {
+  const interest = (principal * ratePct * years) / 100;
+  return { interest, total: principal + interest, perYear: (principal * ratePct) / 100, perMonth: (principal * ratePct) / 1200 };
+}
+/** What something costing `amount` today will cost after `years`, and what `amount` will be worth then. */
+export function inflation(amount: number, ratePct: number, years: number) {
+  const f = Math.pow(1 + ratePct / 100, years);
+  const rows = Array.from({ length: Math.max(0, Math.round(years)) }, (_, i) => ({ year: i + 1, cost: amount * Math.pow(1 + ratePct / 100, i + 1), worth: amount / Math.pow(1 + ratePct / 100, i + 1) }));
+  return { futureCost: amount * f, worthLater: amount / f, lostPct: (1 - 1 / f) * 100, rows };
+}
+/** Price after a discount, an optional extra discount on the discounted price, and optional GST. */
+export function discount(price: number, pct: number, extraPct = 0, gstPct = 0) {
+  const afterFirst = price * (1 - pct / 100);
+  const afterExtra = afterFirst * (1 - extraPct / 100);
+  const gstAmt = (afterExtra * gstPct) / 100;
+  const final = afterExtra + gstAmt;
+  return { afterFirst, afterExtra, gst: gstAmt, final, saved: price - afterExtra, effectivePct: price ? (1 - afterExtra / price) * 100 : 0 };
+}

@@ -1,0 +1,64 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+const faqs = [
+  { q: 'What is the compound interest formula?', a: 'A = P × (1 + r/n)<sup>n×t</sup>, where P is the principal, r the yearly rate, n the number of times interest is added per year and t the number of years. Compound interest = A − P.' },
+  { q: 'What is ₹1 lakh at 10% for 5 years with yearly compounding?', a: '₹1,61,051, so the interest is ₹61,051. With simple interest it would be only ₹50,000.' },
+  { q: 'Does compounding frequency matter?', a: 'Yes, a little. At 12% a year, monthly compounding gives an effective 12.68% a year, quarterly 12.55% and yearly 12%. Indian bank FDs usually compound quarterly.' },
+  { q: 'Can I add money every month?', a: 'Yes. Use "Monthly addition" to see how regular top-ups grow along with the starting amount.' },
+];
+const steps = ['Enter the starting amount, the yearly rate and the number of years.', 'Choose how often interest is compounded, and optionally a monthly addition.', 'See the maturity amount, the interest earned and a year-by-year table.'];
+---
+<ToolLayout slug="compound-interest-calculator" h1="Compound Interest Calculator" lead="See how your money grows with compound interest: yearly, half-yearly, quarterly, monthly or daily compounding, with optional monthly additions and a year-by-year table."
+  presets={[{ label: '₹1 lakh, 10%, 5 years', href: '/compound-interest-calculator?p=100000&r=10&y=5&n=1&m=0' }, { label: '🏦 FD-style (quarterly)', href: '/compound-interest-calculator?p=500000&r=7&y=5&n=4&m=0' }, { label: '📅 Monthly compounding', href: '/compound-interest-calculator?p=100000&r=12&y=10&n=12&m=0' }, { label: '➕ With ₹5,000/month', href: '/compound-interest-calculator?p=50000&r=12&y=15&n=12&m=5000' }, { label: 'Simple interest instead', href: '/simple-interest-calculator' }]}
+  steps={steps} faqs={faqs} badges={['⚡ Instant', '📈 Year-wise table', '📤 Shareable link']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="p" key="p" label="Principal" unit="₹" min={1000} max={100000000} step={1000} value={100000} />
+      <SliderField id="r" key="r" label="Interest rate (p.a.)" unit="%" min={0.5} max={30} step={0.25} value={10} />
+      <SliderField id="y" key="y" label="Time period" unit="years" min={1} max={50} step={1} value={5} />
+      <div class="field"><label for="n">Compounding</label><select id="n" data-key="n"><option value="1">Yearly</option><option value="2">Half-yearly</option><option value="4">Quarterly</option><option value="12">Monthly</option><option value="365">Daily</option></select></div>
+      <SliderField id="m" key="m" label="Monthly addition (optional)" unit="₹" min={0} max={1000000} step={500} value={0} />
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Maturity amount</span><div class="big-number" id="o-mat">–</div><span class="hint" id="o-words"></span></div>
+      <div class="result-rows">
+        <div><span>Total invested</span><b id="o-inv">–</b></div>
+        <div><span>Compound interest</span><b id="o-int">–</b></div>
+        <div><span>Simple interest would be</span><b id="o-si">–</b></div>
+        <div><span>Effective yearly rate</span><b id="o-eff">–</b></div>
+      </div>
+      <div id="o-split"></div>
+      <button type="button" class="btn btn-sm" data-share="Compound interest">📤 Share</button>
+    </div>
+  </div>
+  <h2 style="margin-top:28px">Growth year by year</h2>
+  <div id="o-chart" class="chart"></div>
+  <div class="table-wrap" style="margin-top:14px"><table class="data"><thead><tr><th>Year</th><th>Invested</th><th>Interest</th><th>Balance</th></tr></thead><tbody id="o-table"></tbody></table></div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { compoundInterest, simpleInterest } from '../lib/finance';
+    import { rupees, rupeesShort } from '../lib/format';
+    import { splitBar, stackedColumns } from '../lib/charts';
+    const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    const n = document.getElementById('n') as HTMLSelectElement;
+    function update() {
+      const r = compoundInterest(val('p'), val('r'), val('y'), +n.value, val('m'));
+      setText('o-mat', rupees(r.maturity));
+      setText('o-words', `≈ ${rupeesShort(r.maturity)}`);
+      setText('o-inv', rupees(r.invested));
+      setText('o-int', rupees(r.interest));
+      setText('o-si', val('m') ? '–' : rupees(simpleInterest(val('p'), val('r'), val('y')).interest));
+      setText('o-eff', `${r.effectiveRatePct.toFixed(2)}%`);
+      splitBar(document.getElementById('o-split')!, [{ name: 'Invested', color: css('--series-1'), value: r.invested }, { name: 'Interest', color: css('--series-3'), value: r.interest }], rupeesShort);
+      stackedColumns(document.getElementById('o-chart')!, r.rows.map((x) => `Y${x.year}`), [{ name: 'Invested', color: css('--series-1'), values: r.rows.map((x) => x.a) }, { name: 'Interest', color: css('--series-3'), values: r.rows.map((x) => x.b) }], rupeesShort, { title: 'Invested amount and interest by year' });
+      document.getElementById('o-table')!.innerHTML = r.rows.map((x) => `<tr><td>Year ${x.year}</td><td>${rupees(x.a)}</td><td>${rupees(x.b)}</td><td>${rupees(x.balance)}</td></tr>`).join('');
+    }
+    initCalculator(update, { n });
+  </script>
+  <Fragment slot="content">
+    <h2>Compound vs simple interest</h2>
+    <p>Simple interest is paid only on the original amount. Compound interest is also paid on the interest already earned, so growth speeds up over time. ₹1 lakh at 10% for 20 years becomes ₹3 lakh with simple interest but ₹6.73 lakh with yearly compounding.</p>
+    <p>Related: <a href="/simple-interest-calculator">Simple interest</a> · <a href="/fd-calculator">FD calculator</a> · <a href="/sip-calculator">SIP calculator</a> · <a href="/inflation-calculator">Inflation calculator</a></p>
+  </Fragment>
+</ToolLayout>

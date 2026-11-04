@@ -1,0 +1,180 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'How do I make a salary slip?', a: 'Fill in the company and employee details, enter the monthly earnings and deductions (or use <b>Fill from monthly gross</b>), choose the month and the paid days, and press <b>Download payslip PDF</b>.' },
+  { q: 'What should a salary slip include?', a: 'Company name, employee name and ID, designation, the month, days paid, each earning (basic, HRA, allowances), each deduction (PF, professional tax, TDS) and the net pay in figures and words.' },
+  { q: 'How is PF calculated?', a: 'The employee\'s PF is 12% of basic pay (plus DA). Many employers apply it only up to the ₹15,000 wage ceiling, which caps it at ₹1,800 a month; tick or untick the cap to match your company.' },
+  { q: 'What is LOP?', a: 'Loss of pay: unpaid leave days. Earnings are reduced in proportion to the days paid. Enter the paid days and the slip prorates every earning.' },
+  { q: 'Is my data saved?', a: 'Your last entries are remembered only in this browser so you can make next month\'s slip quickly. Nothing is uploaded. Use <b>Clear saved details</b> to remove them.' },
+];
+const steps = ['Enter company and employee details.', 'Enter earnings and deductions, or fill them from the monthly gross.', 'Pick the month and paid days, check the preview and download the PDF.'];
+const now = new Date();
+const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+---
+<ToolLayout slug="salary-slip-generator" h1="Salary Slip Generator (Payslip PDF)" lead="Make a clean, professional monthly payslip PDF for your employees in a minute: earnings, PF, professional tax, TDS, loss-of-pay days and net pay in words. Free, no sign-up, nothing uploaded."
+  presets={[{ label: '🏢 Small business, ₹30,000 gross', set: { '#ss-gross': '30000' } }, { label: '💼 ₹75,000 gross', set: { '#ss-gross': '75000' } }, { label: '🏠 Domestic staff / driver', set: { '#ss-gross': '15000', '#ss-pf': false, '#ss-pt': '0' } }, { label: '💰 CTC → in-hand first', href: '/salary-calculator' }]}
+  steps={steps} faqs={faqs} badges={['🧾 Payslip PDF', '🔢 Net pay in words', '📵 Saved only on your device']}>
+  <div class="stack">
+    <p class="callout" style="margin:0">For employers issuing payslips to their own employees. Making a payslip with false details to get a loan, visa or rental is fraud.</p>
+    <div class="grid-2">
+      <div class="field"><label for="ss-co">Company name</label><input id="ss-co" type="text" placeholder="Sharma Traders Pvt Ltd" /></div>
+      <div class="field"><label for="ss-coaddr">Company address</label><input id="ss-coaddr" type="text" placeholder="City, State" /></div>
+      <div class="field"><label for="ss-name">Employee name</label><input id="ss-name" type="text" /></div>
+      <div class="field"><label for="ss-id">Employee ID</label><input id="ss-id" type="text" /></div>
+      <div class="field"><label for="ss-desig">Designation</label><input id="ss-desig" type="text" /></div>
+      <div class="field"><label for="ss-dept">Department</label><input id="ss-dept" type="text" /></div>
+      <div class="field"><label for="ss-doj">Date of joining</label><input id="ss-doj" type="date" /></div>
+      <div class="field"><label for="ss-pan">PAN (optional)</label><input id="ss-pan" type="text" maxlength="10" style="text-transform:uppercase" /></div>
+      <div class="field"><label for="ss-uan">UAN (optional)</label><input id="ss-uan" type="text" maxlength="12" /></div>
+      <div class="field"><label for="ss-bank">Bank account (last 4 digits)</label><input id="ss-bank" type="text" maxlength="4" inputmode="numeric" /></div>
+      <div class="field"><label for="ss-month">Month</label><input id="ss-month" type="month" value={ym} /></div>
+      <div class="field"><label for="ss-paid">Paid days</label><input id="ss-paid" type="number" min="0" max="31" placeholder="All days" /></div>
+    </div>
+    <div class="card stack-sm" style="box-shadow:none">
+      <div class="row" style="align-items:end"><div class="field" style="flex:1;min-width:180px"><label for="ss-gross">Fill from monthly gross (₹)</label><input id="ss-gross" type="number" min="0" placeholder="e.g. 30000" /></div><button type="button" class="btn" id="ss-fill">Fill earnings</button></div>
+      <small class="hint">Splits it the common way: basic 50%, HRA 50% of basic, the rest as special allowance. Edit anything after.</small>
+    </div>
+    <div class="grid-2">
+      <div class="stack-sm">
+        <b>Earnings (full month)</b>
+        <div class="field"><label for="ss-basic">Basic</label><input id="ss-basic" type="number" min="0" value="0" /></div>
+        <div class="field"><label for="ss-hra">HRA</label><input id="ss-hra" type="number" min="0" value="0" /></div>
+        <div class="field"><label for="ss-conv">Conveyance</label><input id="ss-conv" type="number" min="0" value="0" /></div>
+        <div class="field"><label for="ss-special">Special allowance</label><input id="ss-special" type="number" min="0" value="0" /></div>
+        <div class="field"><label for="ss-other">Bonus / other</label><input id="ss-other" type="number" min="0" value="0" /></div>
+      </div>
+      <div class="stack-sm">
+        <b>Deductions</b>
+        <label class="check"><input type="checkbox" id="ss-pf" checked /> PF 12% of basic</label>
+        <label class="check"><input type="checkbox" id="ss-pfcap" checked /> Cap PF at ₹1,800 (₹15,000 ceiling)</label>
+        <div class="field"><label for="ss-pt">Professional tax</label><input id="ss-pt" type="number" min="0" value="200" /></div>
+        <div class="field"><label for="ss-tds">Income tax (TDS)</label><input id="ss-tds" type="number" min="0" value="0" /></div>
+        <div class="field"><label for="ss-ded">Other deductions (advance, ESI…)</label><input id="ss-ded" type="number" min="0" value="0" /></div>
+      </div>
+    </div>
+    <div class="result" id="ss-preview" aria-live="polite"></div>
+    <div class="row">
+      <button type="button" class="btn btn-primary btn-lg" id="ss-go">⬇ Download payslip PDF</button>
+      <button type="button" class="btn btn-sm" id="ss-clear">Clear saved details</button>
+    </div>
+    <p class="status" id="ss-status"></p>
+  </div>
+  <script>
+    import { loadPdfLib, pdfBlob } from '../lib/pdf';
+    import { latin, hasNonLatin, money, rightText, MONTHS } from '../lib/pdfdoc';
+    import { numberToWords, rupees } from '../lib/format';
+    import { downloadBlob, setStatus, store } from '../lib/ui';
+    import { toolStarted } from '../lib/analytics';
+    const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
+    const TEXT = ['ss-co', 'ss-coaddr', 'ss-name', 'ss-id', 'ss-desig', 'ss-dept', 'ss-doj', 'ss-pan', 'ss-uan', 'ss-bank'];
+    const NUM = ['ss-basic', 'ss-hra', 'ss-conv', 'ss-special', 'ss-other', 'ss-pt', 'ss-tds', 'ss-ded'];
+    const saved = store.get<Record<string, string>>('salary-slip', {});
+    [...TEXT, ...NUM].forEach((id) => { if (saved[id] != null) $(id).value = saved[id]; });
+    if (saved['ss-pf'] != null) $('ss-pf').checked = saved['ss-pf'] === '1';
+    if (saved['ss-pfcap'] != null) $('ss-pfcap').checked = saved['ss-pfcap'] === '1';
+    const n = (id: string) => Math.max(0, +$(id).value || 0);
+
+    function calc() {
+      const [y, m] = ($('ss-month').value || '').split('-').map(Number);
+      const days = y ? new Date(y, m, 0).getDate() : 30;
+      const paid = $('ss-paid').value === '' ? days : Math.min(days, Math.max(0, +$('ss-paid').value));
+      const f = paid / days;
+      const earn: [string, number][] = [['Basic', n('ss-basic')], ['House Rent Allowance', n('ss-hra')], ['Conveyance', n('ss-conv')], ['Special Allowance', n('ss-special')], ['Bonus / Other', n('ss-other')]];
+      const earned = earn.filter(([, v]) => v > 0).map(([k, v]) => [k, Math.round(v * f)] as [string, number]);
+      const basicEarned = Math.round(n('ss-basic') * f);
+      const pf = $('ss-pf').checked ? Math.round(0.12 * ($('ss-pfcap').checked ? Math.min(basicEarned, 15000) : basicEarned)) : 0;
+      const ded: [string, number][] = ([['Provident Fund (PF)', pf], ['Professional Tax', n('ss-pt')], ['Income Tax (TDS)', n('ss-tds')], ['Other Deductions', n('ss-ded')]] as [string, number][]).filter(([, v]) => v > 0);
+      const gross = earned.reduce((s, [, v]) => s + v, 0), totalDed = ded.reduce((s, [, v]) => s + v, 0);
+      return { y, m, days, paid, earned, ded, gross, totalDed, net: gross - totalDed };
+    }
+    const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+    function update() {
+      store.set('salary-slip', { ...Object.fromEntries([...TEXT, ...NUM].map((id) => [id, $(id).value])), 'ss-pf': $('ss-pf').checked ? '1' : '0', 'ss-pfcap': $('ss-pfcap').checked ? '1' : '0' });
+      const c = calc();
+      const rows = Math.max(c.earned.length, c.ded.length);
+      let body = '';
+      for (let i = 0; i < rows; i++) body += `<tr><td>${c.earned[i]?.[0] ?? ''}</td><td>${c.earned[i] ? rupees(c.earned[i][1]) : ''}</td><td>${c.ded[i]?.[0] ?? ''}</td><td>${c.ded[i] ? rupees(c.ded[i][1]) : ''}</td></tr>`;
+      document.getElementById('ss-preview')!.innerHTML = `<b>${esc($('ss-co').value || 'Company name')}</b> · Payslip for ${c.y ? `${MONTHS[c.m - 1]} ${c.y}` : '—'}<br><span class="hint">${esc($('ss-name').value || 'Employee')} · Paid days ${c.paid} of ${c.days}</span>
+        <div class="table-wrap" style="margin-top:8px"><table class="data"><thead><tr><th>Earnings</th><th>Amount</th><th>Deductions</th><th>Amount</th></tr></thead><tbody>${body}<tr class="hl"><td>Gross earnings</td><td>${rupees(c.gross)}</td><td>Total deductions</td><td>${rupees(c.totalDed)}</td></tr></tbody></table></div>
+        <p style="margin:8px 0 0"><b>Net pay: ${rupees(c.net)}</b> <span class="hint">(${numberToWords(String(Math.max(0, Math.round(c.net))), 'indian', 'inr')})</span></p>`;
+    }
+    document.querySelectorAll('input').forEach((el) => el.addEventListener('input', () => { toolStarted('input'); update(); }));
+    document.querySelectorAll('input[type=checkbox]').forEach((el) => el.addEventListener('change', update));
+    document.getElementById('ss-fill')!.addEventListener('click', () => {
+      const g = n('ss-gross');
+      if (!g) return;
+      const basic = Math.round(g * 0.5), hra = Math.round(basic * 0.5);
+      $('ss-basic').value = String(basic); $('ss-hra').value = String(hra); $('ss-conv').value = '0'; $('ss-other').value = '0';
+      $('ss-special').value = String(g - basic - hra);
+      update();
+    });
+    $('ss-gross').addEventListener('change', () => document.getElementById('ss-fill')!.click());
+    document.getElementById('ss-clear')!.addEventListener('click', () => { store.set('salary-slip', {}); location.reload(); });
+    update();
+
+    document.getElementById('ss-go')!.addEventListener('click', async () => {
+      const st = document.getElementById('ss-status')!;
+      const c = calc();
+      if (!$('ss-co').value || !$('ss-name').value || !c.gross) return setStatus(st, 'Please fill the company name, employee name and at least one earning.', 'warn');
+      const { PDFDocument, StandardFonts, rgb } = await loadPdfLib();
+      const doc = await PDFDocument.create();
+      const font = await doc.embedFont(StandardFonts.Helvetica), bold = await doc.embedFont(StandardFonts.HelveticaBold);
+      const page = doc.addPage([595.28, 841.89]);
+      const ink = rgb(0.1, 0.1, 0.15), grey = rgb(0.4, 0.4, 0.45), line = rgb(0.75, 0.75, 0.8), band = rgb(0.93, 0.94, 0.97);
+      const L = 40, R = 555;
+      let y = 790;
+      page.drawText(latin($('ss-co').value, bold), { x: L, y, size: 17, font: bold, color: ink });
+      if ($('ss-coaddr').value) page.drawText(latin($('ss-coaddr').value, font), { x: L, y: y - 18, size: 10, font, color: grey });
+      const title = `Payslip for the month of ${MONTHS[c.m - 1]} ${c.y}`;
+      rightText(page, title, R, y, 11, bold, ink);
+      y -= 44;
+      page.drawLine({ start: { x: L, y }, end: { x: R, y }, thickness: 1, color: line });
+      // Employee details, two columns
+      const det: [string, string][] = [['Employee name', $('ss-name').value], ['Employee ID', $('ss-id').value], ['Designation', $('ss-desig').value], ['Department', $('ss-dept').value], ['Date of joining', $('ss-doj').value ? $('ss-doj').value.split('-').reverse().join('/') : ''], ['PAN', $('ss-pan').value.toUpperCase()], ['UAN', $('ss-uan').value], ['Bank account', $('ss-bank').value ? `XXXX${$('ss-bank').value}` : ''], ['Days in month', String(c.days)], ['Paid days', String(c.paid)], ['Loss of pay days', String(c.days - c.paid)]].filter(([, v]) => v) as [string, string][];
+      y -= 22;
+      det.forEach(([k, v], i) => {
+        const col = i % 2, x = col ? 310 : L, yy = y - Math.floor(i / 2) * 18;
+        page.drawText(`${k}:`, { x, y: yy, size: 9.5, font, color: grey });
+        page.drawText(latin(v, bold), { x: x + 100, y: yy, size: 9.5, font: bold, color: ink });
+      });
+      y -= Math.ceil(det.length / 2) * 18 + 16;
+      // Earnings | Deductions table
+      const colX = [L, 220, 305, 485];
+      const tableTop = y + 16;
+      page.drawRectangle({ x: L, y: y - 6, width: R - L, height: 22, color: band });
+      ['Earnings', 'Amount', 'Deductions', 'Amount'].forEach((h, i) => (i % 2 ? rightText(page, h, i === 1 ? 290 : R - 8, y, 10, bold, ink) : page.drawText(h, { x: colX[i] + 8, y, size: 10, font: bold, color: ink })));
+      y -= 24;
+      const rows = Math.max(c.earned.length, c.ded.length);
+      for (let i = 0; i < rows; i++) {
+        const e = c.earned[i], d = c.ded[i];
+        if (e) { page.drawText(e[0], { x: L + 8, y, size: 10, font, color: ink }); rightText(page, money(e[1]), 290, y, 10, font, ink); }
+        if (d) { page.drawText(d[0], { x: 305 + 8, y, size: 10, font, color: ink }); rightText(page, money(d[1]), R - 8, y, 10, font, ink); }
+        y -= 18;
+      }
+      page.drawLine({ start: { x: L, y: y + 8 }, end: { x: R, y: y + 8 }, thickness: 0.8, color: line });
+      y -= 6;
+      page.drawText('Gross earnings', { x: L + 8, y, size: 10, font: bold, color: ink }); rightText(page, money(c.gross), 290, y, 10, bold, ink);
+      page.drawText('Total deductions', { x: 313, y, size: 10, font: bold, color: ink }); rightText(page, money(c.totalDed), R - 8, y, 10, bold, ink);
+      page.drawLine({ start: { x: 297, y: tableTop }, end: { x: 297, y: y - 6 }, thickness: 0.5, color: line });
+      page.drawRectangle({ x: L, y: y - 6, width: R - L, height: tableTop - y + 6, borderColor: line, borderWidth: 0.8 });
+      y -= 40;
+      page.drawRectangle({ x: L, y: y - 30, width: R - L, height: 48, color: band, borderColor: line, borderWidth: 0.8 });
+      page.drawText(`Net pay: ${money(c.net)}`, { x: L + 12, y: y, size: 13, font: bold, color: ink });
+      page.drawText(latin(numberToWords(String(Math.max(0, Math.round(c.net))), 'indian', 'inr'), font), { x: L + 12, y: y - 18, size: 9.5, font, color: grey });
+      page.drawText('This is a computer-generated payslip and does not need a signature.', { x: L, y: 60, size: 8.5, font, color: grey });
+      downloadBlob(pdfBlob(await doc.save()), `payslip-${latin($('ss-name').value, font).replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-${$('ss-month').value}.pdf`);
+      setStatus(st, `✅ Payslip created.${hasNonLatin($('ss-co').value, $('ss-name').value, $('ss-desig').value) ? ' Note: non-English characters were replaced; please type names in English.' : ''}`, 'ok');
+    });
+  </script>
+  <Fragment slot="content">
+    <h2>Salary slip components explained</h2>
+    <ul>
+      <li><b>Basic:</b> usually 40–50% of gross; PF and gratuity are calculated on it.</li>
+      <li><b>HRA:</b> house rent allowance, partly tax-free under the old regime if you pay rent (see the <a href="/hra-calculator">HRA calculator</a>).</li>
+      <li><b>Special allowance:</b> the balance of the salary, fully taxable.</li>
+      <li><b>PF:</b> 12% of basic from the employee, matched by the employer (see the <a href="/epf-calculator">EPF calculator</a>).</li>
+      <li><b>Professional tax:</b> a state tax of up to ₹2,500 a year, commonly ₹200 a month in states that levy it.</li>
+    </ul>
+    <p>Related: <a href="/salary-calculator">CTC to in-hand salary</a> · <a href="/income-tax-calculator">Income tax calculator</a> · <a href="/invoice-generator">GST invoice generator</a> · <a href="/rent-receipt-generator">Rent receipt generator</a></p>
+  </Fragment>
+</ToolLayout>

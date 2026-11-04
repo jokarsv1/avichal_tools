@@ -1,0 +1,53 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+const faqs = [
+  { q: 'What is the simple interest formula?', a: 'SI = P × R × T ÷ 100, where P is the principal, R the rate per year and T the time in years. Total amount = P + SI.' },
+  { q: 'What is the simple interest on ₹1 lakh at 8% for 3 years?', a: '₹1,00,000 × 8 × 3 ÷ 100 = ₹24,000, so the total amount is ₹1,24,000.' },
+  { q: 'Where is simple interest used?', a: 'Personal lending between friends and family, some short-term loans, many school maths problems, and interest on some government savings schemes paid out (not reinvested) every year.' },
+  { q: 'How do I enter months or days?', a: 'Choose months or days in "Time in" and the calculator converts them to years (days are divided by 365).' },
+];
+const steps = ['Enter the principal and the yearly interest rate.', 'Enter the time in years, months or days.', 'Read the interest, the total amount and the monthly interest.'];
+---
+<ToolLayout slug="simple-interest-calculator" h1="Simple Interest Calculator" lead="Work out simple interest (SI = P × R × T ÷ 100), the total amount and the interest per month, for any time in years, months or days, with the working shown."
+  presets={[{ label: '₹1 lakh, 8%, 3 years', href: '/simple-interest-calculator?p=100000&r=8&t=3&u=y' }, { label: '🤝 ₹50,000 loan to a friend, 12%, 6 months', href: '/simple-interest-calculator?p=50000&r=12&t=6&u=m' }, { label: '📚 Class 8 example', href: '/simple-interest-calculator?p=5000&r=5&t=2&u=y' }, { label: 'Compound interest instead', href: '/compound-interest-calculator' }]}
+  steps={steps} faqs={faqs} badges={['🧮 Working shown', '⚡ Instant']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="p" key="p" label="Principal" unit="₹" min={100} max={100000000} step={100} value={100000} />
+      <SliderField id="r" key="r" label="Rate of interest (per year)" unit="%" min={0.25} max={50} step={0.25} value={8} />
+      <SliderField id="t" key="t" label="Time" min={1} max={120} step={1} value={3} />
+      <div class="field"><label for="u">Time in</label><select id="u" data-key="u"><option value="y">Years</option><option value="m">Months</option><option value="d">Days</option></select></div>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Simple interest</span><div class="big-number" id="o-si">–</div></div>
+      <div class="result-rows">
+        <div><span>Total amount</span><b id="o-tot">–</b></div>
+        <div><span>Interest per month</span><b id="o-pm">–</b></div>
+        <div><span>Interest per year</span><b id="o-py">–</b></div>
+      </div>
+      <p class="callout" id="o-work" style="margin:0;font-variant-numeric:tabular-nums"></p>
+      <button type="button" class="btn btn-sm" data-share="Simple interest">📤 Share</button>
+    </div>
+  </div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { simpleInterest } from '../lib/finance';
+    import { rupees } from '../lib/format';
+    const u = document.getElementById('u') as HTMLSelectElement;
+    function update() {
+      const t = val('t'), years = u.value === 'y' ? t : u.value === 'm' ? t / 12 : t / 365;
+      const r = simpleInterest(val('p'), val('r'), years);
+      setText('o-si', rupees(r.interest, true));
+      setText('o-tot', rupees(r.total, true));
+      setText('o-pm', rupees(r.perMonth, true));
+      setText('o-py', rupees(r.perYear, true));
+      const tStr = u.value === 'y' ? `${t}` : u.value === 'm' ? `${t}/12` : `${t}/365`;
+      setText('o-work', `SI = P × R × T ÷ 100 = ${rupees(val('p'))} × ${val('r')} × ${tStr} ÷ 100 = ${rupees(r.interest, true)}`);
+    }
+    initCalculator(update, { u });
+  </script>
+  <Fragment slot="content">
+    <p>Related: <a href="/compound-interest-calculator">Compound interest</a> · <a href="/emi-calculator">EMI calculator</a> · <a href="/fd-calculator">FD calculator</a> · <a href="/percentage-calculator">Percentage calculator</a></p>
+  </Fragment>
+</ToolLayout>

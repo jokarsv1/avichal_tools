@@ -1,0 +1,46 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'How do I calculate a discount?', a: 'Discounted price = price × (1 − discount ÷ 100). ₹2,000 at 25% off is ₹2,000 × 0.75 = ₹1,500, so you save ₹500.' },
+  { q: 'Is "20% + 10% off" the same as 30% off?', a: 'No. The extra 10% applies to the already-discounted price, so 20% + 10% is 28% off in total. ₹1,000 becomes ₹800, then ₹720.' },
+  { q: 'Is GST added before or after the discount?', a: 'In India, GST is charged on the price after discount (the transaction value). Most MRP prices already include GST; use the GST field only when the price shown is before tax.' },
+];
+const steps = ['Enter the price and the discount %.', 'Add an extra discount (bank offer, coupon) or GST if needed.', 'See the final price and how much you save.'];
+---
+<ToolLayout slug="discount-calculator" h1="Discount Calculator" lead="Find the final price after a discount, extra coupon or bank offer, and GST, and see what the combined discount really is (20% + 10% is 28%, not 30%)."
+  presets={[{ label: '🛍️ 25% off ₹2,000', href: '/discount-calculator?p=2000&d=25&e=0&g=0' }, { label: '🏷️ Sale 50% + 10% bank offer', href: '/discount-calculator?p=5000&d=50&e=10&g=0' }, { label: '🧾 Price + 18% GST after 10% off', href: '/discount-calculator?p=10000&d=10&e=0&g=18' }, { label: '% Percentage calculator', href: '/percentage-calculator' }]}
+  steps={steps} faqs={faqs} badges={['⚡ Instant', '🏷️ Stacked offers']}>
+  <div class="calc">
+    <div class="stack">
+      <div class="field"><label for="p">Price (₹)</label><input id="p" data-key="p" type="number" min="0" step="any" value="2000" /></div>
+      <div class="field"><label for="d">Discount (%)</label><input id="d" data-key="d" type="number" min="0" max="100" step="any" value="25" /></div>
+      <div class="field"><label for="e">Extra discount on top (%)</label><input id="e" data-key="e" type="number" min="0" max="100" step="any" value="0" /></div>
+      <div class="field"><label for="g">GST to add (%)</label><select id="g" data-key="g"><option value="0">None (price includes tax)</option><option value="5">5%</option><option value="18">18%</option><option value="40">40%</option></select></div>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">You pay</span><div class="big-number" id="o-final">–</div></div>
+      <div class="result-rows">
+        <div><span>You save</span><b id="o-save">–</b></div>
+        <div><span>Total discount</span><b id="o-eff">–</b></div>
+        <div><span>Price after first discount</span><b id="o-first">–</b></div>
+        <div><span>GST added</span><b id="o-gst">–</b></div>
+      </div>
+      <button type="button" class="btn btn-sm" data-share="Discount">📤 Share</button>
+    </div>
+  </div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { discount } from '../lib/finance';
+    import { rupees } from '../lib/format';
+    const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
+    function update() {
+      const r = discount(val('p'), Math.min(100, val('d')), Math.min(100, val('e')), val('g'));
+      setText('o-final', rupees(r.final, true));
+      setText('o-save', rupees(r.saved, true));
+      setText('o-eff', `${+r.effectivePct.toFixed(2)}%`);
+      setText('o-first', rupees(r.afterFirst, true));
+      setText('o-gst', rupees(r.gst, true));
+    }
+    initCalculator(update, { p: $('p'), d: $('d'), e: $('e'), g: document.getElementById('g') as HTMLSelectElement });
+  </script>
+</ToolLayout>
