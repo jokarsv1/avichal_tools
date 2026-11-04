@@ -1,0 +1,38 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import Dropzone from '../components/Dropzone.astro';
+const faqs = [
+  { q: 'How do I extract text from an image?', a: 'Choose or paste an image (screenshot, photo of a document, scanned page) and the text appears in the box below. Copy it or download it as a .txt file.' },
+  { q: 'Does it work for Hindi?', a: 'Yes. Choose <b>Hindi</b> or <b>English + Hindi</b> before adding the image. Printed text works best; handwriting is much harder for any OCR.' },
+  { q: 'Can I convert a scanned PDF to text?', a: 'Yes. Drop a scanned PDF and the first 20 pages are read. To make a searchable PDF instead, that feature is on our <a href="/roadmap">roadmap</a>.' },
+  { q: 'How accurate is it?', a: 'Very good for clear printed text (often 95%+). Accuracy drops with blur, low light, unusual fonts, tables and handwriting. Always proofread important text.' },
+  { q: 'Are my images uploaded?', a: 'No. The OCR engine (Tesseract, open source) runs inside your browser. It downloads once (about 5 MB) and then works offline.' },
+];
+const steps = ['Pick the language (English, Hindi or both).', 'Choose, drop or paste (Ctrl+V) an image or scanned PDF.', 'Wait a few seconds while the text is read.', 'Copy the text or download it as a .txt file.'];
+---
+<ToolLayout slug="image-to-text" h1="Image to Text (OCR)" lead="Extract text from images, screenshots, photos of documents and scanned PDFs, in English and Hindi. Free, private, and it runs on your device." steps={steps} faqs={faqs} badges={['🇮🇳 English + Hindi', '📋 Paste screenshots', '🔒 No upload', '✅ No login']}>
+  <div class="stack">
+    <div class="field" style="max-width:320px"><label for="ocr-lang">Language</label><select id="ocr-lang"><option value="eng">English</option><option value="hin">Hindi (हिंदी)</option><option value="eng+hin">English + Hindi</option></select></div>
+    <Dropzone id="ocr-drop" accept="image/*,.heic,.heif,.pdf,application/pdf" title="Choose an image or scanned PDF" hint="JPG, PNG, WebP, HEIC, PDF · or paste a screenshot with Ctrl+V" icon="🔍" />
+    <div class="progress hidden" id="ocr-progress"><i></i></div>
+    <div class="status" id="ocr-status"></div>
+    <div id="ocr-result" class="grid-2 hidden" style="align-items:start">
+      <div class="preview-box"><img id="ocr-preview" alt="Image being read" /></div>
+      <div class="stack-sm">
+        <textarea id="ocr-out" rows="14" aria-label="Extracted text" style="font-family:var(--mono);font-size:.92rem"></textarea>
+        <div class="btn-row"><button type="button" class="btn btn-primary" id="ocr-copy">📋 Copy text</button><button type="button" class="btn" id="ocr-download">⬇ Download .txt</button></div>
+      </div>
+    </div>
+  </div>
+  <script>import '../tools/ocr';</script>
+  <Fragment slot="content">
+    <h2>Tips for better OCR results</h2>
+    <ul>
+      <li>Photograph the page flat, straight-on and in good light; avoid shadows and glare.</li>
+      <li>Crop to the text you need with <a href="/crop-image">Crop Image</a> first.</li>
+      <li>Screenshots work best: they are perfectly sharp.</li>
+      <li>For mixed English and Hindi documents, choose <b>English + Hindi</b>.</li>
+    </ul>
+    <p>Related: <a href="/jpg-to-pdf">JPG to PDF</a> · <a href="/pdf-to-jpg">PDF to JPG</a> · <a href="/compress-pdf">compress PDF</a></p>
+  </Fragment>
+</ToolLayout>
