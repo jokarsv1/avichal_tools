@@ -1,0 +1,43 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Search tools" description="Find the right free tool and open it directly." path="/search" noindex>
+  <div class="container">
+    <section class="hero" style="padding-bottom:10px">
+      <h1>Search tools</h1>
+      <form class="search" role="search" action="/search" method="get">
+        <label for="sq" class="visually-hidden">Search tools</label>
+        <input id="sq" name="q" type="search" placeholder="compress pdf 200kb, aadhaar password, emi…" autocomplete="off" />
+      </form>
+      <p class="hint" id="s-msg" aria-live="polite"></p>
+    </section>
+    <div class="tool-grid" id="s-results"></div>
+    <p class="status warn hidden" id="s-none">No tool matches that yet. <a href="/roadmap">Request it</a> and we'll build it.</p>
+  </div>
+  <script>
+    import { loadIndex, rank, bestMatch } from '../lib/search';
+    import { capture } from '../lib/analytics';
+    const p = new URLSearchParams(location.search);
+    const q = (p.get('q') || '').trim();
+    const input = document.getElementById('sq') as HTMLInputElement;
+    input.value = q;
+    const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+    function show(items: Awaited<ReturnType<typeof loadIndex>>, query: string) {
+      const r = rank(query, items).slice(0, 18);
+      document.getElementById('s-results')!.innerHTML = r.map(({ item }) => `<a class="tool-tile" href="${item.u}"><span class="ti" aria-hidden="true">${item.i}</span><span><b>${esc(item.n)}</b></span></a>`).join('');
+      document.getElementById('s-none')!.classList.toggle('hidden', !query || r.length > 0);
+      return r.length;
+    }
+    loadIndex().then((items) => {
+      if (q) {
+        const best = p.get('stay') ? null : bestMatch(q, items);
+        capture('search_used', { query: q.toLowerCase().slice(0, 40), results: rank(q, items).length, source: p.get('from') || 'search_page', redirected: !!best });
+        if (best) { document.getElementById('s-msg')!.textContent = `Opening ${best.n}…`; location.replace(best.u); return; }
+      }
+      show(items, q);
+      let t: number | undefined;
+      input.addEventListener('input', () => { clearTimeout(t); t = window.setTimeout(() => show(items, input.value), 120); });
+      input.focus();
+    });
+  </script>
+</Base>

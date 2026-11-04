@@ -1,0 +1,37 @@
+---
+/** Landing pages for "compress pdf to 200kb"-style searches: the same compressor with the target pre-filled. */
+import ToolLayout from '../layouts/ToolLayout.astro';
+import CompressPdf from '../components/CompressPdf.astro';
+import { PDF_SIZES } from '../data/pdf-sizes';
+import { KB_PAGES } from '../data/exams';
+
+export function getStaticPaths() {
+  return PDF_SIZES.map((s) => ({ params: { size: s.slug }, props: { s } }));
+}
+const { s } = Astro.props as { s: (typeof PDF_SIZES)[number] };
+const label = `${s.value} ${s.unit}`;
+const others = PDF_SIZES.filter((x) => x.slug !== s.slug);
+const kbs = KB_PAGES.map((k) => k.kb);
+const imgKb = s.unit === 'MB' ? Math.max(...kbs) : Math.max(...kbs.filter((k) => k <= s.value));
+const faqs = [
+  { q: `How do I compress a PDF to ${label}?`, a: `Choose your PDF on this page. The target is already set to ${label}, so the tool tries stronger settings one after another until the file is ${label} or smaller, then you download it. No sign-up and no upload.` },
+  { q: `Will the text still be readable at ${label}?`, a: `Usually yes. The tool first shrinks only the photos and scans inside the PDF, which keeps text sharp. Only if that is not enough does it convert pages to images at lower quality. For very long documents, split the PDF and compress each part.` },
+  { q: `My PDF is still above ${label}, what can I do?`, a: `Remove pages you don't need with <a href="/organize-pdf">Organize PDF</a>, split it with <a href="/split-pdf">Split PDF</a>, or if it is a photographed document, recreate it from cropped photos with <a href="/jpg-to-pdf">JPG to PDF</a>.` },
+  { q: 'Is it safe for certificates and ID documents?', a: 'Yes. Compression happens in your browser and the file never leaves your device.' },
+];
+const steps = [`Choose the PDF (the target of ${label} is already filled in).`, 'Wait a few seconds while it tries stronger settings until the file fits.', 'Check the new size and press <b>Download PDF</b>.'];
+---
+<ToolLayout slug="compress-pdf" path={`/compress-pdf-to-${s.slug}`} crumb={`Under ${label}`}
+  title={`Compress PDF to ${label} – Free, Online, No Upload`}
+  description={`Reduce a PDF to ${label} or less in seconds, for ${s.uses}. Tries stronger settings automatically. Free, no sign-up, files never leave your device.`}
+  h1={`Compress PDF to ${label}`}
+  lead={`Make your PDF <b>${label} or smaller</b> for ${s.uses}. Choose the file and the tool automatically tries stronger settings until it fits. Nothing is uploaded.`}
+  presets={others.map((o) => ({ label: `🎯 ${o.value} ${o.unit}`, href: `/compress-pdf-to-${o.slug}` }))}
+  steps={steps} faqs={faqs} badges={[`🎯 Auto-fits ${label}`, '📄 Text stays sharp when possible']}>
+  <CompressPdf target={{ value: s.value, unit: s.unit }} />
+  <Fragment slot="content">
+    <h2>Other sizes</h2>
+    <p>{others.map((o, i) => <>{i ? ' · ' : ''}<a href={`/compress-pdf-to-${o.slug}`}>Compress PDF to {o.value} {o.unit}</a></>)} · <a href="/compress-pdf">Compress PDF (choose level)</a></p>
+    <p>Need an image under a size limit instead? Use <a href={`/compress-image-to-${imgKb}kb`}>compress image to {imgKb} KB</a>.</p>
+  </Fragment>
+</ToolLayout>

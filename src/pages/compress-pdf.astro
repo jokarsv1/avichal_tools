@@ -1,6 +1,6 @@
 ---
 import ToolLayout from '../layouts/ToolLayout.astro';
-import Dropzone from '../components/Dropzone.astro';
+import CompressPdf from '../components/CompressPdf.astro';
 const faqs = [
   { q: 'How can I reduce PDF size without losing quality?', a: 'Use <b>Smart</b> mode with the <b>Recommended</b> level. It only shrinks the photos and scans inside the PDF, so text, links and vector graphics stay exactly as sharp as before.' },
   { q: 'How do I compress a PDF to under 1 MB, 500 KB or 200 KB?', a: 'Start with Recommended. If it is still too big, choose <b>Strong</b> or <b>Extreme</b>. For scanned documents, "Pages to images" gives the biggest reduction.' },
@@ -15,43 +15,8 @@ const steps = [
   'Compare the before/after size and press <b>Download</b>.',
 ];
 ---
-<ToolLayout presets={[{"label": "📧 For email (best quality)", "set": {"input[name=cp-level][value=medium]": true, "input[name=cp-mode][value=smart]": true}}, {"label": "📱 Under 1 MB (portals, WhatsApp)", "set": {"input[name=cp-level][value=high]": true, "input[name=cp-mode][value=smart]": true}}, {"label": "🏛️ Smallest (govt forms)", "set": {"input[name=cp-level][value=extreme]": true, "input[name=cp-mode][value=raster]": true}}, {"label": "📷 Phone scans", "set": {"input[name=cp-level][value=high]": true, "input[name=cp-mode][value=raster]": true}}, {"label": "🖨️ Print quality", "set": {"input[name=cp-level][value=low]": true, "input[name=cp-mode][value=smart]": true}}]} slug="compress-pdf" h1="Compress PDF" lead="Shrink a big PDF to a size that emails and portals accept, in seconds. Text stays sharp, nothing is uploaded, no daily limit." steps={steps} faqs={faqs}>
-  <div class="stack">
-    <Dropzone id="cp-drop" accept=".pdf,application/pdf" title="Choose a PDF to compress" hint="Any size · drag & drop" icon="🗜️" />
-    <div id="cp-panel" class="stack hidden">
-      <p class="hint" id="cp-file"></p>
-      <div class="field">
-        <span class="label" style="font-weight:600">Compression level</span>
-        <div class="seg" role="radiogroup" aria-label="Compression level">
-          <label><input type="radio" name="cp-level" value="low" /><span>Light</span></label>
-          <label><input type="radio" name="cp-level" value="medium" checked /><span>Recommended</span></label>
-          <label><input type="radio" name="cp-level" value="high" /><span>Strong</span></label>
-          <label><input type="radio" name="cp-level" value="extreme" /><span>Extreme</span></label>
-        </div>
-      </div>
-      <div class="field">
-        <span style="font-weight:600">Mode</span>
-        <div class="seg" role="radiogroup" aria-label="Mode">
-          <label><input type="radio" name="cp-mode" value="smart" checked /><span>Smart (keeps text)</span></label>
-          <label><input type="radio" name="cp-mode" value="raster" /><span>Pages to images (scans)</span></label>
-        </div>
-      </div>
-      <div class="progress hidden" id="cp-progress"><i></i></div>
-      <div class="status" id="cp-status"></div>
-      <div class="result hidden" id="cp-result">
-        <div class="stat-row">
-          <div class="stat"><b id="cp-before">–</b><span>Original</span></div>
-          <div class="stat accent"><b id="cp-after">–</b><span>Compressed</span></div>
-          <div class="stat good"><b id="cp-saved">–</b><span>Saved</span></div>
-        </div>
-      </div>
-      <div class="btn-row">
-        <button type="button" class="btn btn-primary btn-lg" id="cp-download" disabled>⬇ Download PDF</button>
-        <button type="button" class="btn" id="cp-go">Re-run</button>
-      </div>
-    </div>
-  </div>
-  <script>import '../tools/compress-pdf';</script>
+<ToolLayout presets={[{"label": "📧 For email (best quality)", "set": {"input[name=cp-level][value=medium]": true, "input[name=cp-mode][value=smart]": true}}, {"label": "📱 Under 1 MB (portals, WhatsApp)", "set": {"input[name=cp-level][value=high]": true, "input[name=cp-mode][value=smart]": true}}, {"label": "🏛️ Smallest (govt forms)", "set": {"input[name=cp-level][value=extreme]": true, "input[name=cp-mode][value=raster]": true}}, {"label": "📷 Phone scans", "set": {"input[name=cp-level][value=high]": true, "input[name=cp-mode][value=raster]": true}}, {"label": "🖨️ Print quality", "set": {"input[name=cp-level][value=low]": true, "input[name=cp-mode][value=smart]": true}}, {"label": "🎯 Under 200 KB", "href": "/compress-pdf-to-200kb"}, {"label": "🎯 Under 100 KB", "href": "/compress-pdf-to-100kb"}]} slug="compress-pdf" h1="Compress PDF" lead="Shrink a big PDF to a size that emails and portals accept, in seconds. Text stays sharp, nothing is uploaded, no daily limit." steps={steps} faqs={faqs}>
+  <CompressPdf />
   <Fragment slot="content">
     <h2>How this PDF compressor works</h2>
     <p>Large PDFs are almost always large because of the photos or scans inside them. <b>Smart mode</b> finds each embedded image, scales it to a sensible resolution and re-encodes it as an efficient JPEG, then compresses any uncompressed data. Everything else (text, fonts, links and vector drawings) is left untouched, so the document stays searchable and crisp.</p>

@@ -19,7 +19,7 @@ const schema = [
       <p>PDF, image, video, exam-form and finance tools that run on your own device. Your files never leave your phone or computer, so there are no limits, no watermarks and no waiting.</p>
       <div class="search" role="search">
         <label for="tool-search" class="visually-hidden">Search tools</label>
-        <input id="tool-search" type="text" placeholder="Search tools: compress pdf, 20kb, emi…" autocomplete="off" />
+        <input id="tool-search" type="text" placeholder="Search tools: compress pdf, 20kb, emi… then press Enter" autocomplete="off" />
       </div>
       <div class="pills"><span>🆓 Free forever</span><span>👤 No account, ever</span><span>🔒 No data stored</span><span>📵 Files never leave your device</span><span>🚫 No watermark</span><span>💻 Open source</span></div>
     </section>
@@ -69,5 +69,7 @@ const schema = [
       none.classList.toggle('hidden', shown > 0);
     });
     addEventListener('keydown', (e) => { if (e.key === '/' && document.activeElement !== input) { e.preventDefault(); input.focus(); } });
+    // Enter goes straight to the best match (tools and landing pages like "compress pdf to 200kb").
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter' && input.value.trim()) location.href = `/search?q=${encodeURIComponent(input.value.trim())}&from=home`; });
   </script>
 </Base>

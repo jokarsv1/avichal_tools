@@ -16,6 +16,17 @@ const LEVELS = {
   extreme: { q: 0.4, maxDim: 1000, dpi: 72, label: 'Extreme' },
 } as const;
 type Level = keyof typeof LEVELS;
+type Opt = { q: number; maxDim: number; dpi: number; label: string };
+/** Used only when a target size is set: progressively stronger settings until the file fits. */
+const LADDER: [mode: 'smart' | 'raster', opt: Opt, level: Level][] = [
+  ['smart', LEVELS.medium, 'medium'],
+  ['smart', LEVELS.high, 'high'],
+  ['smart', LEVELS.extreme, 'extreme'],
+  ['raster', LEVELS.high, 'high'],
+  ['raster', LEVELS.extreme, 'extreme'],
+  ['raster', { q: 0.3, maxDim: 800, dpi: 60, label: 'Very small' }, 'extreme'],
+  ['raster', { q: 0.2, maxDim: 650, dpi: 48, label: 'Smallest' }, 'extreme'],
+];
 
 const drop = $('#cp-drop');
 const panel = $('#cp-panel');
@@ -36,7 +47,13 @@ onFiles(drop, ([f]) => {
   run();
 });
 go.addEventListener('click', run);
-$$<HTMLInputElement>('input[name=cp-level], input[name=cp-mode]').forEach((el) => el.addEventListener('change', () => file && run()));
+const targetEl = $<HTMLInputElement>('#cp-target');
+const unitEl = $<HTMLSelectElement>('#cp-unit');
+const targetBytes = () => { const v = parseFloat(targetEl.value); return v > 0 ? v * +unitEl.value * 1024 : 0; };
+// Choosing a level by hand means "use this level", so the target size is cleared.
+$$<HTMLInputElement>('input[name=cp-level], input[name=cp-mode]').forEach((el) => el.addEventListener('change', (e) => { if (e.isTrusted) targetEl.value = ''; if (file) run(); }));
+let tt: number | undefined;
+[targetEl, unitEl].forEach((el) => el.addEventListener('input', () => { clearTimeout(tt); tt = window.setTimeout(() => file && run(), 700); }));
 dl.addEventListener('click', () => output && file && downloadBlob(pdfBlob(output), `${baseName(file.name)}-compressed.pdf`));
 
 async function run() {
@@ -48,6 +65,8 @@ async function run() {
   const mode = document.querySelector<HTMLInputElement>('input[name=cp-mode]:checked')?.value || 'smart';
   try {
     const input = await readFile(file);
+    const target = targetBytes();
+    if (target > 0) { await runToTarget(input, target); return; }
     const out = mode === 'raster' ? await rasterize(input, LEVELS[level]) : await smart(input, LEVELS[level]);
     const saved = 1 - out.length / input.length;
     if (out.length >= input.length) {
@@ -72,9 +91,45 @@ async function run() {
   }
 }
 
+function showResult(input: Uint8Array, out: Uint8Array) {
+  output = out;
+  $('#cp-before').textContent = formatBytes(input.length);
+  $('#cp-after').textContent = formatBytes(out.length);
+  $('#cp-saved').textContent = out === input ? '0%' : `−${Math.round((1 - out.length / input.length) * 100)}%`;
+  $('#cp-result').classList.remove('hidden');
+  dl.disabled = false;
+}
+
+/** Try stronger settings one by one until the PDF is at or below the target size. */
+async function runToTarget(input: Uint8Array, target: number) {
+  const label = formatBytes(target);
+  if (input.length <= target) {
+    showResult(input, input);
+    setStatus(status, `✅ This PDF is already ${formatBytes(input.length)}, under ${label}. No compression needed.`, 'ok');
+    return;
+  }
+  let best: { out: Uint8Array; step: (typeof LADDER)[number] } | null = null;
+  for (const step of LADDER) {
+    const [mode, opt] = step;
+    const out = mode === 'raster' ? await rasterize(input, opt) : await smart(input, opt);
+    if (!best || out.length < best.out.length) best = { out, step };
+    if (out.length <= target) break;
+    setStatus(status, `Still ${formatBytes(out.length)}, trying stronger settings…`, 'info');
+  }
+  const { out, step } = best!;
+  const [mode, opt, level] = step;
+  document.querySelector<HTMLInputElement>(`input[name=cp-level][value=${level}]`)!.checked = true;
+  document.querySelector<HTMLInputElement>(`input[name=cp-mode][value=${mode}]`)!.checked = true;
+  if (out.length >= input.length) { showResult(input, input); setStatus(status, `⚠️ This PDF can't be made smaller than it is (${formatBytes(input.length)}). Try removing pages with Organize PDF.`, 'warn'); return; }
+  showResult(input, out);
+  const how = mode === 'raster' ? `pages turned into images, ${opt.label.toLowerCase()} quality; text is no longer selectable` : `${opt.label} level; text stays sharp`;
+  if (out.length <= target) setStatus(status, `✅ ${formatBytes(input.length)} → ${formatBytes(out.length)}, under your ${label} target (${how}).`, 'ok');
+  else setStatus(status, `⚠️ The smallest we could reach is ${formatBytes(out.length)}, above ${label}. Split the PDF into parts or remove pages, then compress each part.`, 'warn');
+}
+
 // ---------------- Smart image recompression ----------------
 
-async function smart(input: Uint8Array, opt: (typeof LEVELS)[Level]): Promise<Uint8Array> {
+async function smart(input: Uint8Array, opt: Opt): Promise<Uint8Array> {
   const lib = await loadPdfLib();
   const { PDFName, PDFRawStream, PDFArray, PDFNumber, PDFDict, PDFRef, PDFBool } = lib;
   setStatus(status, 'Reading PDF…', 'info');
@@ -205,7 +260,7 @@ async function smart(input: Uint8Array, opt: (typeof LEVELS)[Level]): Promise<Ui
 
 // ---------------- Rasterize pages ----------------
 
-async function rasterize(input: Uint8Array, opt: (typeof LEVELS)[Level]): Promise<Uint8Array> {
+async function rasterize(input: Uint8Array, opt: Opt): Promise<Uint8Array> {
   setStatus(status, 'Opening PDF…', 'info');
   return rasterizePdf(input, opt.dpi, Math.min(0.95, opt.q + 0.1), (i, n) => {
     setStatus(status, `Rendering page ${i} of ${n}…`, 'info');

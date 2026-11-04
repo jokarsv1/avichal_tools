@@ -1,0 +1,47 @@
+---
+/** Compress PDF UI (logic in src/tools/compress-pdf.ts). `target` pre-fills the target size for landing pages. */
+import Dropzone from './Dropzone.astro';
+interface Props { target?: { value: number; unit: 'KB' | 'MB' } }
+const { target } = Astro.props;
+---
+<div class="stack">
+  <Dropzone id="cp-drop" accept=".pdf,application/pdf" title="Choose a PDF to compress" hint="Any size · drag & drop" icon="🗜️" />
+  <div id="cp-panel" class="stack hidden">
+    <p class="hint" id="cp-file"></p>
+    <div class="field">
+      <span class="label" style="font-weight:600">Compression level</span>
+      <div class="seg" role="radiogroup" aria-label="Compression level">
+        <label><input type="radio" name="cp-level" value="low" /><span>Light</span></label>
+        <label><input type="radio" name="cp-level" value="medium" checked /><span>Recommended</span></label>
+        <label><input type="radio" name="cp-level" value="high" /><span>Strong</span></label>
+        <label><input type="radio" name="cp-level" value="extreme" /><span>Extreme</span></label>
+      </div>
+    </div>
+    <div class="field">
+      <span style="font-weight:600">Mode</span>
+      <div class="seg" role="radiogroup" aria-label="Mode">
+        <label><input type="radio" name="cp-mode" value="smart" checked /><span>Smart (keeps text)</span></label>
+        <label><input type="radio" name="cp-mode" value="raster" /><span>Pages to images (scans)</span></label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="cp-target">Target size <span class="hint">(optional)</span></label>
+      <div class="row" style="flex-wrap:nowrap;max-width:320px"><input id="cp-target" type="number" min="1" step="any" placeholder="e.g. 200" value={target ? target.value : ''} style="flex:1" inputmode="decimal" /><select id="cp-unit" style="width:auto"><option value="1" selected={!target || target.unit === 'KB'}>KB</option><option value="1024" selected={target?.unit === 'MB'}>MB</option></select></div>
+      <small class="hint">Set a limit (like a portal's "max 200 KB") and we try stronger settings until the PDF fits.</small>
+    </div>
+    <div class="progress hidden" id="cp-progress"><i></i></div>
+    <div class="status" id="cp-status"></div>
+    <div class="result hidden" id="cp-result">
+      <div class="stat-row">
+        <div class="stat"><b id="cp-before">–</b><span>Original</span></div>
+        <div class="stat accent"><b id="cp-after">–</b><span>Compressed</span></div>
+        <div class="stat good"><b id="cp-saved">–</b><span>Saved</span></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn btn-primary btn-lg" id="cp-download" disabled>⬇ Download PDF</button>
+      <button type="button" class="btn" id="cp-go">Re-run</button>
+    </div>
+  </div>
+</div>
+<script>import '../tools/compress-pdf';</script>

@@ -10,6 +10,20 @@ const popular = LIVE_TOOLS.filter((t) => t.popular);
       <h1>404: page not found</h1>
       <p>The page may have moved. Try one of our popular tools, or <a href="/">search all tools</a>.</p>
     </section>
+    <section id="nf-suggest" class="hidden" style="margin-bottom:24px">
+      <div class="section-head"><h2>Were you looking for…</h2></div>
+      <div class="tool-grid" id="nf-list"></div>
+    </section>
     <div class="tool-grid">{popular.map((t) => <ToolTile tool={t} />)}</div>
   </div>
+  <script>
+    import { loadIndex, rank } from '../lib/search';
+    const words = decodeURIComponent(location.pathname).replace(/[\/_-]+/g, ' ').replace(/\.html?$/, '').trim();
+    if (words) loadIndex().then((items) => {
+      const r = rank(words, items).slice(0, 6);
+      if (!r.length) return;
+      document.getElementById('nf-list')!.innerHTML = r.map(({ item }) => `<a class="tool-tile" href="${item.u}"><span class="ti" aria-hidden="true">${item.i}</span><span><b>${item.n.replace(/</g, '&lt;')}</b></span></a>`).join('');
+      document.getElementById('nf-suggest')!.classList.remove('hidden');
+    });
+  </script>
 </Base>
