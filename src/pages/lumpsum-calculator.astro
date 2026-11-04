@@ -1,0 +1,50 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+const faqs = [
+  { q: 'How is lump sum return calculated?', a: 'Future value = P × (1 + r)<sup>t</sup>, where P is the amount invested, r the expected annual return and t the number of years. ₹1 lakh at 12% for 10 years grows to about ₹3.1 lakh.' },
+  { q: 'Lump sum or SIP: which is better?', a: 'If you already have the money and a long horizon, a lump sum has more time in the market. If markets look expensive or you invest from salary, a <a href="/sip-calculator">SIP</a> spreads the risk. Many investors split the amount over a few months (an STP).' },
+  { q: 'What return should I assume?', a: 'Use conservative figures: around 10–12% for diversified equity funds over the long term, 6–7.5% for debt funds and FDs. Past returns are not guaranteed.' },
+];
+const steps = ['Enter the amount you will invest once.', 'Set the expected annual return and the number of years.', 'See the future value and the year-by-year growth.'];
+---
+<ToolLayout slug="lumpsum-calculator" h1="Lumpsum Calculator" lead="Calculate the future value of a one-time investment in mutual funds, stocks or FDs, with a year-by-year growth table." steps={steps} faqs={faqs} badges={['⚡ Instant', '📈 Year-wise growth', '📤 Shareable link', '✅ No login']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="p" key="p" label="Investment amount" unit="₹" min={1000} max={50000000} step={1000} value={100000} />
+      <SliderField id="r" key="r" label="Expected return (p.a.)" unit="%" min={1} max={30} step={0.5} value={12} />
+      <SliderField id="y" key="y" label="Time period" unit="years" min={1} max={40} step={1} value={10} />
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Future value</span><div class="big-number" id="o-v">–</div><span class="hint" id="o-x"></span></div>
+      <div class="result-rows"><div><span>Invested</span><b id="o-p">–</b></div><div><span>Estimated gains</span><b id="o-g">–</b></div></div>
+      <div id="o-split"></div>
+      <button type="button" class="btn btn-sm" data-share="Lumpsum calculation">📤 Share</button>
+    </div>
+  </div>
+  <h2 style="margin-top:28px">Growth by year</h2>
+  <div id="o-chart" class="chart"></div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { lumpsum } from '../lib/finance';
+    import { rupees, rupeesShort } from '../lib/format';
+    import { splitBar, stackedColumns } from '../lib/charts';
+    const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    function update() {
+      const P = val('p'), r = lumpsum(P, val('r'), val('y'));
+      setText('o-v', rupees(r.value)); setText('o-x', `${(r.value / P).toFixed(2)}× your money`);
+      setText('o-p', rupees(P)); setText('o-g', rupees(r.gains));
+      splitBar(document.getElementById('o-split')!, [{ name: 'Invested', color: css('--series-1'), value: P }, { name: 'Gains', color: css('--series-3'), value: r.gains }], rupeesShort);
+      stackedColumns(document.getElementById('o-chart')!, r.rows.map((x) => `Y${x.year}`), [
+        { name: 'Invested', color: css('--series-1'), values: r.rows.map((x) => x.a) },
+        { name: 'Gains', color: css('--series-3'), values: r.rows.map((x) => x.b) },
+      ], rupeesShort, { title: 'Lump sum growth by year' });
+    }
+    initCalculator(update);
+  </script>
+  <Fragment slot="content">
+    <h2>Rule of 72</h2>
+    <p>A quick way to estimate doubling time: divide 72 by the annual return. At 12% your money doubles in about 6 years; at 8%, about 9 years. Over 24 years at 12% that's four doublings, or 16× the original amount.</p>
+    <p>Related: <a href="/sip-calculator">SIP calculator</a> · <a href="/cagr-calculator">CAGR calculator</a> · <a href="/swp-calculator">SWP calculator</a></p>
+  </Fragment>
+</ToolLayout>

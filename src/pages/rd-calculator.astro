@@ -1,0 +1,43 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+const faqs = [
+  { q: 'How is RD interest calculated?', a: 'Indian banks compound RD interest quarterly. Each monthly instalment earns interest for the months it stays deposited: maturity = Σ P × (1 + r/400)<sup>4 × (months remaining)/12</sup>. This matches bank RD calculators closely.' },
+  { q: 'Is RD interest taxable?', a: 'Yes, at your income-tax slab rate. Banks deduct TDS if total interest from the bank crosses the yearly threshold.' },
+  { q: 'RD or SIP?', a: 'An RD gives guaranteed returns and suits short goals (1–3 years). An equity <a href="/sip-calculator">SIP</a> can earn more over 5+ years but is market-linked.' },
+];
+const steps = ['Enter the monthly deposit, interest rate and tenure in months.', 'See the maturity amount and the total interest.'];
+---
+<ToolLayout slug="rd-calculator" h1="RD Calculator" lead="Calculate the maturity value of a recurring deposit with quarterly compounding, the way Indian banks and post offices do." steps={steps} faqs={faqs} badges={['🏦 Bank formula', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="p" key="p" label="Monthly deposit" unit="₹" min={100} max={1000000} step={100} value={5000} />
+      <SliderField id="r" key="r" label="Interest rate (p.a.)" unit="%" min={1} max={12} step={0.05} value={7} />
+      <SliderField id="m" key="m" label="Tenure" unit="months" min={6} max={120} step={3} value={24} />
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Maturity amount</span><div class="big-number" id="o-m">–</div></div>
+      <div class="result-rows"><div><span>Total deposited</span><b id="o-i">–</b></div><div><span>Interest earned</span><b id="o-int">–</b></div></div>
+      <div id="o-split"></div>
+      <button type="button" class="btn btn-sm" data-share="RD calculation">📤 Share</button>
+    </div>
+  </div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { rd } from '../lib/finance';
+    import { rupees, rupeesShort } from '../lib/format';
+    import { splitBar } from '../lib/charts';
+    const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    function update() {
+      const r = rd(val('p'), val('r'), Math.round(val('m')));
+      setText('o-m', rupees(r.maturity)); setText('o-i', rupees(r.invested)); setText('o-int', rupees(r.interest));
+      splitBar(document.getElementById('o-split')!, [{ name: 'Deposited', color: css('--series-1'), value: r.invested }, { name: 'Interest', color: css('--series-3'), value: r.interest }], rupeesShort);
+    }
+    initCalculator(update);
+  </script>
+  <Fragment slot="content">
+    <h2>When an RD makes sense</h2>
+    <p>Recurring deposits build the saving habit for near-term goals: a holiday, a gadget, school fees or an emergency fund. Post Office RDs (5 years) are government-backed; bank RDs are insured up to ₹5 lakh per bank by DICGC.</p>
+    <p>Compare with a <a href="/fd-calculator">fixed deposit</a> if you have the full amount upfront.</p>
+  </Fragment>
+</ToolLayout>

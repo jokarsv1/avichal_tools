@@ -1,0 +1,58 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'What is the gratuity formula?', a: 'Gratuity = last drawn monthly wages (basic + DA) × 15 × years of service ÷ 26. If your employer is not covered by the gratuity law, it is usually ÷ 30 instead of ÷ 26.' },
+  { q: 'Who is eligible for gratuity?', a: 'Permanent employees usually after 5 years of continuous service (waived on death or disability). Under the Code on Social Security, 2020 (in force since November 2025), fixed-term employees become eligible after 1 year of service, on a pro-rata basis.' },
+  { q: 'How are partial years counted?', a: 'Service of more than 6 months in the final year is rounded up to a full year. For example, 10 years 7 months counts as 11 years.' },
+  { q: 'Is gratuity taxable?', a: 'For private-sector employees, gratuity is tax-free up to ₹20 lakh in a lifetime; anything above is taxable at your slab rate. For government employees it is fully exempt.' },
+  { q: 'Did the labour codes change the wages used?', a: 'Under the labour codes, "wages" must be at least 50% of total pay; if allowances exceed 50%, the excess counts as wages. This can increase gratuity for people with a low basic salary. Ask HR how your wages are defined.' },
+];
+const steps = ['Enter your last drawn monthly basic + DA.', 'Enter your years and months of service.', 'Choose whether your employer is covered by the gratuity law.', 'See your gratuity and how much of it is tax-free.'];
+---
+<ToolLayout slug="gratuity-calculator" h1="Gratuity Calculator" lead="Calculate your gratuity under the 15/26 formula, with the 6-month rounding rule, the labour code changes and the ₹20 lakh tax-free limit." steps={steps} faqs={faqs} badges={['🇮🇳 Labour code 2025', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
+  <div class="calc">
+    <div class="stack-sm">
+      <div class="field"><label for="w">Last drawn monthly basic + DA (₹)</label><input id="w" data-key="w" type="number" min="0" step="500" value="50000" /></div>
+      <div class="grid-2">
+        <div class="field"><label for="y">Years of service</label><input id="y" data-key="y" type="number" min="0" step="1" value="10" /></div>
+        <div class="field"><label for="m">and months</label><input id="m" data-key="m" type="number" min="0" max="11" step="1" value="7" /></div>
+      </div>
+      <div class="field"><label for="c">Employer</label><select id="c" data-key="c"><option value="1">Covered by gratuity law (15/26)</option><option value="0">Not covered (15/30)</option></select></div>
+      <div class="field"><label for="t">Employment type</label><select id="t" data-key="t"><option value="perm">Permanent (eligible after 5 years)</option><option value="fixed">Fixed-term (eligible after 1 year)</option></select></div>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Gratuity payable</span><div class="big-number" id="o-g">–</div></div>
+      <div class="status" id="o-elig"></div>
+      <div class="result-rows">
+        <div><span>Years counted</span><b id="o-y">–</b></div>
+        <div><span>Tax-free</span><b id="o-tf">–</b></div>
+        <div><span>Taxable</span><b id="o-tx">–</b></div>
+      </div>
+      <button type="button" class="btn btn-sm" data-share="Gratuity calculation">📤 Share</button>
+    </div>
+  </div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { gratuity } from '../lib/finance';
+    import { rupees } from '../lib/format';
+    const get = (id: string) => document.getElementById(id) as HTMLInputElement;
+    function update() {
+      const g = gratuity(val('w'), val('y'), val('m'), val('c') === 1);
+      const fixed = get('t').value === 'fixed';
+      const served = val('y') + val('m') / 12;
+      const eligible = fixed ? served >= 1 : served >= 5;
+      setText('o-g', rupees(g.amount)); setText('o-y', `${g.countedYears} years`);
+      setText('o-tf', rupees(g.taxFree)); setText('o-tx', rupees(g.taxable));
+      const el = document.getElementById('o-elig')!;
+      el.className = `status ${eligible ? 'ok' : 'warn'}`;
+      el.textContent = eligible ? '✅ You are likely eligible for gratuity.' : fixed ? '⚠️ Fixed-term employees need at least 1 year of service.' : '⚠️ Permanent employees usually need 5 years of continuous service (except on death or disability).';
+    }
+    initCalculator(update, Object.fromEntries(['w', 'y', 'm', 'c', 't'].map((id) => [id, get(id)])));
+  </script>
+  <Fragment slot="content">
+    <h2>Example</h2>
+    <p>Last drawn basic + DA ₹50,000 and service of 10 years 7 months (counted as 11 years): gratuity = 50,000 × 15 × 11 ÷ 26 = <b>₹3,17,308</b>, fully tax-free because it is below ₹20 lakh.</p>
+    <p class="hint">This is an estimate. Your employer's gratuity policy, the definition of wages under the labour codes and court rulings can change the final amount.</p>
+    <p>Related: <a href="/salary-calculator">salary (CTC to in-hand)</a> · <a href="/income-tax-calculator">income tax calculator</a></p>
+  </Fragment>
+</ToolLayout>

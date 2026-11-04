@@ -1,0 +1,49 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+const faqs = [
+  { q: 'What is an SWP?', a: 'A Systematic Withdrawal Plan lets you withdraw a fixed amount from a mutual fund every month while the rest stays invested. Retirees use it as a monthly "salary" from their savings.' },
+  { q: 'How much can I withdraw without running out?', a: 'If your withdrawals per year are below the expected return on your corpus, the corpus lasts indefinitely. For example, ₹1 crore earning 8% can support roughly ₹60,000–65,000 a month while staying intact. This calculator shows exactly when (or whether) the money runs out.' },
+  { q: 'How is SWP taxed?', a: 'Each withdrawal is partly your capital (not taxed) and partly gains (taxed as capital gains). This usually makes SWP more tax-efficient than FD interest, which is fully taxable.' },
+  { q: 'Should I increase withdrawals for inflation?', a: 'Yes, ideally. Use the annual step-up field (e.g. 5%) to model inflation-linked withdrawals; it makes the corpus deplete sooner, so plan for it.' },
+];
+const steps = ['Enter your investment (corpus), monthly withdrawal and expected return.', 'Optionally add an annual increase in withdrawals for inflation.', 'See the balance left, total withdrawn and whether the money runs out.'];
+---
+<ToolLayout slug="swp-calculator" h1="SWP Calculator" lead="Plan a monthly income from your mutual fund corpus: see how long the money lasts, the total you withdraw and the balance left." steps={steps} faqs={faqs} badges={['🧓 Retirement income', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="c" key="c" label="Total investment (corpus)" unit="₹" min={100000} max={100000000} step={50000} value={10000000} />
+      <SliderField id="w" key="w" label="Monthly withdrawal" unit="₹" min={500} max={1000000} step={500} value={60000} />
+      <SliderField id="r" key="r" label="Expected return (p.a.)" unit="%" min={1} max={20} step={0.5} value={8} />
+      <SliderField id="y" key="y" label="Time period" unit="years" min={1} max={40} step={1} value={20} />
+      <SliderField id="s" key="s" label="Annual increase in withdrawal" unit="%" min={0} max={15} step={1} value={0} />
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Balance after the period</span><div class="big-number" id="o-b">–</div></div>
+      <div class="status" id="o-msg"></div>
+      <div class="result-rows"><div><span>Total withdrawn</span><b id="o-w">–</b></div><div><span>Initial corpus</span><b id="o-c">–</b></div></div>
+      <button type="button" class="btn btn-sm" data-share="SWP plan">📤 Share</button>
+    </div>
+  </div>
+  <h2 style="margin-top:28px">Year by year</h2>
+  <div class="table-wrap"><table class="data"><thead><tr><th>Year</th><th>Withdrawn in year</th><th>Balance at year end</th></tr></thead><tbody id="o-table"></tbody></table></div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { swp } from '../lib/finance';
+    import { rupees } from '../lib/format';
+    function update() {
+      const r = swp(val('c'), val('w'), val('r'), val('y'), val('s'));
+      setText('o-b', rupees(r.finalBalance)); setText('o-w', rupees(r.withdrawn)); setText('o-c', rupees(val('c')));
+      const msg = document.getElementById('o-msg')!;
+      if (r.depletedAt) { msg.className = 'status err'; msg.textContent = `⚠️ The money runs out after ${Math.floor(r.depletedAt / 12)} years ${r.depletedAt % 12} months. Lower the withdrawal or increase the corpus.`; }
+      else { msg.className = 'status ok'; msg.textContent = r.finalBalance >= val('c') ? '✅ Your corpus lasts and even grows over the period.' : '✅ Your corpus lasts the whole period.'; }
+      document.getElementById('o-table')!.innerHTML = r.rows.map((x) => `<tr><td>Year ${x.year}</td><td>${rupees(x.a)}</td><td>${rupees(x.balance)}</td></tr>`).join('');
+    }
+    initCalculator(update);
+  </script>
+  <Fragment slot="content">
+    <h2>The 4% rule, Indian edition</h2>
+    <p>A common retirement guideline is to withdraw about 3–4% of your corpus in the first year and increase it with inflation. With Indian inflation of 5–6%, many planners suggest a more conservative 3–3.5%. Use the step-up field to test your plan against inflation.</p>
+    <p>Building the corpus first? Use the <a href="/sip-calculator">SIP calculator</a> or <a href="/lumpsum-calculator">lumpsum calculator</a>.</p>
+  </Fragment>
+</ToolLayout>

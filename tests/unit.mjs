@@ -1,5 +1,5 @@
 // Unit tests for pure finance/format functions. Run: node tests/unit.mjs (Node 22.18+ strips TS types natively).
-import { emi, sip, fd, ppf, gst, incomeTax, breakEvenDeductions, hraExemption, attendance, salaryBreakup, prepayment } from '../src/lib/finance.ts';
+import { emi, sip, fd, ppf, gst, incomeTax, breakEvenDeductions, hraExemption, attendance, salaryBreakup, prepayment, lumpsum, cagr, swp, rd, gratuity } from '../src/lib/finance.ts';
 import { numberToWords, indianGrouping, rupeesShort } from '../src/lib/format.ts';
 
 let fails = 0;
@@ -55,6 +55,13 @@ eq('Prepay saves interest (> 0)', pre.saved > 1000000 ? 1 : 0, 1);
 eq('Prepay shortens tenure', pre.monthsSaved > 30 ? 1 : 0, 1);
 const none = prepayment({ principal: 5000000, ratePct: 8.5, months: 240, lump: 0, lumpMonth: 1, monthlyExtra: 0, yearlyExtra: 0, mode: 'tenure' });
 eq('No prepayment = baseline interest', Math.round(none.interest), Math.round(none.baseInterest), 5);
+
+eq('Lumpsum 1L @12% 10y', Math.round(lumpsum(100000, 12, 10).value), 310585, 2);
+eq('CAGR 1L -> 2L in 6y', +cagr(100000, 200000, 6).toFixed(2), 12.25, 0.01);
+eq('SWP 10L, 10k/m @8% 10y keeps corpus', swp(1000000, 10000, 8, 10).depletedAt, 0);
+eq('SWP depletes when withdrawal too high', swp(1000000, 20000, 8, 10).depletedAt > 0 ? 1 : 0, 1);
+eq('RD 5k x 12m @7% (bank formula)', Math.round(rd(5000, 7, 12).maturity), 62335, 40);
+eq('Gratuity 50k x 10y 7m (=11y)', Math.round(gratuity(50000, 10, 7).amount), Math.round(50000 * 15 * 11 / 26));
 
 // Words
 eq('Words 1,25,00,050 INR', numberToWords('12500050', 'indian', 'inr'), 'Rupees One Crore Twenty-Five Lakh Fifty Only');

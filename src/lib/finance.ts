@@ -290,3 +290,58 @@ export function prepayment(p: PrepayInput) {
   }
   return { baseEmi, baseInterest, interest, saved: baseInterest - interest, months: m, monthsSaved: p.months - m, finalEmi: pay, prepaid, years };
 }
+
+// ---------------- Lump sum / CAGR ----------------
+export function lumpsum(principal: number, annualRatePct: number, years: number) {
+  const rows: YearRow[] = [];
+  for (let y = 1; y <= Math.ceil(years); y++) {
+    const v = principal * Math.pow(1 + annualRatePct / 100, Math.min(y, years));
+    rows.push({ year: y, a: principal, b: v - principal, balance: v });
+  }
+  const value = principal * Math.pow(1 + annualRatePct / 100, years);
+  return { value, gains: value - principal, rows };
+}
+
+export function cagr(start: number, end: number, years: number) {
+  if (start <= 0 || years <= 0) return NaN;
+  return (Math.pow(end / start, 1 / years) - 1) * 100;
+}
+
+// ---------------- SWP ----------------
+/** Monthly withdrawals from a corpus that keeps growing. Withdrawal at the end of each month. */
+export function swp(corpus: number, monthly: number, annualRatePct: number, years: number, stepUpPct = 0) {
+  const i = annualRatePct / 12 / 100;
+  let bal = corpus, withdrawn = 0, w = monthly, depletedAt = 0;
+  const rows: YearRow[] = [];
+  let yw = 0;
+  for (let m = 1; m <= Math.round(years * 12); m++) {
+    if (m > 1 && (m - 1) % 12 === 0) w *= 1 + stepUpPct / 100;
+    bal = bal * (1 + i);
+    const take = Math.min(w, bal);
+    bal -= take; withdrawn += take; yw += take;
+    if (bal <= 0 && !depletedAt) depletedAt = m;
+    if (m % 12 === 0) { rows.push({ year: m / 12, a: yw, b: 0, balance: bal }); yw = 0; }
+    if (bal <= 0) break;
+  }
+  return { finalBalance: Math.max(0, bal), withdrawn, depletedAt, rows };
+}
+
+// ---------------- RD (recurring deposit, quarterly compounding like Indian banks) ----------------
+export function rd(monthly: number, annualRatePct: number, months: number) {
+  const q = annualRatePct / 400;
+  let maturity = 0;
+  for (let k = 1; k <= months; k++) maturity += monthly * Math.pow(1 + q, (4 * (months - k + 1)) / 12);
+  return { maturity, invested: monthly * months, interest: maturity - monthly * months };
+}
+
+// ---------------- Gratuity ----------------
+/**
+ * Payment of Gratuity Act / Code on Social Security, 2020: 15 days' wages per completed year,
+ * using 26 working days a month (15/26). Service of more than 6 months in the last year counts as a full year.
+ * Employers not covered by the Act often use 15/30.
+ */
+export function gratuity(monthlyWages: number, years: number, months: number, covered = true) {
+  const y = years + (months > 6 ? 1 : 0);
+  const amount = (monthlyWages * 15 * y) / (covered ? 26 : 30);
+  return { amount, countedYears: y, taxFree: Math.min(amount, 2000000), taxable: Math.max(0, amount - 2000000) };
+}

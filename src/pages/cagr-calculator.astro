@@ -1,0 +1,49 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'What is CAGR?', a: 'Compound Annual Growth Rate is the steady yearly rate at which an investment would have grown from its starting value to its ending value. CAGR = (end ÷ start)<sup>1/years</sup> − 1.' },
+  { q: 'Is CAGR the same as average return?', a: 'No. If an investment rises 50% one year and falls 50% the next, the average return is 0% but you lost 25%. CAGR (−13.4% a year) shows the real result.' },
+  { q: 'What is a good CAGR?', a: 'It depends on risk: around 6–7% for FDs, 10–12% for long-term diversified equity in India, and higher (with more risk) for small caps. Compare like with like.' },
+  { q: 'CAGR vs XIRR?', a: 'CAGR suits one investment at one start date. For SIPs or multiple cash flows on different dates, use XIRR.' },
+];
+const steps = ['Enter the starting value, ending value and number of years.', 'Read the CAGR. Use the second box to project a value forward at a given CAGR.'];
+---
+<ToolLayout slug="cagr-calculator" h1="CAGR Calculator" lead="Calculate the compound annual growth rate of an investment, stock, fund or business revenue, or project a future value from a CAGR." steps={steps} faqs={faqs} badges={['📊 Investments & business', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
+  <div class="calc">
+    <div class="stack-sm">
+      <div class="field"><label for="s">Starting value (₹)</label><input id="s" data-key="s" type="number" min="0" step="any" value="100000" /></div>
+      <div class="field"><label for="e">Ending value (₹)</label><input id="e" data-key="e" type="number" min="0" step="any" value="250000" /></div>
+      <div class="field"><label for="y">Duration (years)</label><input id="y" data-key="y" type="number" min="0.1" step="0.1" value="7" /></div>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">CAGR</span><div class="big-number" id="o-c">–</div><span class="hint" id="o-abs"></span></div>
+      <hr class="divider" />
+      <div class="grid-2">
+        <div class="field"><label for="pv">Project: amount (₹)</label><input id="pv" type="number" value="100000" /></div>
+        <div class="field"><label for="pr">at CAGR (%) for</label><input id="pr" type="number" step="0.1" value="12" /></div>
+        <div class="field"><label for="py">years</label><input id="py" type="number" step="1" value="10" /></div>
+        <div><span class="hint">Future value</span><div style="font-size:1.4rem;font-weight:800" id="o-fv">–</div></div>
+      </div>
+      <button type="button" class="btn btn-sm" data-share="CAGR calculation">📤 Share</button>
+    </div>
+  </div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { cagr } from '../lib/finance';
+    import { rupees } from '../lib/format';
+    const get = (id: string) => document.getElementById(id) as HTMLInputElement;
+    function update() {
+      const c = cagr(val('s'), val('e'), val('y'));
+      setText('o-c', Number.isFinite(c) ? `${c.toFixed(2)}%` : '–');
+      const abs = val('s') ? ((val('e') - val('s')) / val('s')) * 100 : NaN;
+      setText('o-abs', Number.isFinite(abs) ? `Absolute return: ${abs.toFixed(1)}% over ${val('y')} years` : '');
+      setText('o-fv', rupees(val('pv') * Math.pow(1 + val('pr') / 100, val('py'))));
+    }
+    ['pv', 'pr', 'py'].forEach((id) => get(id).addEventListener('input', update));
+    initCalculator(update, { s: get('s'), e: get('e'), y: get('y') });
+  </script>
+  <Fragment slot="content">
+    <h2>Using CAGR for business and careers</h2>
+    <p>CAGR isn't just for investments: use it to compare revenue growth between companies, to measure how fast your salary has grown, or to check whether a property's price rise has beaten inflation. For SIPs, use the <a href="/sip-calculator">SIP calculator</a>.</p>
+  </Fragment>
+</ToolLayout>
