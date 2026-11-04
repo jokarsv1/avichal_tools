@@ -1,0 +1,46 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import KbResizer from '../components/KbResizer.astro';
+import { EXAMS, LAST_CHECKED } from '../data/exams';
+const groups = EXAMS.map((e) => ({ label: e.name, specs: e.specs }));
+const faqs = [
+  { q: 'Which photo size is required for SSC, IBPS, UPSC and NEET?', a: 'See the table on this page. In short: IBPS photo 200 × 230 px, 20–50 KB; SSC photo 3.5 × 4.5 cm, 20–50 KB; UPSC photo 20–200 KB; NEET passport photo 10–200 KB. Always check the latest official notification.' },
+  { q: 'Why does the portal say my photo is too small even though it looks fine?', a: 'Many portals have a minimum file size (for example 20 KB). Small, simple photos compress below that. This tool pads the JPEG to the minimum without changing the picture.' },
+  { q: 'Can I make my signature background white?', a: 'Yes. Turn on <b>Clean signature</b>. It whitens the paper, darkens the ink and removes shadows from phone photos. It is on by default for signature presets.' },
+  { q: 'Is it safe to use for ID photos?', a: 'Yes. Everything is processed on your device; nothing is uploaded. You can even turn off the internet after the page loads.' },
+  { q: 'The specs on this page differ from my notification. Which should I follow?', a: 'Always follow your official notification. Portals change specs over time. Choose "Custom size" and type the numbers from your notification.' },
+];
+const steps = [
+  'Choose your photo or signature (a phone photo is fine).',
+  'Select your exam and file type from the <b>Preset</b> list, for example "IBPS Photo".',
+  'Drag and zoom so your face fills the frame as the notification describes.',
+  'Wait for <b>✓ Pass</b>, then download and upload it to the portal.',
+];
+---
+<ToolLayout slug="exam-photo-resizer" h1="Exam Photo & Signature Resizer" lead="Resize your photo, signature, thumb impression and declaration to the exact KB and pixel size for SSC, IBPS, SBI, UPSC, NEET, JEE Main and PAN card forms." steps={steps} faqs={faqs}>
+  <KbResizer groups={groups} defaultId="ibps-photo" />
+  <Fragment slot="content">
+    <h2>Photo and signature sizes for popular exams</h2>
+    <p class="callout">Specs last checked: {LAST_CHECKED}. Portals change requirements, so confirm with the official notification. Every value is editable in the tool.</p>
+    <table>
+      <thead><tr><th>Exam</th><th>File</th><th>Size</th><th>Dimensions / notes</th></tr></thead>
+      <tbody>
+        {EXAMS.flatMap((e) => e.specs.map((s, i) => (
+          <tr>
+            <td>{i === 0 ? <a href={`/${e.slug}-photo-resizer`}>{e.name}</a> : ''}</td>
+            <td>{s.label.replace(e.name, '').trim()}</td>
+            <td>{s.minKB ? `${s.minKB}–${s.maxKB} KB` : `max ${s.maxKB} KB`}</td>
+            <td>{s.printed}</td>
+          </tr>
+        )))}
+      </tbody>
+    </table>
+    <h2>Tips that prevent rejection</h2>
+    <ul>
+      <li>Use a recent colour photo on a plain white or light background, face centred, both ears visible, no cap or dark glasses.</li>
+      <li>Photograph your signature in daylight on plain white paper, filling the frame. Turn on <b>Clean signature</b> to remove shadows.</li>
+      <li>Do not upload a photo of a photo. Blurry or tilted photos are a common reason for rejection.</li>
+      <li>Save the downloaded files with simple names (no spaces) if your portal is picky.</li>
+    </ul>
+  </Fragment>
+</ToolLayout>

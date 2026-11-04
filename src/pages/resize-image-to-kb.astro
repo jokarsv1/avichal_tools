@@ -1,0 +1,33 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import KbResizer from '../components/KbResizer.astro';
+import { EXAMS, GENERIC_SPECS, KB_PAGES } from '../data/exams';
+const groups = [{ label: 'Common sizes', specs: GENERIC_SPECS }, ...EXAMS.map((e) => ({ label: e.name, specs: e.specs }))];
+const faqs = [
+  { q: 'How do I reduce a photo to exactly 50 KB?', a: 'Choose your photo, pick "Under 50 KB" (or type 50 in Max KB) and the tool finds the highest quality that stays under 50 KB. Download it. If the portal also has a minimum, type it in Min KB.' },
+  { q: 'My portal says "file size must be at least 20 KB". What do I do?', a: 'Type 20 in Min KB. If the compressed photo comes out smaller, the tool adds invisible padding inside the JPEG so the file is at least 20 KB, without changing the picture. Most tools cannot do this.' },
+  { q: 'Is 1 KB 1000 or 1024 bytes?', a: 'Portals differ. To be safe, we keep the file under max KB × 1000 bytes and above min KB × 1024 bytes, so it passes either way.' },
+  { q: 'Will compressing reduce quality?', a: 'Only as much as needed. The tool binary-searches the JPEG quality to the highest value that fits your limit, and only reduces pixel size if quality alone is not enough.' },
+  { q: 'Are my photos uploaded anywhere?', a: 'No. The photo is processed by your browser on your phone or computer. Nothing is sent to a server, which is why it is safe for ID photos and signatures.' },
+  { q: 'Does it work on mobile?', a: 'Yes. It works in Chrome, Safari and Firefox on Android and iPhone, including iPhone HEIC photos.' },
+];
+const steps = [
+  'Tap <b>Choose a photo or signature</b> and select your image (JPG, PNG, WebP or HEIC).',
+  'Pick a preset such as <b>Under 50 KB</b> or an exam preset, or type your own Min KB, Max KB and pixel size.',
+  'If you set both width and height, drag the photo and use zoom to frame your face inside the box.',
+  'Check the green <b>✓ Pass</b> badge, then tap <b>Download</b>.',
+];
+---
+<ToolLayout slug="resize-image-to-kb" h1="Resize Image to KB (Exact Size)" lead="Compress a photo or signature to an exact file size like 20 KB, 50 KB or 100 KB, with an optional minimum size, exact pixel size and DPI, all in your browser." steps={steps} faqs={faqs}>
+  <KbResizer groups={groups} defaultId="kb-50" />
+  <Fragment slot="content">
+    <h2>Compress an image to any KB size</h2>
+    <p>Government portals, job sites and exam forms often reject photos that are even one kilobyte over the limit, and some also reject files that are too small. This tool solves both: it finds the best quality that fits under your maximum and, if needed, pads the file to reach your minimum. It can also resize to exact pixels (for example 200 × 230 px) and write the DPI into the file, which PAN card portals check.</p>
+    <h3>Popular sizes</h3>
+    <ul>
+      {KB_PAGES.map((p) => <li><a href={`/compress-image-to-${p.kb}kb`}>Compress image to {p.kb} KB</a>: {p.uses}.</li>)}
+    </ul>
+    <h3>Exam presets</h3>
+    <p>Need sizes for a specific exam? Use the <a href="/exam-photo-resizer">exam photo resizer</a> or go straight to {EXAMS.map((e, i) => <>{i ? ', ' : ''}<a href={`/${e.slug}-photo-resizer`}>{e.name}</a></>)}.</p>
+  </Fragment>
+</ToolLayout>

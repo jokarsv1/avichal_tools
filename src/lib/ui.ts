@@ -101,7 +101,8 @@ export function onFiles(zone: HTMLElement, cb: (files: File[]) => void, opts: { 
 }
 
 export function setStatus(el: HTMLElement, msg: string, kind: 'info' | 'ok' | 'warn' | 'err' = 'info') {
-  el.className = `status ${kind}`;
+  el.classList.remove('info', 'ok', 'warn', 'err');
+  el.classList.add('status', kind);
   el.textContent = msg;
 }
 

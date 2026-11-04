@@ -1,0 +1,44 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import KbResizer from '../components/KbResizer.astro';
+import { EXAMS, LAST_CHECKED, type Exam } from '../data/exams';
+
+export function getStaticPaths() {
+  return EXAMS.map((exam) => ({ params: { exam: exam.slug }, props: { exam } }));
+}
+const { exam } = Astro.props as { exam: Exam };
+const photo = exam.specs.find((s) => s.kind === 'photo');
+const sign = exam.specs.find((s) => s.kind === 'signature');
+const sz = (s?: typeof photo) => (s ? (s.minKB ? `${s.minKB}–${s.maxKB} KB` : `up to ${s.maxKB} KB`) : '');
+const title = `${exam.name} Photo & Signature Resizer – ${sz(photo)} Online`;
+const description = `Resize your photo${sign ? ' and signature' : ''} for ${exam.fullName}: ${photo?.printed ?? ''}${sign ? `; signature ${sign.printed}` : ''}. Free, private, instant.`.slice(0, 160);
+const faqs = [
+  { q: `What is the ${exam.name} photo size in KB?`, a: photo ? `${photo.printed}. The preset on this page applies it automatically.` : 'See the table above.' },
+  ...(sign ? [{ q: `What is the ${exam.name} signature size?`, a: `${sign.printed}. Select the signature preset and keep "Clean signature" on for a white background.` }] : []),
+  { q: 'What if the official notification shows different numbers?', a: `Follow the notification. Choose "Custom size…" and type the values. We last checked these specs in ${LAST_CHECKED}.` },
+  { q: 'Is my photo uploaded to your server?', a: 'No. The photo is resized in your browser and never leaves your device.' },
+];
+const steps = [
+  `Choose your photo (or signature) for the ${exam.name} form.`,
+  `Pick the matching <b>${exam.name}</b> preset (photo, signature${exam.specs.length > 2 ? ', thumb or declaration' : ''}).`,
+  'Drag and zoom to frame it, and check for the green <b>✓ Pass</b> badge.',
+  `Download and upload it on <a href="${exam.officialSite}" rel="noopener nofollow">the official ${exam.name} site</a>.`,
+];
+---
+<ToolLayout slug="exam-photo-resizer" path={`/${exam.slug}-photo-resizer`} title={title} description={description}
+  h1={`${exam.name} Photo & Signature Resizer`} crumb={exam.name}
+  lead={`Resize your photo and signature to the exact size for <b>${exam.fullName}</b>. Pick a preset, frame the photo and download.`} steps={steps} faqs={faqs}>
+  <KbResizer groups={[{ label: exam.name, specs: exam.specs }]} defaultId={exam.specs[0].id} />
+  <Fragment slot="content">
+    <h2>{exam.name} photo and signature specifications</h2>
+    <table>
+      <thead><tr><th>File</th><th>File size</th><th>Dimensions</th></tr></thead>
+      <tbody>{exam.specs.map((s) => <tr><td>{s.label}</td><td>{sz(s)}</td><td>{s.printed}</td></tr>)}</tbody>
+    </table>
+    <p class="callout">Last checked {LAST_CHECKED}. Specs can change with each notification, so confirm on <a href={exam.officialSite} rel="noopener nofollow">{exam.officialSite.replace('https://', '')}</a>.{exam.alsoFor ? ` ${exam.alsoFor}` : ''}</p>
+    <h2>Instructions for {exam.name} uploads</h2>
+    <ul>{exam.notes.map((n) => <li>{n}</li>)}</ul>
+    <h3>Other exams</h3>
+    <p>{EXAMS.filter((e) => e.slug !== exam.slug).map((e, i) => <>{i ? ' · ' : ''}<a href={`/${e.slug}-photo-resizer`}>{e.name} photo resizer</a></>)}</p>
+  </Fragment>
+</ToolLayout>

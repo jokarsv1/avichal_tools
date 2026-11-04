@@ -1,0 +1,33 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import KbResizer from '../components/KbResizer.astro';
+import { EXAMS } from '../data/exams';
+const sigs = EXAMS.flatMap((e) => e.specs.filter((s) => s.kind === 'signature'));
+const groups = [
+  { label: 'Exam signatures', specs: sigs },
+  { label: 'Common sizes', specs: [
+    { id: 'sig-10-20', label: 'Signature 10–20 KB', kind: 'signature' as const, minKB: 10, maxKB: 20 },
+    { id: 'sig-20', label: 'Signature under 20 KB', kind: 'signature' as const, maxKB: 20 },
+    { id: 'sig-50', label: 'Signature under 50 KB', kind: 'signature' as const, maxKB: 50 },
+  ] },
+];
+const faqs = [
+  { q: 'How do I make my signature 10–20 KB?', a: 'Choose the photo of your signature, select "Signature 10–20 KB" or your exam preset, and download. The tool keeps it within the range, padding it if it is too small.' },
+  { q: 'How do I get a white background for my signature?', a: 'Keep <b>Clean signature</b> switched on. It turns grey paper and shadows pure white and makes the ink dark and crisp.' },
+  { q: 'Which pen should I use?', a: 'Most notifications ask for black (sometimes blue) ink on white paper. A gel or felt-tip pen gives a clearer line than a ballpoint.' },
+  { q: 'Can I use a signature in capital letters?', a: 'SSC, IBPS and NTA reject signatures in capital letters. Sign in your normal running hand.' },
+];
+const steps = [
+  'Sign on plain white paper and take a photo in good light, holding the phone straight above the paper.',
+  'Choose that photo here and select your exam or a size range.',
+  'Use zoom and drag so the signature fills the box with a little margin.',
+  'Download when the badge shows <b>✓ Pass</b>.',
+];
+---
+<ToolLayout slug="signature-resizer" h1="Signature Resizer (10–20 KB, White Background)" lead="Turn a phone photo of your signature into a clean, scanned-looking JPG at the exact KB and pixel size your exam or bank form needs." steps={steps} faqs={faqs}>
+  <KbResizer groups={groups} defaultId="ssc-sign" signature dropTitle="Choose a photo of your signature" />
+  <Fragment slot="content">
+    <h2>Why signatures get rejected and how this fixes it</h2>
+    <p>The most common problems are a grey or shadowed background, a file that is too small (below 10 KB) or too big, and the wrong pixel size. <b>Clean signature</b> fixes the background, the size search keeps the file in range, and the presets set the right pixel size for SSC, IBPS, UPSC, NEET, JEE and PAN applications.</p>
+  </Fragment>
+</ToolLayout>

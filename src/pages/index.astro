@@ -1,4 +1,72 @@
 ---
 import Base from '../layouts/Base.astro';
+import ToolTile from '../components/ToolTile.astro';
+import AdSlot from '../components/AdSlot.astro';
+import SupportBox from '../components/SupportBox.astro';
+import { SITE } from '../config/site';
+import { CATEGORIES, LIVE_TOOLS, toolsIn } from '../data/tools';
+import { EXAMS } from '../data/exams';
+
+const popular = LIVE_TOOLS.filter((t) => t.popular);
+const schema = [
+  { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE.name, url: SITE.url + '/', description: SITE.tagline },
+  { '@context': 'https://schema.org', '@type': 'Organization', name: SITE.name, url: SITE.url + '/', email: SITE.email, logo: SITE.url + '/icon-512.png', sameAs: [SITE.github] },
+];
 ---
-<Base title="Test" description="Test" path="/"><div class="container"><h1>Hello</h1></div></Base>
+<Base title={`${SITE.name} – Free Online PDF, Image, Video Tools & Calculators`} rawTitle description={`${LIVE_TOOLS.length}+ free tools: compress PDF, resize image to KB, exam photo resizer, compress video, EMI, SIP and income tax calculators. No login, no upload, no watermark.`} path="/" schema={schema}>
+  <div class="container">
+    <section class="hero">
+      <h1>Free tools that work in your browser. No login, no upload.</h1>
+      <p>PDF, image, video, exam-form and finance tools that run on your own device. Your files never leave your phone or computer, so there are no limits, no watermarks and no waiting.</p>
+      <div class="search" role="search">
+        <label for="tool-search" class="visually-hidden">Search tools</label>
+        <input id="tool-search" type="text" placeholder="Search tools: compress pdf, 20kb, emi…" autocomplete="off" />
+      </div>
+      <div class="pills"><span>🔒 100% private</span><span>⚡ Instant, on-device</span><span>🚫 No watermark</span><span>👤 No account</span><span>💻 Open source</span></div>
+    </section>
+
+    <section id="popular">
+      <div class="section-head"><h2>Popular tools</h2></div>
+      <div class="tool-grid">{popular.map((t) => <ToolTile tool={t} />)}</div>
+    </section>
+
+    <AdSlot slot="belowTool" />
+
+    {CATEGORIES.map((c) => (
+      <section id={c.id} data-cat>
+        <div class="section-head"><h2>{c.icon} {c.label} tools</h2><a href={c.path}>View all →</a></div>
+        <div class="tool-grid">{toolsIn(c.id).map((t) => <ToolTile tool={t} />)}</div>
+        {c.id === 'exam' && (
+          <p class="hint" style="margin-top:10px">Exam presets: {EXAMS.map((e, i) => <>{i ? ' · ' : ''}<a href={`/${e.slug}-photo-resizer`}>{e.name}</a></>)} · <a href="/compress-image-to-20kb">20 KB</a> · <a href="/compress-image-to-50kb">50 KB</a> · <a href="/compress-image-to-100kb">100 KB</a></p>
+        )}
+      </section>
+    ))}
+    <p class="status warn hidden" id="no-results">No tool matches that search yet. <a href="/roadmap">Request it</a> and we'll build it.</p>
+
+    <section class="prose" style="margin-top:40px">
+      <h2>Why are these tools free, and why is there no upload?</h2>
+      <p>Most "free" online tools upload your file to a server, then charge for credits, add a watermark or limit you to two files a day, because servers cost money. {SITE.name} works differently: the processing code runs inside your browser using modern web technology (WebAssembly and WebCodecs). Your device does the work, so there are no server costs to pass on, no limits, and nothing to leak. The site is supported by a few non-intrusive ads and by donations.</p>
+    </section>
+    <SupportBox />
+  </div>
+  <script>
+    const input = document.getElementById('tool-search') as HTMLInputElement;
+    const tiles = Array.from(document.querySelectorAll<HTMLElement>('[data-cat] .tool-tile'));
+    const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-cat]'));
+    const popular = document.getElementById('popular')!;
+    const none = document.getElementById('no-results')!;
+    input.addEventListener('input', () => {
+      const terms = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      let shown = 0;
+      tiles.forEach((t) => {
+        const ok = terms.every((w) => (t.dataset.search || '').includes(w));
+        t.classList.toggle('hidden', !ok);
+        if (ok) shown++;
+      });
+      sections.forEach((s) => s.classList.toggle('hidden', !s.querySelector('.tool-tile:not(.hidden)')));
+      popular.classList.toggle('hidden', terms.length > 0);
+      none.classList.toggle('hidden', shown > 0);
+    });
+    addEventListener('keydown', (e) => { if (e.key === '/' && document.activeElement !== input) { e.preventDefault(); input.focus(); } });
+  </script>
+</Base>

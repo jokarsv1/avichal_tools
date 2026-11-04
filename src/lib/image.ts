@@ -185,31 +185,34 @@ export async function encodeToTarget(
   let downscaled = false;
   // Leave headroom for the DPI header / rounding.
   const limit = opts.maxBytes - 64;
-  for (let attempt = 0; attempt < 8; attempt++) {
-    const hi = await canvasToBlob(c, type, 0.95);
-    if (hi.size <= limit) return finalize(hi, 0.95, c, downscaled);
-    let lo = 0.05, top = 0.95, best: Blob | null = null, bestQ = 0.05;
-    for (let i = 0; i < 8; i++) {
+  // When we may shrink pixels, never go below this quality: a smaller sharp photo beats a big blocky one.
+  const floor = opts.allowDownscale ? 0.6 : 0.05;
+  const search = async (lo: number, top: number) => {
+    let best: Blob | null = null, bestQ = lo;
+    for (let i = 0; i < 7; i++) {
       const mid = (lo + top) / 2;
       const b = await canvasToBlob(c, type, mid);
       if (b.size <= limit) { best = b; bestQ = mid; lo = mid; } else { top = mid; }
     }
-    if (!best) {
-      const b = await canvasToBlob(c, type, 0.05);
-      if (b.size <= limit) { best = b; bestQ = 0.05; }
+    return { best, bestQ };
+  };
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const hi = await canvasToBlob(c, type, 0.95);
+    if (hi.size <= limit) return finalize(hi, 0.95, c, downscaled);
+    const atFloor = await canvasToBlob(c, type, floor);
+    if (atFloor.size <= limit) {
+      const { best, bestQ } = await search(floor, 0.95);
+      return finalize(best ?? atFloor, best ? bestQ : floor, c, downscaled);
     }
-    if (best) return finalize(best, bestQ, c, downscaled);
-    if (!opts.allowDownscale) {
-      const b = await canvasToBlob(c, type, 0.05);
-      return finalize(b, 0.05, c, downscaled);
-    }
-    // Too big even at minimum quality: shrink and retry.
-    const scale = 0.75;
+    if (!opts.allowDownscale) return finalize(atFloor, floor, c, downscaled);
+    if (c.width <= 32 || c.height <= 32) return finalize(atFloor, floor, c, downscaled);
+    // Too big even at the quality floor: shrink proportionally to the overshoot and retry.
+    const scale = Math.max(0.3, Math.min(0.9, Math.sqrt(limit / atFloor.size) * 0.95));
     c = drawScaled(c, Math.max(16, c.width * scale), Math.max(16, c.height * scale));
     downscaled = true;
   }
-  const b = await canvasToBlob(c, type, 0.05);
-  return finalize(b, 0.05, c, downscaled);
+  const b = await canvasToBlob(c, type, floor);
+  return finalize(b, floor, c, downscaled);
 }
 
 /**
@@ -223,18 +226,19 @@ export function cleanSignature(canvas: HTMLCanvasElement, strength = 0.85): HTML
   const hist = new Uint32Array(256);
   for (let i = 0; i < d.length; i += 4) hist[(d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114) | 0]++;
   const total = d.length / 4;
-  let acc = 0, paper = 255, ink = 0;
-  for (let v = 0; v < 256; v++) { acc += hist[v]; if (acc >= total * 0.03) { ink = v; break; } }
-  acc = 0;
-  for (let v = 255; v >= 0; v--) { acc += hist[v]; if (acc >= total * 0.4) { paper = v; break; } }
-  const white = Math.max(ink + 10, paper * strength + 255 * (1 - strength) - 12);
+  const pct = (p: number) => { let acc = 0; for (let v = 0; v < 256; v++) { acc += hist[v]; if (acc >= total * p) return v; } return 255; };
+  // Paper dominates a signature photo, so the 60th percentile is paper; ink is the darkest 0.5 %.
+  const paper = pct(0.6);
+  const ink = Math.min(pct(0.005), paper * 0.5);
+  // Anything within the paper's noise band (shadows, grain) becomes pure white.
+  const white = Math.max(ink + 8, paper - Math.max(12, paper * 0.08) * (0.5 + strength));
   const range = Math.max(1, white - ink);
   for (let i = 0; i < d.length; i += 4) {
     const l = d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114;
     if (l >= white) { d[i] = d[i + 1] = d[i + 2] = 255; continue; }
     const t = Math.max(0, (l - ink) / range); // 0 = ink, 1 = paper
     const k = t * t; // push mid-tones towards ink for crisp strokes
-    for (let c = 0; c < 3; c++) d[i + c] = Math.round(d[i + c] * (1 - k) * 0.85 + 255 * k);
+    for (let c = 0; c < 3; c++) d[i + c] = Math.round(d[i + c] * (1 - k) * 0.75 + 255 * k);
   }
   ctx.putImageData(img, 0, 0);
   return canvas;

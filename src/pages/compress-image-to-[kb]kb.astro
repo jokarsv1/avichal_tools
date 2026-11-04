@@ -1,0 +1,40 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import KbResizer from '../components/KbResizer.astro';
+import { GENERIC_SPECS, KB_PAGES, EXAMS, type KbPage } from '../data/exams';
+
+export function getStaticPaths() {
+  return KB_PAGES.map((p) => ({ params: { kb: String(p.kb) }, props: { page: p } }));
+}
+const { page } = Astro.props as { page: KbPage };
+const kb = page.kb;
+const spec = { id: `kb-${kb}`, label: `Under ${kb} KB`, kind: 'photo' as const, maxKB: kb };
+const others = GENERIC_SPECS.filter((s) => s.id !== spec.id);
+const groups = [{ label: 'Target', specs: [spec] }, { label: 'Other sizes', specs: others }, ...EXAMS.map((e) => ({ label: e.name, specs: e.specs }))];
+const faqs = [
+  { q: `How do I compress a JPG to ${kb} KB?`, a: `Choose your image above. The "Under ${kb} KB" preset is already selected, so the tool immediately finds the best quality under ${kb} KB. Then press Download.` },
+  { q: `Can I compress to exactly ${kb} KB?`, a: `You can get just under ${kb} KB. If your form needs a range, for example ${Math.max(1, Math.round(kb * 0.4))}–${kb} KB, type the lower number in Min KB too.` },
+  { q: `What is ${kb} KB used for?`, a: `Common uses: ${page.uses}.` },
+  { q: 'Is it free and private?', a: 'Yes. No sign-up, no watermark, and the photo never leaves your device.' },
+];
+const steps = [
+  'Choose or drop your image (JPG, PNG, WebP or HEIC).',
+  `The <b>Under ${kb} KB</b> preset is pre-selected. Add a minimum size or pixel size if your portal needs it.`,
+  'Wait a second for the result and check the ✓ badge.',
+  'Press Download.',
+];
+---
+<ToolLayout slug="resize-image-to-kb" path={`/compress-image-to-${kb}kb`}
+  title={`Compress Image to ${kb} KB Online – JPG Under ${kb} KB Free`}
+  description={`Reduce photo size to ${kb} KB (or less) instantly. Free, no upload, no login. Optional minimum KB, pixel size and DPI for exam and job forms.`}
+  h1={`Compress Image to ${kb} KB`} crumb={`${kb} KB`}
+  lead={`Reduce a JPG, PNG or HEIC photo to under <b>${kb} KB</b> with the best possible quality. Used for ${page.uses}.`} steps={steps} faqs={faqs}>
+  <KbResizer groups={groups} defaultId={spec.id} />
+  <Fragment slot="content">
+    <h2>Getting a photo under {kb} KB without making it blurry</h2>
+    <p>{page.tip}</p>
+    <p>The tool works in two steps. First it searches for the highest JPEG quality that fits under {kb} KB. Only if that is not enough does it reduce the pixel size, a little at a time. You see the final size in KB and bytes before you download.</p>
+    <h3>Other sizes</h3>
+    <p>{KB_PAGES.filter((p) => p.kb !== kb).map((p, i) => <>{i ? ' · ' : ''}<a href={`/compress-image-to-${p.kb}kb`}>{p.kb} KB</a></>)} · <a href="/resize-image-to-kb">custom KB size</a></p>
+  </Fragment>
+</ToolLayout>

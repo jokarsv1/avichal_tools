@@ -1,0 +1,39 @@
+---
+import Base from '../layouts/Base.astro';
+import ToolTile from '../components/ToolTile.astro';
+import AdSlot from '../components/AdSlot.astro';
+import SupportBox from '../components/SupportBox.astro';
+import { SITE } from '../config/site';
+import { CATEGORIES, toolsIn, type Category } from '../data/tools';
+import { EXAMS, KB_PAGES } from '../data/exams';
+
+export function getStaticPaths() {
+  return CATEGORIES.map((c) => ({ params: { hub: c.path.slice(1) }, props: { cat: c } }));
+}
+const { cat } = Astro.props as { cat: Category };
+const tools = toolsIn(cat.id);
+const schema = [
+  { '@context': 'https://schema.org', '@type': 'CollectionPage', name: cat.title, description: cat.description, url: SITE.url + cat.path },
+  { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: tools.map((t, i) => ({ '@type': 'ListItem', position: i + 1, name: t.name, url: `${SITE.url}/${t.slug}` })) },
+];
+---
+<Base title={cat.title} description={cat.description} path={cat.path} schema={schema} activeCategory={cat.id}>
+  <div class="container">
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> › {cat.label} tools</nav>
+    <header class="tool-hero">
+      <h1>{cat.icon} {cat.title}</h1>
+      <p class="lead">{cat.description}</p>
+    </header>
+    <div class="tool-grid">{tools.map((t) => <ToolTile tool={t} />)}</div>
+    {cat.id === 'exam' && (
+      <section class="prose">
+        <h2>Exam-specific resizers</h2>
+        <ul>{EXAMS.map((e) => <li><a href={`/${e.slug}-photo-resizer`}>{e.name} photo &amp; signature resizer</a>: {e.fullName}</li>)}</ul>
+        <h2>Compress to a fixed size</h2>
+        <ul>{KB_PAGES.map((p) => <li><a href={`/compress-image-to-${p.kb}kb`}>Compress image to {p.kb} KB</a></li>)}</ul>
+      </section>
+    )}
+    <AdSlot slot="belowTool" />
+    <SupportBox />
+  </div>
+</Base>

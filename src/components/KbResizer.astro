@@ -1,0 +1,94 @@
+---
+/**
+ * The "resize photo/signature to exact KB" engine UI. Reused by:
+ * /resize-image-to-kb, /exam-photo-resizer, /signature-resizer, /<exam>-photo-resizer, /compress-image-to-<n>kb
+ */
+import Dropzone from './Dropzone.astro';
+import type { ImageSpec } from '../data/exams';
+
+interface Props {
+  /** Presets grouped under headings in the dropdown. */
+  groups: { label: string; specs: ImageSpec[] }[];
+  defaultId?: string;
+  /** Turn on signature cleanup by default. */
+  signature?: boolean;
+  dropTitle?: string;
+}
+const { groups, defaultId = groups[0]?.specs[0]?.id ?? 'custom', signature = false, dropTitle = 'Choose a photo or signature' } = Astro.props;
+const all = groups.flatMap((g) => g.specs);
+---
+<div class="kb" data-kb data-presets={JSON.stringify(all)} data-default={defaultId} data-signature={signature ? '1' : '0'}>
+  <Dropzone id="kb-drop" accept="image/*,.heic,.heif" title={dropTitle} hint="JPG, PNG, WebP or iPhone HEIC · drag & drop or paste" icon="🖼️" />
+
+  <div class="kb-editor stack hidden">
+    <div class="kb-grid">
+      <div class="stack-sm">
+        <div class="kb-view-wrap preview-box"><canvas class="kb-view" aria-label="Crop preview. Drag to move the photo."></canvas></div>
+        <div class="row kb-crop-tools">
+          <label class="field" style="flex:1;min-width:140px">Zoom <input type="range" class="kb-zoom" min="1" max="4" step="0.01" value="1" /></label>
+          <button type="button" class="btn btn-sm kb-rotate" title="Rotate 90°">⟳ Rotate</button>
+          <div class="seg" role="group" aria-label="Fit mode">
+            <button type="button" class="kb-fit" data-fit="cover" aria-pressed="true">Crop to fill</button>
+            <button type="button" class="kb-fit" data-fit="contain" aria-pressed="false">Fit (no crop)</button>
+          </div>
+        </div>
+        <p class="hint kb-drag-hint">Drag the photo to position it inside the frame.</p>
+      </div>
+
+      <div class="stack-sm">
+        <div class="field">
+          <label for="kb-preset">Preset</label>
+          <select id="kb-preset" class="kb-preset">
+            {groups.map((g) => (
+              <optgroup label={g.label}>
+                {g.specs.map((s) => <option value={s.id}>{s.label}{s.printed ? ` (${s.printed})` : ''}</option>)}
+              </optgroup>
+            ))}
+            <option value="custom">Custom size…</option>
+          </select>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label for="kb-min">Min KB</label><input id="kb-min" class="kb-min" type="number" min="0" step="1" placeholder="none" inputmode="numeric" /></div>
+          <div class="field"><label for="kb-max">Max KB</label><input id="kb-max" class="kb-max" type="number" min="1" step="1" inputmode="numeric" /></div>
+          <div class="field"><label for="kb-w">Width (px)</label><input id="kb-w" class="kb-w" type="number" min="16" step="1" placeholder="keep" inputmode="numeric" /></div>
+          <div class="field"><label for="kb-h">Height (px)</label><input id="kb-h" class="kb-h" type="number" min="16" step="1" placeholder="keep" inputmode="numeric" /></div>
+          <div class="field"><label for="kb-dpi">DPI</label><input id="kb-dpi" class="kb-dpi" type="number" min="50" max="1200" step="1" placeholder="auto" inputmode="numeric" /></div>
+          <div class="field"><label for="kb-fmt">Format</label>
+            <select id="kb-fmt" class="kb-fmt"><option value="image/jpeg">JPG (recommended)</option><option value="image/webp">WebP</option><option value="image/png">PNG</option></select>
+          </div>
+        </div>
+        <label class="check"><input type="checkbox" class="kb-clean" /> Clean signature (white paper, dark ink)</label>
+        <label class="check"><input type="checkbox" class="kb-gray" /> Black &amp; white</label>
+      </div>
+    </div>
+
+    <div class="result kb-result stack-sm" aria-live="polite">
+      <div class="stat-row">
+        <div class="stat accent"><b class="kb-out-size">–</b><span class="kb-out-bytes">final size</span></div>
+        <div class="stat"><b class="kb-out-dim">–</b><span>pixels</span></div>
+        <div class="stat"><b class="kb-out-check">–</b><span class="kb-out-range">size check</span></div>
+      </div>
+      <div class="status kb-status"></div>
+      <div class="kb-out-wrap preview-box"><img class="kb-out-img" alt="Resized result preview" /></div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary btn-lg kb-download" disabled>⬇ Download</button>
+        <button type="button" class="btn kb-reset">Use another photo</button>
+      </div>
+      <p class="hint">Sizes use the strict definition (max KB × 1000 bytes, min KB × 1024 bytes), so the file passes portals that count either way.</p>
+    </div>
+  </div>
+</div>
+
+<style>
+  .kb-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+  @media (max-width: 760px) { .kb-grid { grid-template-columns: 1fr; } }
+  .kb-view { touch-action: none; cursor: grab; max-width: 100%; max-height: 380px; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.15); }
+  .kb-view:active { cursor: grabbing; }
+  .kb-out-img { max-height: 300px; box-shadow: 0 0 0 1px rgba(0,0,0,.12); }
+  .kb-out-wrap { min-height: 120px; }
+</style>
+
+<script>
+  import { initKbResizer } from '../tools/kb-resizer';
+  document.querySelectorAll<HTMLElement>('[data-kb]').forEach(initKbResizer);
+</script>

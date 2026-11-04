@@ -1,0 +1,16 @@
+# Old/alternate spellings -> canonical tool URLs (301 keeps SEO value).
+/pdf-compressor          /compress-pdf          301
+/reduce-pdf-size         /compress-pdf          301
+/combine-pdf             /merge-pdf             301
+/image-to-pdf            /jpg-to-pdf            301
+/png-to-pdf              /jpg-to-pdf            301
+/compress-image          /image-compressor      301
+/image-resizer           /resize-image          301
+/photo-resizer           /resize-image          301
+/video-compressor        /compress-video        301
+/cut-video               /trim-video            301
+/mp4-to-mp3              /video-to-mp3          301
+/qr-code                 /qr-code-generator     301
+/tax-calculator          /income-tax-calculator 301
+/bunk-calculator         /attendance-calculator 301
+/sgpa-to-percentage      /cgpa-to-percentage    301
