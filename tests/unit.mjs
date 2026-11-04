@@ -1,5 +1,5 @@
 // Unit tests for pure finance/format functions. Run: node tests/unit.mjs (Node 22.18+ strips TS types natively).
-import { emi, sip, fd, ppf, gst, incomeTax, breakEvenDeductions, hraExemption, attendance, salaryBreakup, prepayment, lumpsum, cagr, swp, rd, gratuity } from '../src/lib/finance.ts';
+import { emi, sip, fd, ppf, gst, incomeTax, breakEvenDeductions, hraExemption, attendance, salaryBreakup, prepayment, lumpsum, cagr, swp, rd, gratuity, epf, ssy } from '../src/lib/finance.ts';
 import { numberToWords, indianGrouping, rupeesShort } from '../src/lib/format.ts';
 import { COUNTRIES, foreignTax, livingCosts, equivalentIndianCtc, INDIA_CITIES } from '../src/lib/abroad.ts';
 
@@ -63,6 +63,10 @@ eq('SWP 10L, 10k/m @8% 10y keeps corpus', swp(1000000, 10000, 8, 10).depletedAt,
 eq('SWP depletes when withdrawal too high', swp(1000000, 20000, 8, 10).depletedAt > 0 ? 1 : 0, 1);
 eq('RD 5k x 12m @7% (bank formula)', Math.round(rd(5000, 7, 12).maturity), 62335, 40);
 eq('Gratuity 50k x 10y 7m (=11y)', Math.round(gratuity(50000, 10, 7).amount), Math.round(50000 * 15 * 11 / 26));
+
+const e1 = epf({ basic: 30000, age: 30, retireAge: 31, balance: 0, ratePct: 8.25, hikePct: 0 });
+eq('EPF 1 year contributions (30k basic)', Math.round(e1.invested), Math.round(12 * (3600 + 3600 - 1249.5)));
+eq('SSY 1.5L x 15y @8.2% maturity ~ 69-70L', ssy(150000, 8.2, 2).maturity > 6800000 && ssy(150000, 8.2, 2).maturity < 7200000 ? 1 : 0, 1);
 
 // Abroad tax models (2026 estimates)
 const C = (id) => COUNTRIES.find((c) => c.id === id);

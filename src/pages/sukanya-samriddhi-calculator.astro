@@ -1,0 +1,47 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+const faqs = [
+  { q: 'How does Sukanya Samriddhi Yojana work?', a: 'Parents can open an SSY account for a girl child under 10. You deposit between ₹250 and ₹1.5 lakh a year for 15 years; the account matures 21 years after opening. Interest is set by the Government every quarter.' },
+  { q: 'What is the SSY interest rate?', a: 'It has been 8.2% a year for several quarters. Enter the current rate from India Post or your bank.' },
+  { q: 'Is SSY tax-free?', a: 'Yes, it is EEE: deposits qualify for 80C (old regime), and the interest and maturity amount are tax-free.' },
+  { q: 'Can money be withdrawn early?', a: 'Up to 50% of the balance can be withdrawn after the girl turns 18 for higher education or marriage.' },
+];
+const steps = ['Enter the yearly deposit (₹250 to ₹1.5 lakh).', "Enter your daughter's current age and the interest rate.", 'See the maturity amount and the year-by-year balance.'];
+---
+<ToolLayout slug="sukanya-samriddhi-calculator" h1="Sukanya Samriddhi Yojana (SSY) Calculator" lead="Calculate the maturity value of your daughter's Sukanya Samriddhi account: 15 years of deposits, maturity at 21 years, tax-free." steps={steps} faqs={faqs} badges={['👧 For girl child', '🇮🇳 Govt scheme', '📤 Shareable link']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="d" key="d" label="Yearly deposit" unit="₹" min={250} max={150000} step={250} value={150000} />
+      <SliderField id="r" key="r" label="Interest rate" unit="%" min={6} max={10} step={0.05} value={8.2} />
+      <SliderField id="g" key="g" label="Girl's age when opening" unit="years" min={0} max={10} step={1} value={2} />
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Maturity amount</span><div class="big-number" id="o-m">–</div><span class="hint" id="o-age"></span></div>
+      <div class="result-rows"><div><span>Total deposited (15 years)</span><b id="o-i">–</b></div><div><span>Interest earned</span><b id="o-int">–</b></div></div>
+      <div id="o-split"></div>
+      <button type="button" class="btn btn-sm" data-share="SSY calculation">📤 Share</button>
+    </div>
+  </div>
+  <h2 style="margin-top:26px">Year by year</h2>
+  <div class="table-wrap"><table class="data"><thead><tr><th>Year</th><th>Her age</th><th>Deposited so far</th><th>Balance</th></tr></thead><tbody id="o-t"></tbody></table></div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { ssy } from '../lib/finance';
+    import { rupees, rupeesShort } from '../lib/format';
+    import { splitBar } from '../lib/charts';
+    const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    function update() {
+      const r = ssy(val('d'), val('r'), val('g'));
+      setText('o-m', rupees(r.maturity)); setText('o-age', `when she turns ${r.maturityAge}`);
+      setText('o-i', rupees(r.invested)); setText('o-int', rupees(r.interest));
+      splitBar(document.getElementById('o-split')!, [{ name: 'Deposited', color: css('--series-1'), value: r.invested }, { name: 'Interest', color: css('--series-3'), value: r.interest }], rupeesShort);
+      document.getElementById('o-t')!.innerHTML = r.rows.map((x) => `<tr><td>${x.year}</td><td>${x.extra}</td><td>${rupees(x.a)}</td><td>${rupees(x.balance)}</td></tr>`).join('');
+    }
+    initCalculator(update);
+  </script>
+  <Fragment slot="content">
+    <h2>Why SSY is popular</h2>
+    <p>Sukanya Samriddhi offers one of the highest guaranteed, tax-free returns among small savings schemes, backed by the Government. For long horizons, consider combining it with an equity <a href="/sip-calculator">SIP</a> for growth; compare with <a href="/ppf-calculator">PPF</a>.</p>
+  </Fragment>
+</ToolLayout>

@@ -1,0 +1,51 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+const faqs = [
+  { q: 'How is EPF contribution calculated?', a: 'You contribute 12% of basic + DA. Your employer also contributes 12%, but 8.33% of wages up to ₹15,000 (max ₹1,250 a month) goes to the pension scheme (EPS); the rest goes to your EPF account. Voluntary PF (VPF) can be added on top.' },
+  { q: 'What is the current EPF interest rate?', a: 'EPFO declares the rate every financial year (8.25% for recent years). Enter the latest declared rate above.' },
+  { q: 'Is EPF tax-free?', a: 'Withdrawals after 5 years of continuous service are tax-free. Interest on your own contributions above ₹2.5 lakh a year is taxable.' },
+  { q: 'When can I withdraw EPF?', a: 'In full at retirement (58) or after 2 months of unemployment; partial withdrawals are allowed for housing, education, marriage and medical needs.' },
+];
+const steps = ['Enter your monthly basic + DA, age and current EPF balance.', 'Set the expected annual salary hike and the EPF interest rate.', 'See your retirement corpus and the year-by-year growth.'];
+---
+<ToolLayout slug="epf-calculator" h1="EPF Calculator" lead="Estimate your Employees' Provident Fund corpus at retirement, with employer share, EPS split, salary hikes and the latest EPF interest rate." steps={steps} faqs={faqs} badges={['🇮🇳 EPFO rules', '📈 Salary hikes', '📤 Shareable link']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="b" key="b" label="Monthly basic + DA" unit="₹" min={5000} max={500000} step={500} value={30000} />
+      <SliderField id="a" key="a" label="Current age" unit="years" min={18} max={57} step={1} value={28} />
+      <SliderField id="bal" key="bal" label="Current EPF balance" unit="₹" min={0} max={10000000} step={5000} value={200000} />
+      <SliderField id="h" key="h" label="Annual salary increase" unit="%" min={0} max={20} step={0.5} value={7} />
+      <SliderField id="r" key="r" label="EPF interest rate" unit="%" min={5} max={10} step={0.05} value={8.25} />
+      <SliderField id="v" key="v" label="Voluntary PF (VPF)" unit="% of basic" min={0} max={88} step={1} value={0} />
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">EPF corpus at 58</span><div class="big-number" id="o-c">–</div><span class="hint" id="o-cs"></span></div>
+      <div class="result-rows"><div><span>Total contributions</span><b id="o-i">–</b></div><div><span>Interest earned</span><b id="o-int">–</b></div><div><span>Monthly contribution now</span><b id="o-m">–</b></div></div>
+      <div id="o-split"></div>
+      <button type="button" class="btn btn-sm" data-share="EPF projection">📤 Share</button>
+    </div>
+  </div>
+  <h2 style="margin-top:26px">Year by year</h2>
+  <div class="table-wrap"><table class="data"><thead><tr><th>Year</th><th>Monthly to EPF</th><th>Total contributed</th><th>Balance</th></tr></thead><tbody id="o-t"></tbody></table></div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { epf } from '../lib/finance';
+    import { rupees, rupeesShort } from '../lib/format';
+    import { splitBar } from '../lib/charts';
+    const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    function update() {
+      const r = epf({ basic: val('b'), age: val('a'), retireAge: 58, balance: val('bal'), ratePct: val('r'), hikePct: val('h'), vpfPct: val('v') });
+      setText('o-c', rupees(r.corpus)); setText('o-cs', `≈ ${rupeesShort(r.corpus)}`);
+      setText('o-i', rupees(r.invested)); setText('o-int', rupees(r.interest)); setText('o-m', rupees(r.rows[0]?.extra ?? 0));
+      splitBar(document.getElementById('o-split')!, [{ name: 'Contributions', color: css('--series-1'), value: r.invested }, { name: 'Interest', color: css('--series-3'), value: r.interest }], rupeesShort);
+      document.getElementById('o-t')!.innerHTML = r.rows.map((x) => `<tr><td>Age ${val('a') + x.year}</td><td>${rupees(x.extra ?? 0)}</td><td>${rupees(x.a)}</td><td>${rupees(x.balance)}</td></tr>`).join('');
+    }
+    initCalculator(update);
+  </script>
+  <Fragment slot="content">
+    <h2>EPF vs EPS</h2>
+    <p>Only part of your employer's 12% reaches your EPF account: 8.33% of wages (capped at ₹15,000, so at most ₹1,250 a month) goes to the Employees' Pension Scheme, which pays a monthly pension after 58 instead of a lump sum. This calculator shows only the EPF lump sum.</p>
+    <p>Related: <a href="/ppf-calculator">PPF calculator</a> · <a href="/salary-calculator">in-hand salary</a> · <a href="/gratuity-calculator">gratuity</a></p>
+  </Fragment>
+</ToolLayout>

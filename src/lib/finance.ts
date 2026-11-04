@@ -345,3 +345,38 @@ export function gratuity(monthlyWages: number, years: number, months: number, co
   const amount = (monthlyWages * 15 * y) / (covered ? 26 : 30);
   return { amount, countedYears: y, taxFree: Math.min(amount, 2000000), taxable: Math.max(0, amount - 2000000) };
 }
+
+// ---------------- EPF ----------------
+/**
+ * EPF corpus projection. Employee 12% of basic+DA; employer 12% of which 8.33% (on wages capped at ₹15,000,
+ * i.e. max ₹1,250/month) goes to EPS (pension), the rest to EPF. Interest is computed monthly on the running
+ * balance and credited yearly, as EPFO does.
+ */
+export function epf(o: { basic: number; age: number; retireAge: number; balance: number; ratePct: number; hikePct: number; vpfPct?: number }) {
+  let bal = o.balance, basic = o.basic, invested = o.balance;
+  const rows: YearRow[] = [];
+  for (let y = 1; y <= Math.max(0, o.retireAge - o.age); y++) {
+    let interest = 0;
+    const eps = Math.min(basic, 15000) * 0.0833;
+    const monthly = basic * 0.12 + basic * ((o.vpfPct ?? 0) / 100) + (basic * 0.12 - eps);
+    for (let m = 0; m < 12; m++) { bal += monthly; invested += monthly; interest += (bal * o.ratePct) / 1200; }
+    bal += interest;
+    rows.push({ year: y, a: invested, b: bal - invested, balance: bal, extra: monthly });
+    basic *= 1 + o.hikePct / 100;
+  }
+  return { corpus: bal, invested, interest: bal - invested, rows };
+}
+
+// ---------------- Sukanya Samriddhi Yojana ----------------
+/** Deposits for 15 years from opening; account matures 21 years after opening; yearly compounding. */
+export function ssy(yearly: number, ratePct: number, girlAge: number) {
+  let bal = 0, invested = 0;
+  const rows: YearRow[] = [];
+  for (let y = 1; y <= 21; y++) {
+    const dep = y <= 15 ? Math.min(150000, Math.max(250, yearly)) : 0;
+    invested += dep;
+    bal = (bal + dep) * (1 + ratePct / 100);
+    rows.push({ year: y, a: invested, b: bal - invested, balance: bal, extra: girlAge + y });
+  }
+  return { maturity: bal, invested, interest: bal - invested, maturityAge: girlAge + 21, rows };
+}
