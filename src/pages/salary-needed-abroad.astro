@@ -1,0 +1,96 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import { COUNTRIES, INDIA_CITIES, LIFESTYLE } from '../lib/abroad';
+const faqs = [
+  { q: 'What salary should I ask for when moving abroad from India?', a: 'Start from what you save today, not what you earn. Enter your Indian CTC, city and lifestyle; this tool finds the gross salary abroad that leaves you the same savings after foreign taxes, rent, childcare and trips home. Ask for at least that, ideally 20–30% more for the risks and effort of moving.' },
+  { q: 'Why is the number lower or higher than a currency conversion?', a: 'A straight conversion ignores that rent, food and childcare abroad cost far more, while salaries are also far higher. Some countries (Gulf) have no income tax; others (Germany, UK) take 30–40%. The tool accounts for all of these.' },
+  { q: 'Does it include relocation costs?', a: 'No. One-off costs like visas, flights, deposits and furniture are not included. Ask your employer for a relocation package to cover them.' },
+  { q: 'Is my salary stored?', a: 'No. Everything is calculated in your browser and nothing is sent or saved.' },
+];
+const steps = ['Enter your current Indian CTC, city, family and lifestyle.', 'Pick the destination country and city.', 'Optionally ask to save 25% or 50% more than now.', 'Use the result (and the table for all cities) to negotiate your offer.'];
+---
+<ToolLayout slug="salary-needed-abroad" h1="What Salary Should I Ask For Abroad?" lead="Enter your Indian CTC and lifestyle. We calculate the gross salary you need in the US, UK, Canada, Germany, Dubai, Singapore and more to save as much as you do now, or more." steps={steps} faqs={faqs} badges={['🤝 Negotiation helper', '🌍 25 cities', '💱 Live INR rates']}>
+  <div class="calc" data-sna>
+    <div class="stack-sm">
+      <div class="grid-2">
+        <div class="field"><label for="na-ctc">Your Indian CTC (₹/year)</label><input id="na-ctc" data-key="ctc" type="number" min="0" step="50000" value="3000000" /></div>
+        <div class="field"><label for="na-icity">Indian city</label><select id="na-icity" data-key="ic">{INDIA_CITIES.map((c) => <option value={c.id}>{c.name}</option>)}</select></div>
+        <div class="field"><label for="na-country">Moving to</label><select id="na-country" data-key="c">{COUNTRIES.map((c) => <option value={c.id}>{c.flag} {c.name}</option>)}</select></div>
+        <div class="field"><label for="na-city">City</label><select id="na-city" data-key="ct"></select></div>
+        <div class="field"><label for="na-spouse">Spouse</label><select id="na-spouse" data-key="sp"><option value="0">Single</option><option value="1">Spouse (not working)</option></select></div>
+        <div class="field"><label for="na-kids">Children</label><select id="na-kids" data-key="k"><option>0</option><option>1</option><option>2</option><option>3</option></select></div>
+        <div class="field"><label for="na-life">Lifestyle</label><select id="na-life" data-key="l">{Object.entries(LIFESTYLE).map(([k, v]) => <option value={k} selected={k === 'moderate'}>{v.label}</option>)}</select></div>
+        <div class="field"><label for="na-more">Savings goal</label><select id="na-more" data-key="m"><option value="0">Same as now</option><option value="25" selected>25% more</option><option value="50">50% more</option><option value="100">Double</option></select></div>
+      </div>
+      <p class="hint" id="na-india"></p>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Ask for at least (gross per year)</span><div class="big-number" id="na-out">–</div><span class="hint" id="na-out-inr"></span></div>
+      <div class="result-rows">
+        <div><span>Take-home per month</span><b id="na-net">–</b></div>
+        <div><span>Living costs per month</span><b id="na-cost">–</b></div>
+        <div><span>Savings per month</span><b id="na-save">–</b></div>
+      </div>
+      <p class="hint" id="na-fx"></p>
+      <button type="button" class="btn btn-sm" data-share="Salary I need abroad">📤 Share</button>
+    </div>
+  </div>
+  <h2 style="margin-top:26px">Salary needed in every city</h2>
+  <div class="table-wrap"><table class="data"><thead><tr><th>City</th><th>Gross needed / year</th><th>In ₹ (market rate)</th><th>Tax rate</th></tr></thead><tbody id="na-table"></tbody></table></div>
+  <script>
+    import { initCalculator } from '../lib/calc-ui';
+    import { COUNTRIES, INDIA_CITIES, getRates, grossNeeded, foreignSavings, indiaSavings, FALLBACK_INR, type Lifestyle, type Rates } from '../lib/abroad';
+    import { rupees, rupeesShort } from '../lib/format';
+    const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
+    let rates: Rates = { inrPer: { ...FALLBACK_INR }, date: '', live: false };
+    const money = (n: number, cur: string) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: cur, maximumFractionDigits: 0 }).format(n);
+    const country = () => COUNTRIES.find((c) => c.id === $('na-country').value) ?? COUNTRIES[0];
+    function fillCities() {
+      const keep = $('na-city').value || new URLSearchParams(location.search).get('ct') || '';
+      const sel = $('na-city') as unknown as HTMLSelectElement;
+      sel.replaceChildren(...country().cities.map((x) => Object.assign(document.createElement('option'), { value: x.id, textContent: x.name })));
+      if (country().cities.some((x) => x.id === keep)) sel.value = keep;
+    }
+    function update() {
+      const h = { spouse: $('na-spouse').value === '1', kids: +$('na-kids').value, lifestyle: $('na-life').value as Lifestyle, paidSchool: false };
+      const india = INDIA_CITIES.find((x) => x.id === $('na-icity').value)!;
+      const now = indiaSavings(+$('na-ctc').value || 0, india, h);
+      const target = Math.max(1000, now.savings * (1 + (+$('na-more').value) / 100));
+      $('na-india').textContent = `Today in ${india.name}: in-hand ${rupees(now.inHand)}/month, living costs about ${rupees(now.costs)}, savings ${rupees(now.savings)}/month. Target abroad: ${rupees(target)}/month.`;
+      const c = country(), city = c.cities.find((x) => x.id === $('na-city').value) ?? c.cities[0];
+      const hh = { ...h, paidSchool: h.kids > 0 && c.paidSchoolDefault };
+      const fx = rates.inrPer[c.currency];
+      const g = grossNeeded(c, city, hh, 1, fx, target);
+      if (g == null) { $('na-out').textContent = 'Not realistic'; return; }
+      const s = foreignSavings(c, city, g, hh, 1, fx);
+      $('na-out').textContent = money(Math.ceil(g / 1000) * 1000, c.currency);
+      $('na-out-inr').textContent = `≈ ${rupeesShort(g * fx)} a year at 1 ${c.currency} = ₹${fx.toFixed(2)}`;
+      $('na-net').textContent = money(s.net, c.currency); $('na-cost').textContent = money(s.costs, c.currency);
+      $('na-save').textContent = `${money(s.savings, c.currency)} (${rupees(s.savings * fx)})`;
+      $('na-fx').textContent = rates.live ? `Live ECB rates (${rates.date}).` : 'Using recent offline exchange rates.';
+      document.getElementById('na-table')!.innerHTML = COUNTRIES.flatMap((co) => co.cities.map((ci) => {
+        const f = rates.inrPer[co.currency];
+        const hc = { ...h, paidSchool: h.kids > 0 && co.paidSchoolDefault };
+        const gg = grossNeeded(co, ci, hc, 1, f, target);
+        if (gg == null) return '';
+        const t = foreignSavings(co, ci, gg, hc, 1, f).tax;
+        return `<tr><td>${co.flag} ${ci.name}</td><td>${money(Math.ceil(gg / 1000) * 1000, co.currency)}</td><td>${rupeesShort(gg * f)}</td><td>${(t.effective * 100).toFixed(0)}%</td></tr>`;
+      })).join('');
+    }
+    $('na-country').addEventListener('change', () => { fillCities(); update(); });
+    const params = new URLSearchParams(location.search);
+    if (params.get('c')) $('na-country').value = params.get('c')!;
+    fillCities();
+    initCalculator(update, Object.fromEntries(['na-ctc', 'na-icity', 'na-country', 'na-city', 'na-spouse', 'na-kids', 'na-life', 'na-more'].map((id) => [$(id).dataset.key!, $(id)])));
+    getRates().then((r) => { rates = { ...r, inrPer: { ...FALLBACK_INR, ...r.inrPer } }; update(); });
+  </script>
+  <Fragment slot="content">
+    <h2>How to use this in a salary negotiation</h2>
+    <ol>
+      <li>Anchor on <b>savings</b>: "To keep my current savings rate I need at least X."</li>
+      <li>Add a premium for the move: new country, no family support, visa risk. 20–50% more savings is a reasonable goal.</li>
+      <li>Ask separately for a <b>relocation package</b> (flights, temporary housing, deposit) and check health insurance for dependants.</li>
+      <li>Check the full picture for any offer with the <a href="/ppp-salary-calculator">salary abroad vs India calculator</a>.</li>
+    </ol>
+  </Fragment>
+</ToolLayout>

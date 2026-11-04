@@ -284,3 +284,27 @@ export async function getRates(): Promise<Rates> {
     return { inrPer: { ...FALLBACK_INR }, date: FALLBACK_DATE, live: false };
   }
 }
+
+/** Monthly savings (local currency) for a foreign gross salary. */
+export function foreignSavings(country: Country, city: City, gross: number, h: Household, tripsPerYear: number, inrPerUnit: number, ruling = true) {
+  const tax = foreignTax(country, city, gross, { married: h.spouse, kids: h.kids, ruling });
+  const people = 1 + (h.spouse ? 1 : 0) + h.kids;
+  const costs = livingCosts(city.costs, h, country.dependentFee ?? 0).total + (tripsPerYear * country.flightInr * people) / 12 / inrPerUnit;
+  return { net: tax.net / 12, costs, savings: tax.net / 12 - costs, tax };
+}
+
+/** Gross salary abroad needed so that monthly savings (in INR) reach `targetInr`. */
+export function grossNeeded(country: Country, city: City, h: Household, tripsPerYear: number, inrPerUnit: number, targetInr: number) {
+  let lo = 0, hi = 5_000_000;
+  const at = (g: number) => foreignSavings(country, city, g, h, tripsPerYear, inrPerUnit).savings * inrPerUnit;
+  if (at(hi) < targetInr) return null;
+  for (let i = 0; i < 60; i++) { const mid = (lo + hi) / 2; if (at(mid) < targetInr) lo = mid; else hi = mid; }
+  return hi;
+}
+
+/** Monthly savings in India for a CTC (new regime) and household/lifestyle in an Indian city. */
+export function indiaSavings(ctc: number, city: IndiaCity, h: Household) {
+  const inHand = salaryBreakup({ ctc, variable: 0, basicPct: 50, hraPct: 50, pfMode: 'capped', gratuityInCtc: true, profTax: 2400, regime: 'new', rentPaid: 0, metro: true, otherDeductions80c: 0, d80d: 0 }).inHandMonthly;
+  const costs = livingCosts(city.costs, { ...h, paidSchool: h.kids > 0 }).total;
+  return { inHand, costs, savings: inHand - costs };
+}
