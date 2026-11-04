@@ -6,11 +6,14 @@
   "description": "Free, open-source, no-login utility tools that run 100% in your browser.",
   "license": "MIT",
   "scripts": {
+    "predev": "node scripts/copy-assets.mjs",
     "dev": "astro dev",
+    "prebuild": "node scripts/copy-assets.mjs",
     "build": "astro build",
     "preview": "astro preview",
-    "deploy": "astro build && wrangler deploy",
-    "test": "node tests/run.mjs"
+    "deploy": "npm run build && wrangler deploy",
+    "test": "node tests/run.mjs",
+    "fixtures": "node tests/make-fixtures.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",

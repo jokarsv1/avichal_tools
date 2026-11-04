@@ -1,0 +1,34 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import Dropzone from '../components/Dropzone.astro';
+const faqs = [
+  { q: 'How do I add page numbers to a PDF?', a: 'Choose your PDF, pick a position and format such as "Page 1 of 10", and press <b>Add page numbers</b>.' },
+  { q: 'Can I skip the cover page?', a: 'Yes. Set <b>Start numbering on page</b> to 2. You can also choose which number to start counting from.' },
+  { q: 'Will numbers appear correctly on landscape or rotated pages?', a: 'Yes. We detect each page\'s rotation and place the number where it looks right when the page is viewed.' },
+];
+const steps = ['Choose a PDF.', 'Pick position, format and font size.', 'Optionally skip the first pages or change the starting number.', 'Press <b>Add page numbers</b>.'];
+---
+<ToolLayout slug="add-page-numbers-to-pdf" h1="Add Page Numbers to PDF" lead="Number the pages of any PDF: choose position, format, size and starting number. Free and private." steps={steps} faqs={faqs}>
+  <div class="stack" data-stamp data-mode="numbers">
+    <Dropzone id="st-drop" accept=".pdf,application/pdf" title="Choose a PDF" icon="🔢" />
+    <div id="st-panel" class="stack-sm hidden">
+      <p class="hint" id="st-file"></p>
+      <div class="grid-3">
+        <div class="field"><label for="st-pos">Position</label>
+          <select id="st-pos"><option value="bottom-center">Bottom centre</option><option value="bottom-right">Bottom right</option><option value="bottom-left">Bottom left</option><option value="top-center">Top centre</option><option value="top-right">Top right</option><option value="top-left">Top left</option></select></div>
+        <div class="field"><label for="st-fmt">Format</label>
+          <select id="st-fmt"><option value="{n}">1</option><option value="Page {n}">Page 1</option><option value="Page {n} of {total}">Page 1 of 10</option><option value="{n} / {total}">1 / 10</option><option value="- {n} -">- 1 -</option></select></div>
+        <div class="field"><label for="st-size">Font size</label><input id="st-size" type="number" min="6" max="48" value="11" /></div>
+        <div class="field"><label for="st-from">Start numbering on page</label><input id="st-from" type="number" min="1" value="1" /></div>
+        <div class="field"><label for="st-start">First number</label><input id="st-start" type="number" min="0" value="1" /></div>
+      </div>
+      <div class="status" id="st-status"></div>
+      <div class="btn-row"><button type="button" class="btn btn-primary btn-lg" id="st-go">Add page numbers</button></div>
+    </div>
+  </div>
+  <script>import '../tools/pdf-stamp';</script>
+  <Fragment slot="content">
+    <h2>Page numbers for reports, theses and legal bundles</h2>
+    <p>Universities, courts and offices often require numbered pages. Use "Page 1 of N" for official documents, or a simple number for books and notes. To leave a title page unnumbered, start numbering on page 2.</p>
+  </Fragment>
+</ToolLayout>

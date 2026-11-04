@@ -9,3 +9,4 @@ dist/
 .DS_Store
 tests/output/
 tests/fixtures/generated/
+public/vendor/

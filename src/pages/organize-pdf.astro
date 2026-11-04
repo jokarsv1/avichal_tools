@@ -1,0 +1,19 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import PageEditor from '../components/PageEditor.astro';
+const faqs = [
+  { q: 'How do I delete pages from a PDF?', a: 'Press 🗑 on each page you want to remove, or type page numbers like <code>2, 5-7</code> and press <b>Mark for deletion</b>. Then press <b>Save PDF</b>.' },
+  { q: 'How do I rearrange PDF pages?', a: 'Drag a page to its new position, or use the ← → buttons on each page (easier on phones).' },
+  { q: 'Can I undo a deletion?', a: 'Yes. Deleted pages stay visible (faded) until you save; press ↺ to restore one, or Reset to start over.' },
+  { q: 'Will links and text survive?', a: 'Yes. Pages are copied as they are; text stays selectable.' },
+];
+const steps = ['Choose a PDF.', 'Drag pages to reorder; delete or rotate pages as needed.', 'Press <b>Save PDF</b> to download the new file.'];
+---
+<ToolLayout slug="organize-pdf" h1="Organize PDF" lead="Reorder, delete and rotate PDF pages visually. Free, unlimited and private." steps={steps} faqs={faqs}>
+  <PageEditor mode="organize" />
+  <Fragment slot="content">
+    <h2>Remove pages and rearrange a PDF</h2>
+    <p>Remove blank or duplicate scans, drop pages with personal information before sharing, or put chapters in the right order. The editor shows a thumbnail of each page so you can see exactly what you keep.</p>
+    <p>Need separate files instead? <a href="/split-pdf">Split PDF</a>. Combining several? <a href="/merge-pdf">Merge PDF</a>.</p>
+  </Fragment>
+</ToolLayout>

@@ -1,0 +1,37 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import Dropzone from '../components/Dropzone.astro';
+const faqs = [
+  { q: 'How do I convert multiple JPGs into one PDF?', a: 'Select all the images at once (or add them in batches), arrange them with the arrows or by dragging, and press <b>Convert to PDF</b>. Each image becomes one page.' },
+  { q: 'Can I convert iPhone HEIC photos to PDF?', a: 'Yes. HEIC photos are converted automatically. You do not need to convert them to JPG first.' },
+  { q: 'Why are my phone photos no longer sideways?', a: 'We read the photo\'s rotation information (EXIF) and straighten each image before adding it, which many converters forget.' },
+  { q: 'How do I make the PDF smaller?', a: 'Tick <b>Smaller file</b>. Photos are resized to a maximum of 2000 px and compressed, which is ideal for email and upload portals. You can also run the result through <a href="/compress-pdf">Compress PDF</a>.' },
+  { q: 'Is this good for scanning documents with my phone?', a: 'Yes. Take photos of each page, choose A4 with a small margin, and convert. The result looks like a scanned PDF.' },
+];
+const steps = ['Choose your images (JPG, PNG, WebP, HEIC).', 'Arrange the order; use <b>Sort A–Z</b> if your files are numbered.', 'Pick page size, orientation and margin.', 'Press <b>Convert to PDF</b>.'];
+---
+<ToolLayout slug="jpg-to-pdf" h1="JPG to PDF" lead="Convert photos and scans (JPG, PNG, WebP, iPhone HEIC) into one PDF. Choose A4 or Letter, margins and order. Free, no watermark." steps={steps} faqs={faqs}>
+  <div class="stack">
+    <Dropzone id="jp-drop" accept="image/*,.heic,.heif" multiple title="Choose images" hint="Add several at once · drag & drop or paste" icon="🖼️" />
+    <div id="jp-panel" class="stack-sm hidden">
+      <div class="row"><b id="jp-count"></b><span class="spacer"></span><button type="button" class="btn btn-sm" id="jp-sort">Sort A–Z</button><button type="button" class="btn btn-sm" id="jp-clear">Clear</button></div>
+      <ul class="file-list" id="jp-list"></ul>
+      <div class="grid-4">
+        <div class="field"><label for="jp-size">Page size</label><select id="jp-size"><option value="a4">A4</option><option value="letter">US Letter</option><option value="legal">Legal</option><option value="a5">A5</option><option value="fit">Same as image</option></select></div>
+        <div class="field"><label for="jp-orient">Orientation</label><select id="jp-orient"><option value="auto">Auto</option><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select></div>
+        <div class="field"><label for="jp-margin">Margin</label><select id="jp-margin"><option value="0">None</option><option value="18" selected>Small</option><option value="40">Large</option></select></div>
+        <div class="field"><label for="jp-name">File name</label><input id="jp-name" type="text" placeholder="images" /></div>
+      </div>
+      <label class="check"><input type="checkbox" id="jp-small" /> Smaller file (for email and portals)</label>
+      <div class="progress hidden" id="jp-progress"><i></i></div>
+      <div class="status" id="jp-status"></div>
+      <div class="btn-row"><button type="button" class="btn btn-primary btn-lg" id="jp-go" disabled>Convert to PDF</button></div>
+    </div>
+  </div>
+  <script>import '../tools/jpg-to-pdf';</script>
+  <Fragment slot="content">
+    <h2>Turn photos into a PDF on your phone or computer</h2>
+    <p>Combine receipts, certificates, ID scans or class notes into one tidy PDF. Images are straightened automatically, centred on the page and kept at full quality unless you choose a smaller file. Everything runs in your browser, so private documents are never uploaded.</p>
+    <p>Next steps: <a href="/compress-pdf">compress the PDF</a>, <a href="/merge-pdf">merge it with other PDFs</a>, or <a href="/sign-pdf">sign it</a>.</p>
+  </Fragment>
+</ToolLayout>

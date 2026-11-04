@@ -1,0 +1,70 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import Dropzone from '../components/Dropzone.astro';
+const faqs = [
+  { q: 'How can I reduce PDF size without losing quality?', a: 'Use <b>Smart</b> mode with the <b>Recommended</b> level. It only shrinks the photos and scans inside the PDF, so text, links and vector graphics stay exactly as sharp as before.' },
+  { q: 'How do I compress a PDF to under 1 MB, 500 KB or 200 KB?', a: 'Start with Recommended. If it is still too big, choose <b>Strong</b> or <b>Extreme</b>. For scanned documents, "Pages to images" gives the biggest reduction.' },
+  { q: 'Why did my PDF not get smaller?', a: 'PDFs that contain mostly text are already small and cannot shrink much. Compression helps PDFs with photos or scans. If a result would be bigger, we keep your original.' },
+  { q: 'Is there a daily limit like other sites?', a: 'No. There is no upload and no server, so you can compress as many PDFs as you like, of any size your device can handle.' },
+  { q: 'Is it safe to compress bank statements or ID documents here?', a: 'Yes. The PDF is processed inside your browser and never leaves your device.' },
+];
+const steps = [
+  'Choose or drop your PDF.',
+  'Pick a level: <b>Recommended</b> is best for most files; <b>Strong</b> and <b>Extreme</b> shrink further.',
+  'For scanned documents, try <b>Pages to images</b> mode for maximum savings.',
+  'Compare the before/after size and press <b>Download</b>.',
+];
+---
+<ToolLayout slug="compress-pdf" h1="Compress PDF" lead="Reduce PDF file size for email, WhatsApp and upload portals, while keeping text sharp and selectable. No upload, no limits." steps={steps} faqs={faqs}>
+  <div class="stack">
+    <Dropzone id="cp-drop" accept=".pdf,application/pdf" title="Choose a PDF to compress" hint="Any size · drag & drop" icon="🗜️" />
+    <div id="cp-panel" class="stack hidden">
+      <p class="hint" id="cp-file"></p>
+      <div class="field">
+        <span class="label" style="font-weight:600">Compression level</span>
+        <div class="seg" role="radiogroup" aria-label="Compression level">
+          <label><input type="radio" name="cp-level" value="low" /><span>Light</span></label>
+          <label><input type="radio" name="cp-level" value="medium" checked /><span>Recommended</span></label>
+          <label><input type="radio" name="cp-level" value="high" /><span>Strong</span></label>
+          <label><input type="radio" name="cp-level" value="extreme" /><span>Extreme</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <span style="font-weight:600">Mode</span>
+        <div class="seg" role="radiogroup" aria-label="Mode">
+          <label><input type="radio" name="cp-mode" value="smart" checked /><span>Smart (keeps text)</span></label>
+          <label><input type="radio" name="cp-mode" value="raster" /><span>Pages to images (scans)</span></label>
+        </div>
+      </div>
+      <div class="progress hidden" id="cp-progress"><i></i></div>
+      <div class="status" id="cp-status"></div>
+      <div class="result hidden" id="cp-result">
+        <div class="stat-row">
+          <div class="stat"><b id="cp-before">–</b><span>Original</span></div>
+          <div class="stat accent"><b id="cp-after">–</b><span>Compressed</span></div>
+          <div class="stat good"><b id="cp-saved">–</b><span>Saved</span></div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary btn-lg" id="cp-download" disabled>⬇ Download PDF</button>
+        <button type="button" class="btn" id="cp-go">Re-run</button>
+      </div>
+    </div>
+  </div>
+  <script>import '../tools/compress-pdf';</script>
+  <Fragment slot="content">
+    <h2>How this PDF compressor works</h2>
+    <p>Large PDFs are almost always large because of the photos or scans inside them. <b>Smart mode</b> finds each embedded image, scales it to a sensible resolution and re-encodes it as an efficient JPEG, then compresses any uncompressed data. Everything else (text, fonts, links and vector drawings) is left untouched, so the document stays searchable and crisp.</p>
+    <p><b>Pages to images</b> mode renders every page as a picture and rebuilds the PDF from those pictures. It is the strongest option for phone scans and photographed documents, but text becomes part of the image and can no longer be selected or searched.</p>
+    <table>
+      <thead><tr><th>Level</th><th>Image resolution</th><th>Best for</th></tr></thead>
+      <tbody>
+        <tr><td>Light</td><td>up to 3000 px, high quality</td><td>Printing, archiving</td></tr>
+        <tr><td>Recommended</td><td>up to 2000 px</td><td>Email, WhatsApp, most portals</td></tr>
+        <tr><td>Strong</td><td>up to 1400 px</td><td>Upload limits like 1 MB</td></tr>
+        <tr><td>Extreme</td><td>up to 1000 px</td><td>Very strict limits (200–500 KB)</td></tr>
+      </tbody>
+    </table>
+    <p>Related: <a href="/merge-pdf">merge PDF</a>, <a href="/jpg-to-pdf">JPG to PDF</a>, <a href="/split-pdf">split PDF</a>.</p>
+  </Fragment>
+</ToolLayout>

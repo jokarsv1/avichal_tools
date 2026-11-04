@@ -1,0 +1,37 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import Dropzone from '../components/Dropzone.astro';
+const faqs = [
+  { q: 'How do I convert a PDF to JPG?', a: 'Choose your PDF, pick JPG and a resolution, and press <b>Convert</b>. A single page downloads directly; several pages can be saved one by one or as a ZIP.' },
+  { q: 'Which resolution should I choose?', a: '150 DPI is great for sharing on screen and WhatsApp. Choose 300 DPI for printing or when you need to zoom into small text. 72 DPI gives the smallest files.' },
+  { q: 'Can I convert only some pages?', a: 'Yes. Type pages like <code>1, 3-5</code> in the Pages box. Leave it empty to convert all pages.' },
+  { q: 'Is my PDF uploaded?', a: 'No. Pages are rendered by your browser using the open-source pdf.js engine (the same one Firefox uses).' },
+];
+const steps = ['Choose a PDF file.', 'Pick JPG or PNG and a resolution (DPI).', 'Optionally enter page numbers.', 'Press <b>Convert</b>, then save images individually or as a ZIP.'];
+---
+<ToolLayout slug="pdf-to-jpg" h1="PDF to JPG" lead="Convert PDF pages to high-quality JPG or PNG images at the resolution you choose. Free, private, no watermark." steps={steps} faqs={faqs}>
+  <div class="stack">
+    <Dropzone id="pj-drop" accept=".pdf,application/pdf" title="Choose a PDF" icon="🏞️" />
+    <div id="pj-panel" class="stack-sm hidden">
+      <p class="hint" id="pj-file"></p>
+      <div class="grid-3">
+        <div class="field"><label for="pj-fmt">Format</label><select id="pj-fmt"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select></div>
+        <div class="field"><label for="pj-dpi">Resolution</label><select id="pj-dpi"><option value="72">72 DPI (small)</option><option value="150" selected>150 DPI (screen)</option><option value="300">300 DPI (print)</option></select></div>
+        <div class="field"><label for="pj-pages">Pages</label><input id="pj-pages" type="text" placeholder="all" /></div>
+      </div>
+      <div class="progress hidden" id="pj-progress"><i></i></div>
+      <div class="status" id="pj-status"></div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary btn-lg" id="pj-go">Convert</button>
+        <button type="button" class="btn hidden" id="pj-zip">⬇ Download all (ZIP)</button>
+      </div>
+      <div class="pages-grid" id="pj-grid"></div>
+    </div>
+  </div>
+  <script>import '../tools/pdf-to-jpg';</script>
+  <Fragment slot="content">
+    <h2>Save PDF pages as images</h2>
+    <p>Images are easier to share on WhatsApp and social media, paste into presentations, or upload to portals that do not accept PDF. Each page is rendered at the DPI you choose, so a 300 DPI A4 page becomes a 2480 × 3508 px image, sharp enough to print.</p>
+    <p>Going the other way? Use <a href="/jpg-to-pdf">JPG to PDF</a>.</p>
+  </Fragment>
+</ToolLayout>

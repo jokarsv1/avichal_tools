@@ -1,0 +1,33 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import Dropzone from '../components/Dropzone.astro';
+const faqs = [
+  { q: 'How do I merge PDF files for free?', a: 'Choose two or more PDFs, put them in the order you want (drag them or use the arrows), and press <b>Merge PDF</b>. The combined file downloads straight away.' },
+  { q: 'Is there a limit on files or size?', a: 'No. There is no upload, so there are no server limits. Very large files (hundreds of MB) depend on your device memory.' },
+  { q: 'Will my PDFs keep their quality, links and text?', a: 'Yes. Pages are copied as they are, so text stays selectable and quality does not change.' },
+  { q: 'Can I merge password-protected PDFs?', a: 'PDFs that need a password to open must be unlocked first. PDFs with only editing restrictions can be merged.' },
+  { q: 'Is it safe for confidential documents?', a: 'Yes. Files are merged by your browser and never leave your device.' },
+];
+const steps = ['Choose or drop your PDF files.', 'Drag them into order, or press <b>Sort A–Z</b>.', 'Optionally name the output file.', 'Press <b>Merge PDF</b>; the file downloads automatically.'];
+---
+<ToolLayout slug="merge-pdf" h1="Merge PDF" lead="Combine multiple PDFs into one file in the order you choose. Unlimited, free and private." steps={steps} faqs={faqs}>
+  <div class="stack">
+    <Dropzone id="mg-drop" accept=".pdf,application/pdf" multiple title="Choose PDF files" hint="Select 2 or more PDFs · drag & drop" icon="📄" />
+    <div id="mg-panel" class="stack-sm hidden">
+      <div class="row"><b id="mg-count"></b><span class="spacer"></span><button type="button" class="btn btn-sm" id="mg-sort">Sort A–Z</button><button type="button" class="btn btn-sm" id="mg-clear">Clear</button></div>
+      <ul class="file-list" id="mg-list"></ul>
+      <div class="row">
+        <div class="field" style="flex:1;min-width:200px"><label for="mg-name">File name</label><input id="mg-name" type="text" placeholder="merged" /></div>
+        <button type="button" class="btn btn-primary btn-lg" id="mg-go" disabled style="align-self:flex-end">Merge PDF</button>
+      </div>
+      <div class="progress hidden" id="mg-progress"><i></i></div>
+      <div class="status" id="mg-status"></div>
+    </div>
+  </div>
+  <script>import '../tools/merge-pdf';</script>
+  <Fragment slot="content">
+    <h2>Combine PDFs without uploading them</h2>
+    <p>Merging happens in your browser with the open-source pdf-lib library, so bank statements, ID documents and contracts are never sent anywhere. Pages are copied without re-compression, keeping text, links and quality exactly as they were.</p>
+    <p>Need to remove or reorder pages after merging? Use <a href="/organize-pdf">Organize PDF</a>. File too big to email? <a href="/compress-pdf">Compress it</a>.</p>
+  </Fragment>
+</ToolLayout>

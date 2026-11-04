@@ -1,0 +1,30 @@
+---
+import Dropzone from './Dropzone.astro';
+interface Props { mode: 'rotate' | 'organize' }
+const { mode } = Astro.props;
+---
+<div class="stack" data-page-editor data-mode={mode}>
+  <Dropzone id="pe-drop" accept=".pdf,application/pdf" title="Choose a PDF" icon={mode === 'rotate' ? '🔄' : '🗂️'} />
+  <div id="pe-panel" class="stack-sm hidden">
+    <p class="hint" id="pe-file"></p>
+    <div class="row">
+      <b id="pe-summary"></b>
+      <span class="spacer"></span>
+      <button type="button" class="btn btn-sm" id="pe-left">⟲ All left</button>
+      <button type="button" class="btn btn-sm" id="pe-right">⟳ All right</button>
+      {mode === 'organize' && <button type="button" class="btn btn-sm" id="pe-reverse">⇅ Reverse order</button>}
+      <button type="button" class="btn btn-sm" id="pe-reset">Reset</button>
+    </div>
+    {mode === 'organize' && (
+      <div class="row">
+        <div class="field" style="flex:1;min-width:200px"><label for="pe-del">Delete pages by number</label><input id="pe-del" type="text" placeholder="e.g. 2, 5-7" /></div>
+        <button type="button" class="btn" id="pe-del-apply" style="align-self:flex-end">Mark for deletion</button>
+      </div>
+    )}
+    <p class="hint">{mode === 'organize' ? 'Drag pages to reorder (or use ← →). 🗑 deletes a page; press it again to restore.' : 'Use ⟲ ⟳ on each page, or rotate all pages at once.'}</p>
+    <div class="pages-grid" id="pe-grid"></div>
+    <div class="status" id="pe-status"></div>
+    <div class="btn-row"><button type="button" class="btn btn-primary btn-lg" id="pe-save">⬇ Save PDF</button></div>
+  </div>
+</div>
+<script>import '../tools/page-editor';</script>

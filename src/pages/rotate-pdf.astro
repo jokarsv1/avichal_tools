@@ -1,0 +1,18 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import PageEditor from '../components/PageEditor.astro';
+const faqs = [
+  { q: 'How do I rotate a PDF permanently?', a: 'Rotate the pages here and press <b>Save PDF</b>. The rotation is saved in the file, so it opens the right way up in every PDF reader, on every device.' },
+  { q: 'Can I rotate just one page?', a: 'Yes. Each page has its own ⟲ ⟳ buttons. Use "All left" or "All right" to rotate every page.' },
+  { q: 'Does rotating change quality?', a: 'No. Rotation only changes a page setting; nothing is re-compressed.' },
+];
+const steps = ['Choose a PDF.', 'Press ⟲ or ⟳ on the pages that are sideways, or rotate all pages.', 'Press <b>Save PDF</b>.'];
+---
+<ToolLayout slug="rotate-pdf" h1="Rotate PDF" lead="Fix sideways or upside-down pages. Rotate single pages or the whole document, then save permanently. Free and private." steps={steps} faqs={faqs}>
+  <PageEditor mode="rotate" />
+  <Fragment slot="content">
+    <h2>Rotate scanned PDFs the right way up</h2>
+    <p>Scanners and phone scanning apps often save pages sideways. Rotating them here changes the page rotation inside the file, which is instant and lossless, unlike re-scanning or printing to PDF.</p>
+    <p>Also try <a href="/organize-pdf">Organize PDF</a> to reorder and delete pages at the same time.</p>
+  </Fragment>
+</ToolLayout>
