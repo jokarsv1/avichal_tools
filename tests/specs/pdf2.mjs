@@ -96,14 +96,14 @@ export default (test, { BASE, newPage, download, fixture, assert }) => {
     const page = await newPage();
     await page.goto(`${BASE}/sign-pdf`);
     await page.setInputFiles('#sg-drop input[type=file]', fixture('a.pdf'));
-    await page.waitForSelector('.sg-page canvas', { timeout: 20000 });
+    await page.waitForSelector('.ov-page canvas', { timeout: 20000 });
     const box = await page.locator('#sg-pad').boundingBox();
     await page.mouse.move(box.x + 30, box.y + 40);
     await page.mouse.down();
     for (let i = 0; i < 20; i++) await page.mouse.move(box.x + 30 + i * 15, box.y + 40 + Math.sin(i) * 20);
     await page.mouse.up();
     await page.click('#sg-add');
-    await page.waitForSelector('.sg-item');
+    await page.waitForSelector('.ov-item');
     await page.click('#sg-add-date');
     const d = await download(page, '#sg-save');
     const doc = await load(d.path);

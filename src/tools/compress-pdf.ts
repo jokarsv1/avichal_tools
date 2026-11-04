@@ -1,5 +1,5 @@
 import { $, $$, onFiles, downloadBlob, setStatus, setProgress, errorMessage, nextFrame, formatBytes, baseName } from '../lib/ui';
-import { loadPdfLib, loadDoc, readFile, pdfBlob, openPdfJs, renderPage, closePdf } from '../lib/pdf';
+import { loadPdfLib, loadDoc, readFile, pdfBlob, rasterizePdf } from '../lib/pdf';
 import { makeCanvas, drawScaled, canvasToBlob } from '../lib/image';
 
 /**
@@ -206,24 +206,11 @@ async function smart(input: Uint8Array, opt: (typeof LEVELS)[Level]): Promise<Ui
 // ---------------- Rasterize pages ----------------
 
 async function rasterize(input: Uint8Array, opt: (typeof LEVELS)[Level]): Promise<Uint8Array> {
-  const { PDFDocument } = await loadPdfLib();
   setStatus(status, 'Opening PDF…', 'info');
-  const src = await openPdfJs(input);
-  const out = await PDFDocument.create();
-  for (let i = 1; i <= src.numPages; i++) {
-    setStatus(status, `Rendering page ${i} of ${src.numPages}…`, 'info');
-    setProgress(bar, i / src.numPages);
-    const page = await src.getPage(i);
-    const vp = page.getViewport({ scale: 1, rotation: page.rotate });
-    const canvas = await renderPage(src, i, opt.dpi / 72);
-    const jpg = new Uint8Array(await (await canvasToBlob(canvas, 'image/jpeg', opt.q + 0.1)).arrayBuffer());
-    const img = await out.embedJpg(jpg);
-    const p = out.addPage([vp.width, vp.height]);
-    p.drawImage(img, { x: 0, y: 0, width: vp.width, height: vp.height });
-    canvas.width = canvas.height = 1;
-  }
-  closePdf(src);
-  return out.save({ useObjectStreams: true });
+  return rasterizePdf(input, opt.dpi, Math.min(0.95, opt.q + 0.1), (i, n) => {
+    setStatus(status, `Rendering page ${i} of ${n}…`, 'info');
+    setProgress(bar, i / n);
+  });
 }
 
 // ---------------- helpers ----------------

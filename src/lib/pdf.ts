@@ -117,3 +117,25 @@ export function parseGroups(input: string, max: number): number[][] | null {
 export function closePdf(doc: any) {
   try { (doc?.loadingTask?.destroy ?? doc?.destroy)?.call(doc.loadingTask ?? doc); } catch { /* ignore */ }
 }
+
+/**
+ * Re-create a PDF where every page is an image ("flatten"). Used for strong compression and for
+ * true redaction: anything hidden under a white box is gone for good, not just covered.
+ */
+export async function rasterizePdf(input: Uint8Array, dpi: number, quality: number, onPage?: (i: number, n: number) => void): Promise<Uint8Array> {
+  const { PDFDocument } = await loadPdfLib();
+  const src = await openPdfJs(input);
+  const out = await PDFDocument.create();
+  for (let i = 1; i <= src.numPages; i++) {
+    onPage?.(i, src.numPages);
+    const page = await src.getPage(i);
+    const vp = page.getViewport({ scale: 1, rotation: page.rotate });
+    const canvas = await renderPage(src, i, dpi / 72);
+    const blob: Blob = await new Promise((res, rej) => canvas.toBlob((b) => (b ? res(b) : rej(new Error('encode failed'))), 'image/jpeg', quality));
+    const img = await out.embedJpg(new Uint8Array(await blob.arrayBuffer()));
+    out.addPage([vp.width, vp.height]).drawImage(img, { x: 0, y: 0, width: vp.width, height: vp.height });
+    canvas.width = canvas.height = 1;
+  }
+  closePdf(src);
+  return out.save({ useObjectStreams: true });
+}

@@ -1,0 +1,52 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import Dropzone from '../components/Dropzone.astro';
+const faqs = [
+  { q: 'How do I edit a PDF for free?', a: 'Choose your PDF, pick <b>Text</b> and click where you want to type. Use <b>White-out</b> to hide something, <b>Highlight</b> to mark text, <b>Box</b> to draw a rectangle and <b>Image</b> to add a picture or stamp. Then press <b>Download</b>.' },
+  { q: 'Can I change the existing text in my PDF?', a: 'PDFs don\'t store text like a Word file, so no browser tool can reflow it reliably. The practical way is what professionals do: white-out the old words and type the new words on top in a matching size.' },
+  { q: 'Is white-out the same as redaction?', a: 'Not by itself: a white box hides text visually, but the text is still in the file and can be copied. Tick <b>Flatten pages</b> before downloading to turn each page into an image. Then the hidden text is permanently gone (true redaction).' },
+  { q: 'Can I type in Hindi or other languages?', a: 'Yes. English text is added as real, selectable PDF text; Hindi and other scripts are added as sharp images using your device\'s fonts.' },
+  { q: 'Is my PDF uploaded?', a: 'No. Editing happens entirely in your browser.' },
+];
+const steps = ['Choose a PDF.', 'Pick a tool: Text, White-out, Highlight, Box or Image.', 'Click or drag on the page; move and resize items as needed.', 'Optionally tick <b>Flatten pages</b> for permanent redaction, then press <b>Download</b>.'];
+---
+<ToolLayout slug="edit-pdf" h1="Edit PDF" lead="Add text, white-out, highlights, boxes and images to any PDF, right in your browser. Free, no sign-up, no watermark." steps={steps} faqs={faqs}>
+  <div class="stack">
+    <Dropzone id="ep-drop" accept=".pdf,application/pdf" title="Choose a PDF to edit" icon="📝" />
+    <div id="ep-panel" class="stack-sm hidden">
+      <div class="row ep-toolbar">
+        <div class="seg" role="group" aria-label="Edit tool">
+          <button type="button" data-tool="text" aria-pressed="true">🔤 Text</button>
+          <button type="button" data-tool="whiteout" aria-pressed="false">⬜ White-out</button>
+          <button type="button" data-tool="highlight" aria-pressed="false">🖍 Highlight</button>
+          <button type="button" data-tool="rect" aria-pressed="false">▭ Box</button>
+          <button type="button" data-tool="image" aria-pressed="false">🖼 Image</button>
+        </div>
+        <span id="ep-text-opts" class="row" style="gap:8px">
+          <label for="ep-size" class="hint">Size</label>
+          <select id="ep-size" style="width:auto"><option value="8">8</option><option value="10">10</option><option value="12" selected>12</option><option value="14">14</option><option value="18">18</option><option value="24">24</option><option value="36">36</option></select>
+          <input id="ep-color" type="color" value="#000000" aria-label="Text colour" />
+        </span>
+        <span id="ep-rect-opts" class="row hidden" style="gap:8px"><label class="hint" for="ep-stroke">Border</label><input id="ep-stroke" type="color" value="#e11d48" /></span>
+        <input id="ep-image" type="file" accept="image/*,.heic" class="hidden" />
+      </div>
+      <div class="status" id="ep-status"></div>
+      <div id="ep-pages" class="ov-pages"></div>
+      <div class="row" style="position:sticky;bottom:10px;justify-content:center;gap:16px">
+        <label class="check card" style="padding:8px 12px;box-shadow:none"><input type="checkbox" id="ep-flatten" /> Flatten pages (true redaction)</label>
+        <button type="button" class="btn btn-primary btn-lg" id="ep-save">⬇ Download PDF</button>
+      </div>
+    </div>
+  </div>
+  <script>import '../tools/edit-pdf';</script>
+  <Fragment slot="content">
+    <h2>What you can do</h2>
+    <ul>
+      <li><b>Fill in forms</b> that aren't fillable: type your name, address and dates onto the lines.</li>
+      <li><b>Correct mistakes:</b> white-out a wrong figure and type the right one on top.</li>
+      <li><b>Hide personal details</b> (Aadhaar number, account number) before sharing; tick Flatten so they're permanently removed.</li>
+      <li><b>Mark up documents:</b> highlight important lines, draw boxes and add a logo or stamp.</li>
+    </ul>
+    <p>Need to sign as well? Use <a href="/sign-pdf">Sign PDF</a>. To remove or reorder pages, use <a href="/organize-pdf">Organize PDF</a>.</p>
+  </Fragment>
+</ToolLayout>

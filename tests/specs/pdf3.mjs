@@ -1,0 +1,30 @@
+import { pdfText } from './pdf.mjs';
+export default (test, { BASE, newPage, download, fixture, assert }) => {
+  test('edit-pdf: add text + whiteout, then flatten removes text', async () => {
+    const page = await newPage();
+    await page.goto(`${BASE}/edit-pdf`);
+    await page.setInputFiles('#ep-drop input[type=file]', fixture('a.pdf'));
+    await page.waitForSelector('.ov-page canvas', { timeout: 20000 });
+    const canvas = page.locator('.ov-page canvas').first();
+    await canvas.scrollIntoViewIfNeeded();
+    const cb = await canvas.boundingBox();
+    await canvas.click({ position: { x: cb.width * 0.2, y: Math.min(cb.height * 0.3, 300) } });
+    await page.waitForSelector('.ov-text');
+    await page.keyboard.type('Hello Edited 2026');
+    await page.click('[data-tool=whiteout]');
+    const box = await canvas.boundingBox();
+    await page.mouse.move(box.x + box.width * 0.1, box.y + 60);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.6, box.y + 110, { steps: 5 });
+    await page.mouse.up();
+    assert((await page.$$('.ov-item')).length === 2, 'items');
+    const d = await download(page, '#ep-save');
+    const txt = await pdfText(d.path);
+    assert(txt.includes('Hello Edited 2026'), 'typed text not in PDF: ' + txt.slice(0, 200));
+    await page.click('label:has(#ep-flatten)');
+    const d2 = await download(page, '#ep-save', 60000);
+    const txt2 = await pdfText(d2.path);
+    assert(!txt2.includes('Doc A'), 'flatten did not remove text');
+    assert(page.errors.length === 0, page.errors.join('\n'));
+  });
+};
