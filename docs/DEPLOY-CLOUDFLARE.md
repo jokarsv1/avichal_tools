@@ -31,6 +31,10 @@ Config already in the repo:
    | `ADSENSE_SLOT_BELOW_TOOL`, `ADSENSE_SLOT_IN_CONTENT`, `ADSENSE_SLOT_SIDEBAR` | `1234567890` | Optional (otherwise Auto ads) |
    | `CF_ANALYTICS_TOKEN` | from Web Analytics | Optional |
    | `UPI_ID` | `yourname@okicici` | Optional, shows the UPI donate QR |
+   | `POSTHOG_KEY` | `phc_…` | Optional. Turns on the AARRR analytics and dashboards (see `ANALYTICS.md`). Without it, PostHog is never loaded. |
+   | `POSTHOG_HOST` | `https://us.i.posthog.com` or `https://eu.i.posthog.com` | Only with `POSTHOG_KEY` (match your PostHog region) |
+   | `EST_ECPM_USD` | `0.8` | Optional. Your AdSense eCPM, used for the estimated-revenue-by-tool charts |
+   | `GA4_ID` | `G-XXXXXXX` | Optional, only if you also want Google Analytics |
 
 6. Press **Deploy**. The first build takes about 1–2 minutes and gives you a URL like `https://avichal-tools.<your-subdomain>.workers.dev`.
 7. Set `SITE_URL` to that URL (or your custom domain later) and **redeploy**, so canonical URLs and the sitemap point to the right place.

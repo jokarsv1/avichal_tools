@@ -31,8 +31,8 @@ Two adjustments decide the **build order** for ad revenue. They don't change the
 | 8 | Merge PDF | 5 | 3 | 5 | **75** | Med | High | ✅ |
 | 9 | JPG to PDF | 5 | 3 | 5 | **75** | Med | High | ✅ |
 | 10 | Edit PDF (add text, white-out, highlight, flatten redaction) | 5 | 5 | 3 | **75** | High | High | ✅ |
-| 11 | **Background remover** | 5 | 5 | 3 | **75** | Med | High | 🔜 #2 |
-| 12 | **Resume builder** (free PDF download) | 5 | 5 | 3 | **75** | **High** | High | 🔜 #3 |
+| 11 | **Background remover** | 5 | 5 | 3 | **75** | Med | High | ✅ |
+| 12 | **Resume builder** (free PDF download) | 5 | 5 | 3 | **75** | **High** | High | ✅ |
 | 13 | Screen recorder | 4 | 4 | 4 | **64** | Med | Med | ✅ |
 | 14 | GST invoice generator (with UPI pay QR) | 4 | 4 | 4 | **64** | **High** | Med | ✅ |
 | 15 | Video to MP3 | 5 | 3 | 4 | **60** | Low | High | ✅ |
@@ -42,11 +42,11 @@ Two adjustments decide the **build order** for ad revenue. They don't change the
 | 19 | Organize / delete PDF pages | 4 | 3 | 5 | **60** | Med | Med | ✅ |
 | 20 | **Fill PDF form** | 3 | 5 | 4 | **60** | High | Med | 🔜 |
 | 21 | Image compressor (bulk, TinyPNG-style PNG) | 5 | 2 | 5 | **50** | Med | High | ✅ |
-| 22 | **Passport photo maker** (white background, print sheet) | 4 | 4 | 3 | **48** | Med | Med | 🔜 #4 |
+| 22 | **Passport photo maker** (white background, print sheet) | 4 | 4 | 3 | **48** | Med | Med | ✅ |
 | 23 | **Unlock / protect PDF** (qpdf WASM) | 4 | 4 | 3 | **48** | Med | Med | 🔜 |
-| 24 | **Image to text (OCR)** | 4 | 3 | 4 | **48** | Med | High | 🔜 |
-| 25 | **Video to GIF** | 3 | 4 | 4 | **48** | Low | Med | 🔜 |
-| 26 | **MP3 cutter / ringtone maker** | 3 | 4 | 4 | **48** | Low | Med | 🔜 |
+| 24 | **Image to text (OCR)** | 4 | 3 | 4 | **48** | Med | High | ✅ |
+| 25 | **Video to GIF** | 3 | 4 | 4 | **48** | Low | Med | ✅ |
+| 26 | **MP3 cutter / ringtone maker** | 3 | 4 | 4 | **48** | Low | Med | ✅ |
 | 27 | Rotate PDF | 3 | 3 | 5 | **45** | Med | Med | ✅ |
 | 28 | Add page numbers / watermark PDF | 3 | 3 | 5 | **45** | Med | Med | ✅ |
 | 29 | UPI QR code generator | 3 | 3 | 5 | **45** | Med | **Low** | ✅ |
@@ -69,24 +69,34 @@ Two adjustments decide the **build order** for ad revenue. They don't change the
 | 46 | Attendance calculator (75% rule) | 3 | 1 | 5 | **15** | Low | **Low** | ✅ |
 | 47 | Number to words (lakh/crore) | 3 | 1 | 5 | **15** | Med | Med | ✅ |
 | 48 | Bank statement / CAS analyzer | 3 | 5 | 2 | **30** | **Very high** | **Low** | later (moat) |
-| 49 | JSON formatter & dev tools | 4 | 1 | 5 | **20** | Very low | High | later (backlinks only) |
+| 49 | JSON formatter | 4 | 1 | 5 | **20** | Very low | High | ✅ |
+| 50 | **Salary abroad vs India (PPP, tax, savings in ₹)** + 12 country pages | 3 | 4 | 4 | **48** | **Very high** | **Low** | ✅ |
+| 51 | Salary to ask for abroad | 2 | 4 | 4 | **32** | **Very high** | **Low** | ✅ |
+| 52 | Live currency converter + 11 pair pages (USD/GBP/AED… → INR) | 5 | 1 | 4 | **20** | High | High | ✅ |
+| 53 | Loan suite: 6 loan-type EMI pages, eligibility, balance transfer, loan comparison | 4 | 2 | 5 | **40** | **Very high** | Med | ✅ |
+| 54 | Lumpsum, SWP, RD, CAGR, gratuity, EPF, Sukanya Samriddhi | 4 | 1 | 5 | **20** | **Very high** | High | ✅ |
+| 55 | Unit converter (gaj, bigha, marla, cent, guntha) | 5 | 1 | 5 | **25** | Med | Med | ✅ |
+| 56 | Time zone converter + meeting planner (IST ↔ US/UK/EU) | 4 | 1 | 5 | **20** | Med | High | ✅ |
+| 57 | BMI (Indian cut-offs), days between dates, password generator | 5 | 1 | 5 | **25** | Low | High | ✅ |
 
-**Built now: 49 tools plus 13 long-tail landing pages (6 exam pages and 7 KB-size pages), 76 pages in total.**
+**Built now: 73 tools and 131 pages in total** (tools plus exam, KB-size, loan-type, country and currency-pair landing pages).
 
-## 3. Build order from here (Phase 2, roughly 4–6 weeks)
+## 3. Build order from here
 
-The order favours **shared engines** (the next tool reuses code you already have) and **high RPM**:
+Done since the first plan: Edit PDF, background remover (MediaPipe, Apache-2.0), resume builder, passport photo maker, OCR (Tesseract.js, English + Hindi), video → GIF, audio cutter, the move-abroad suite, the loan suite, the full finance calculator set, one-click presets on every tool, and PostHog analytics.
 
-1. ~~Edit PDF~~ ✅ done (shares the Sign PDF overlay engine).
-2. **Background remover.** Use Transformers.js (Apache-2.0) with a model whose licence allows commercial use: **MODNet (Apache-2.0)** for portraits, or **BiRefNet-lite (MIT)** for general images. ⚠️ **Avoid BRIA RMBG** (non-commercial licence) and **@imgly/background-removal** (AGPL). Host the model on Cloudflare R2 or the Hugging Face CDN, not in the build, because of the 25 MiB file limit.
-3. **Resume builder.** Highest-RPM consumer tool (jobs). Keep it to 3–4 ATS-friendly templates, export a text PDF with pdf-lib, and save the draft in localStorage.
-4. **Passport/visa photo maker.** Reuses #2 for the white background, adds a 4×6 print sheet with 8 photos. Strong India and global intent.
-5. ~~GST invoice + rent receipt generators~~ ✅ done. Next on the same engine: **salary slip generator** and **quotation generator**. Promote the rent receipt page **before January**, which is tax-proof submission season.
-6. ~~Salary (CTC → in-hand), HRA and loan prepayment calculators~~ ✅ done. Next on the finance engine: **lumpsum, SWP, RD, NPS, gratuity and CAGR** calculators (each under an hour, high RPM).
-7. **OCR (image → text)** with Tesseract.js (Apache-2.0), plus Hindi language data.
-8. **Unlock/protect PDF** with qpdf-wasm (Apache-2.0).
-9. **Video → GIF and audio cutter**, reusing Mediabunny.
-10. **Hindi versions** of the top 10 India pages (`/hi/...` with hreflang). This roughly doubles your India search surface with low competition.
+Next, in order (shared engines first, then high RPM):
+
+1. **Hindi versions** of the top 10 India pages (`/hi/...` with hreflang). Roughly doubles the India search surface with low competition.
+2. **Salary slip and quotation generators** on the invoice engine (high RPM, low competition).
+3. **NPS and retirement planner** on the finance engine.
+4. **Unlock / protect PDF** with qpdf-wasm (Apache-2.0).
+5. **Fill PDF form** on the Edit PDF overlay engine.
+6. **More country pages** for the abroad calculator as Search Console shows demand (one entry in `src/lib/abroad.ts`).
+7. **Bank statement analyzer** (on-device PDF parsing). Strong privacy story, very high RPM, low competition.
+8. Later: speech to text (Whisper, needs a model on R2), PDF ↔ Word (needs a server).
+
+Let real data reorder this list: after a month, the PostHog "Top searches" chart and Search Console impressions show what people want that we don't have yet.
 
 ## 4. What drives revenue, and the levers built into this code
 

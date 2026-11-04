@@ -17,7 +17,7 @@
 - ✅ Programmatic pages only where intent is genuinely different (exam-specific and KB-size pages, each with its own specs and copy). This avoids Google's "scaled content abuse" penalty.
 - ✅ Fast: about 6 KB of JS loads up front per page; heavy engines lazy-load; fonts are system fonts (except handwriting and signature fonts on those two pages).
 - 👉 Search Console + Bing Webmaster + Crawler Hints (see `DEPLOY-CLOUDFLARE.md`).
-- 👉 **Backlinks:** launch the repo on GitHub (good README), post on Product Hunt, Hacker News ("Show HN: 40+ browser tools that never upload your files"), r/india, r/Indian_Academia, r/UPSC, r/SSC, Telegram exam groups, Quora answers. Offer free embeds to coaching sites.
+- 👉 **Backlinks:** launch the repo on GitHub (good README), post on Product Hunt, Hacker News ("Show HN: 70+ browser tools that never upload your files"), r/india, r/Indian_Academia, r/UPSC, r/SSC, Telegram exam groups, Quora answers. Offer free embeds to coaching sites.
 - 👉 Later: Hindi versions of the top India pages under `/hi/` with `hreflang`.
 
 ## 3. Hosting
@@ -36,8 +36,9 @@
 - 👉 Consider a domain email later (for example `hello@yourdomain.com` via free Cloudflare Email Routing to your Gmail). It looks more professional to AdSense and partners and keeps your personal address out of spam lists.
 
 ## 6. APIs to consume
-- ✅ **Zero runtime APIs** today: every tool works offline, costs nothing and leaks nothing.
-- Free data sources for later tools: **Frankfurter** (ECB currency rates, no key), **Razorpay IFSC dataset** (open source, ship as static JSON), **India Post PIN code data** (static JSON), exam specs in `src/data/exams.ts` (maintained by you).
+- ✅ **One runtime API:** **Frankfurter** (ECB currency rates, free, no key) for the currency converter and the salary-abroad calculators, with built-in fallback rates so they still work offline. Every other tool runs without any API.
+- ✅ Static data shipped with the site: World Bank PPP factors, country tax rules and city living costs (`src/lib/abroad.ts`), exam specs (`src/data/exams.ts`).
+- Free data sources for later tools: **Razorpay IFSC dataset** (open source, ship as static JSON), **India Post PIN code data** (static JSON), exam specs in `src/data/exams.ts` (maintained by you).
 - Only for things browsers truly can't do (high-fidelity Word ↔ PDF): self-host **Gotenberg** (LibreOffice in Docker) on a cheap VPS behind Cloudflare Turnstile. Only once traffic justifies it.
 
 ## 7. Ads
@@ -72,20 +73,23 @@
 
 ## 11. Quality, monitoring and analytics
 - ✅ Tests: `npm run test:unit` (finance formulas against known values) and `npm run test:e2e` (headless Chromium drives every tool with real files: PDFs, JPG/PNG/HEIC, MP4/MOV).
-- ✅ Analytics hooks: Cloudflare Web Analytics (cookie-less) and optional GA4; `track()` events never include file names or contents.
+- ✅ Product analytics: privacy-first **PostHog** with AARRR events (visit → start → complete funnels, retention, presets, shares, errors, estimated ad revenue per tool) and a one-command script that builds the overall, category and per-tool dashboards. No autocapture, no recordings, no query strings, Do-Not-Track respected, opt-out on `/privacy-policy`. Details: `ANALYTICS.md`.
+- ✅ Cloudflare Web Analytics (cookie-less) and optional GA4; events never include file names, contents or typed values.
 - 👉 Optional: Sentry free tier for JS error reports from real devices.
 - 👉 Test on a cheap 3–4 GB RAM Android phone and Safari on iPhone before big launches.
 
 ## 12. Accessibility and performance
 - ✅ Labels on every input, keyboard-reachable controls, focus outlines, a skip link, dark mode, `prefers-color-scheme`, alt text, reduced layout shift.
+- ✅ **One-click presets** on every tool ("⚡ One-click" chips such as *SSC photo*, *Compress to 200 KB*, *₹50 L home loan*) and deep links (`?preset=…`) you can share in exam and finance groups.
 - ✅ PWA: installable, offline after the first visit (service worker caches hashed assets; pages are network-first so new deploys appear immediately).
 
 ## Things only you can do (summary)
 1. Pick the final brand name and buy the domain.
 2. Create the Cloudflare account and connect the GitHub repo (≈10 min).
-3. Set `SITE_URL` (and later `ADSENSE_CLIENT`, `UPI_ID`, `CF_ANALYTICS_TOKEN`).
+3. Set `SITE_URL` (and later `ADSENSE_CLIENT`, `UPI_ID`, `POSTHOG_KEY`, `CF_ANALYTICS_TOKEN`).
 4. Verify Search Console and Bing, and submit the sitemap.
 5. Apply to AdSense; enable the consent message.
 6. Create donation accounts (UPI ID, Buy Me a Coffee or Ko-fi, GitHub Sponsors).
-7. Merge this branch into `main` (or open a PR) so Cloudflare deploys it.
-8. Share the launch (GitHub, Reddit, Product Hunt, exam Telegram groups).
+7. Create a free PostHog account, add `POSTHOG_KEY`, then run `node scripts/posthog-dashboards.mjs` once (see `ANALYTICS.md`).
+8. Merge this branch into `main` (or open a PR) so Cloudflare deploys it.
+9. Share the launch (GitHub, Reddit, Product Hunt, exam Telegram groups).
