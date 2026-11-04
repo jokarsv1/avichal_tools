@@ -26,6 +26,17 @@ export const SITE = {
 };
 
 /**
+ * Our promise, shown on every page (top strip, tool badges, footer).
+ * Keep it honest: we store nothing on servers; some tools keep drafts in YOUR browser only.
+ */
+export const USP = {
+  short: ['🆓 Free forever', '👤 No account, ever', '🔒 No data stored'],
+  strip: '100% free forever · No sign-up or account, ever · We store none of your data · Files never leave your device',
+  stripShort: 'Free forever · No account, ever · No data stored',
+  long: 'Every tool is free forever, needs no account or sign-up, and runs on your own device. We never upload, store or see your files or the numbers you type.',
+};
+
+/**
  * Google AdSense.
  * 1. Apply at https://adsense.google.com once the site has ~20+ indexed tool pages and the legal pages.
  * 2. Put your publisher id here (looks like "ca-pub-1234567890123456").

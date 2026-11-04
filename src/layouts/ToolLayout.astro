@@ -10,7 +10,7 @@ import Base from './Base.astro';
 import AdSlot from '../components/AdSlot.astro';
 import ToolTile from '../components/ToolTile.astro';
 import SupportBox from '../components/SupportBox.astro';
-import { SITE, ADS } from '../config/site';
+import { SITE, ADS, USP } from '../config/site';
 import { getTool, getCategory, relatedTools } from '../data/tools';
 
 export interface Faq { q: string; a: string }
@@ -40,10 +40,12 @@ const {
   lead = tool.description,
   steps = [],
   faqs = [],
-  badges = ['🔒 Files stay on your device', '✅ No login', '🚫 No watermark', '∞ No limits'],
+  badges: extraBadges = ['📵 Files never leave your device', '🚫 No watermark', '∞ No limits'],
   crumb,
 } = Astro.props;
 const strip = (s: string) => s.replace(/<[^>]+>/g, '');
+// The USP badges always come first; page-specific badges follow (duplicates of the USP are dropped).
+const badges = [...USP.short, ...extraBadges.filter((b) => !/no login|no account|free forever|no data/i.test(b))];
 const url = SITE.url + path;
 const related = relatedTools(tool.slug);
 const hasSidebar = !!(ADS.client && ADS.slots.sidebar) || (import.meta.env.DEV && ADS.showPlaceholdersInDev);
@@ -113,8 +115,9 @@ if (faqs.length) {
           <AdSlot slot="inContent" />
           <h2>Why {SITE.name}?</h2>
           <ul>
-            <li><b>Private by design:</b> your files are processed by your own browser and are never uploaded to a server.</li>
-            <li><b>Free with no catches:</b> no account, no watermark, no "credits" and no daily limit.</li>
+            <li><b>Free forever:</b> no "credits", no trial, no premium tier, no watermark and no daily limit.</li>
+            <li><b>No account, ever:</b> nothing to sign up for. Just open the page and use it.</li>
+            <li><b>No data stored:</b> your files and the numbers you type are processed by your own browser. We never upload, store or see them.</li>
             <li><b>Works offline:</b> once the page has loaded, most tools keep working without internet.</li>
             <li><b>Open source:</b> anyone can read the code on <a href={SITE.github} rel="noopener">GitHub</a>.</li>
           </ul>

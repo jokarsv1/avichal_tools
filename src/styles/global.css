@@ -64,6 +64,14 @@ code { font-family: var(--mono); font-size: .9em; background: var(--surface-2); 
 .skip-link:focus { left: 8px; top: 8px; }
 :focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
 
+/* ---------- USP strip ---------- */
+.usp-strip { background: linear-gradient(90deg, #4f46e5, #0891b2); color: #fff; font-size: .8rem; font-weight: 650; text-align: center; padding: 5px 0; letter-spacing: .01em; }
+.usp-strip .container { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.usp-short { display: none; }
+@media (max-width: 760px) { .usp-long { display: none; } .usp-short { display: inline; } }
+.usp-foot { display: flex; flex-wrap: wrap; gap: 6px; }
+.usp-foot span { background: var(--surface-2); border-radius: 999px; padding: 3px 10px; font-size: .8rem; font-weight: 600; color: var(--text); }
+
 /* ---------- Header ---------- */
 .site-header { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
 .site-header .bar { display: flex; align-items: center; gap: 16px; min-height: 56px; }
