@@ -121,7 +121,7 @@ if (faqs.length) {
           <slot name="content" />
           {steps.length > 0 && (
             <>
-              <h2>How to use the {tool.name.toLowerCase()} tool</h2>
+              <h2>How to use the {tool.name} tool</h2>
               <ol>{steps.map((s) => <li set:html={s} />)}</ol>
             </>
           )}

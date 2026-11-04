@@ -1,0 +1,26 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import PdfLock from '../components/PdfLock.astro';
+const faqs = [
+  { q: 'How do I remove a password from a PDF?', a: 'Choose the PDF, type its password once, and press <b>Unlock PDF</b>. You get a copy that opens without a password. You must know the password: this tool removes it, it does not crack it.' },
+  { q: 'What is the password of my e-Aadhaar PDF?', a: 'The first 4 letters of your name in CAPITAL letters followed by your year of birth, e.g. <code>SURE1990</code>. If your name is shorter than 4 letters, use the whole name. Use the <a href="/aadhaar-pdf-password">e-Aadhaar helper</a>.' },
+  { q: 'Can I remove print or copy restrictions?', a: 'Yes. Some PDFs open without a password but block printing, copying or editing. These restrictions are removed without needing any password.' },
+  { q: 'Is it safe to unlock bank statements here?', a: 'Yes. The PDF and the password stay in your browser. Nothing is uploaded, so your statement and password are never sent anywhere.' },
+  { q: 'Does unlocking reduce quality?', a: 'No. The pages, text and images are kept exactly as they were; only the encryption is removed.' },
+];
+const steps = ['Choose the password-protected PDF.', 'Type its password (or use the e-Aadhaar helper).', 'Press <b>Unlock PDF</b> and download the password-free copy.'];
+---
+<ToolLayout slug="unlock-pdf" h1="Unlock PDF: Remove Password" lead="Remove the password from a PDF you can open, such as e-Aadhaar, bank statements and ITR forms, and save a copy that opens directly. Also removes print and copy restrictions. Nothing is uploaded."
+  presets={[{ label: '🪪 e-Aadhaar PDF', href: '/aadhaar-pdf-password' }, { label: '🏦 Bank statement', set: { 'input[name=pl-mode][value=unlock]': true }, hint: 'Choose the file, then type the password from the bank email' }, { label: '🖨️ Remove print/copy block', set: { 'input[name=pl-mode][value=unlock]': true } }, { label: '🔒 Add a password instead', href: '/protect-pdf' }]}
+  steps={steps} faqs={faqs} badges={['🔐 Password never leaves your device', '📄 No quality loss']}>
+  <PdfLock mode="unlock" />
+  <Fragment slot="content">
+    <h2>When you need to unlock a PDF</h2>
+    <ul>
+      <li><b>Uploading to portals:</b> many government, visa and loan portals reject password-protected PDFs.</li>
+      <li><b>Printing at a shop:</b> share a copy without telling anyone your password.</li>
+      <li><b>Merging or compressing:</b> other tools can't read encrypted files. Unlock first, then use <a href="/merge-pdf">Merge PDF</a> or <a href="/compress-pdf">Compress PDF</a>.</li>
+    </ul>
+    <p class="hint">Only unlock documents that belong to you or that you have permission to use.</p>
+  </Fragment>
+</ToolLayout>

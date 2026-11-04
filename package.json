@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
+    "@jspawn/qpdf-wasm": "^0.0.2",
     "@mediabunny/aac-encoder": "^1.65.1",
     "@mediabunny/mp3-encoder": "^1.65.1",
     "@mediapipe/selfie_segmentation": "^0.1.1675465747",

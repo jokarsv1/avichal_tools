@@ -1,0 +1,54 @@
+---
+/** Unlock / protect PDF UI. Logic in src/tools/pdf-lock.ts (qpdf WebAssembly in a worker). */
+interface Props { mode?: 'unlock' | 'protect'; aadhaar?: boolean }
+const { mode = 'unlock', aadhaar = false } = Astro.props;
+import Dropzone from './Dropzone.astro';
+---
+<div class="stack" id="pl" data-mode={mode} data-aadhaar={aadhaar ? '1' : ''}>
+  <div class="seg" role="radiogroup" aria-label="What do you want to do?">
+    <label><input type="radio" name="pl-mode" value="unlock" checked={mode === 'unlock'} /><span>🔓 Remove password</span></label>
+    <label><input type="radio" name="pl-mode" value="protect" checked={mode === 'protect'} /><span>🔒 Add password</span></label>
+  </div>
+  <Dropzone id="pl-drop" accept=".pdf,application/pdf" title="Choose a PDF" hint="Stays on your device · drag & drop" icon="🔐" />
+  <p class="hint" id="pl-file"></p>
+  <div class="status" id="pl-status" role="status"></div>
+
+  <div id="pl-unlock" class="stack-sm hidden">
+    <div id="pl-pw-wrap" class="stack-sm hidden">
+      <div class="field"><label for="pl-pw">PDF password</label>
+        <div class="row" style="flex-wrap:nowrap"><input id="pl-pw" type="password" autocomplete="off" placeholder="Type the password to open the file" style="flex:1" /><button type="button" class="btn btn-sm" id="pl-eye" aria-label="Show password">👁</button></div>
+      </div>
+      <details class="card" id="pl-aadhaar" style="box-shadow:none;padding:10px 14px" open={aadhaar}>
+        <summary><b>🪪 e-Aadhaar password helper</b></summary>
+        <p class="hint">The e-Aadhaar PDF password is the <b>first 4 letters of your name in CAPITALS</b> followed by your <b>year of birth</b>, e.g. <code>SURE1990</code> for Suresh, born 1990.</p>
+        <div class="row"><input id="pl-a-name" type="text" placeholder="Name as on Aadhaar" style="flex:1;min-width:160px" autocomplete="off" /><input id="pl-a-year" type="number" placeholder="Birth year" min="1900" max="2026" style="width:120px" /><button type="button" class="btn btn-sm" id="pl-a-use">Use this</button></div>
+      </details>
+      <details class="card" style="box-shadow:none;padding:10px 14px">
+        <summary><b>🧾 Other common document passwords</b></summary>
+        <ul class="hint" style="margin:8px 0 0">
+          <li><b>ITR-V / ITR acknowledgement:</b> PAN in lowercase + date of birth as DDMMYYYY, e.g. <code>abcde1234f01011990</code>.</li>
+          <li><b>Bank and credit card statements:</b> usually a mix of your name, date of birth, customer ID or the last digits of your mobile number. The email that came with the statement says which.</li>
+          <li><b>Mutual fund statements (CAS):</b> the password you chose when requesting the statement.</li>
+        </ul>
+      </details>
+    </div>
+    <button type="button" class="btn btn-primary btn-lg" id="pl-unlock-go" disabled>🔓 Unlock PDF</button>
+  </div>
+
+  <div id="pl-protect" class="stack-sm hidden">
+    <div class="grid-2">
+      <div class="field"><label for="pl-new">New password</label><input id="pl-new" type="password" autocomplete="new-password" /></div>
+      <div class="field"><label for="pl-new2">Confirm password</label><input id="pl-new2" type="password" autocomplete="new-password" /></div>
+    </div>
+    <div class="row">
+      <label class="check"><input type="checkbox" id="pl-print" checked /> Allow printing</label>
+      <label class="check"><input type="checkbox" id="pl-copy" checked /> Allow copying text</label>
+      <label class="check"><input type="checkbox" id="pl-edit" /> Allow editing</label>
+    </div>
+    <p class="hint" style="margin:0">Encrypted with AES-256, the strongest standard PDF encryption. If you forget the password, nobody (including us) can open the file.</p>
+    <button type="button" class="btn btn-primary btn-lg" id="pl-protect-go" disabled>🔒 Protect PDF</button>
+  </div>
+
+  <button type="button" class="btn btn-primary btn-lg hidden" id="pl-download">⬇ Download PDF</button>
+</div>
+<script>import '../tools/pdf-lock';</script>

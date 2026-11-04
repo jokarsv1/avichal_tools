@@ -30,3 +30,9 @@ for (const f of fs.readdirSync(path.resolve('node_modules/@mediapipe/selfie_segm
   if (/\.(js|wasm|data|tflite|binarypb)$/.test(f)) fs.copyFileSync(path.resolve('node_modules/@mediapipe/selfie_segmentation', f), path.join(mdst, f));
 }
 console.log('mediapipe assets copied to public/vendor/mediapipe');
+
+// qpdf (Apache-2.0) compiled to WebAssembly: unlock / password-protect PDFs without re-rendering them.
+const qdst = path.resolve('public/vendor/qpdf');
+fs.mkdirSync(qdst, { recursive: true });
+for (const f of ['qpdf.js', 'qpdf.wasm']) fs.copyFileSync(path.resolve('node_modules/@jspawn/qpdf-wasm', f), path.join(qdst, f));
+console.log('qpdf assets copied to public/vendor/qpdf');

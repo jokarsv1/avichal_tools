@@ -1,0 +1,25 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import PdfLock from '../components/PdfLock.astro';
+const faqs = [
+  { q: 'How do I password-protect a PDF for free?', a: 'Choose the PDF, type a password twice and press <b>Protect PDF</b>. The file is encrypted with AES-256 in your browser, and anyone opening it needs the password.' },
+  { q: 'Can I stop people from printing or copying?', a: 'Yes. Untick <b>Allow printing</b> or <b>Allow copying text</b>. Most PDF readers respect these restrictions.' },
+  { q: 'Is my PDF uploaded to set the password?', a: 'No. Encryption happens on your device; the file and password never leave it.' },
+  { q: 'What if I forget the password?', a: 'AES-256 cannot be broken, so nobody can open the file without it. Keep the original unprotected copy or store the password safely.' },
+];
+const steps = ['Choose the PDF.', 'Type a strong password twice and pick what readers may do.', 'Press <b>Protect PDF</b> and download the encrypted copy.'];
+---
+<ToolLayout slug="protect-pdf" h1="Protect PDF with Password" lead="Add a password to any PDF with AES-256 encryption before you email or share it, and optionally block printing and copying. Done on your device, nothing uploaded."
+  presets={[{ label: '📧 Before emailing (open password)', set: { 'input[name=pl-mode][value=protect]': true, '#pl-print': true, '#pl-copy': true } }, { label: '🚫 No printing or copying', set: { 'input[name=pl-mode][value=protect]': true, '#pl-print': false, '#pl-copy': false, '#pl-edit': false } }, { label: '🔓 Remove a password instead', href: '/unlock-pdf' }]}
+  steps={steps} faqs={faqs} badges={['🛡️ AES-256 encryption', '🔐 Password never leaves your device']}>
+  <PdfLock mode="protect" />
+  <Fragment slot="content">
+    <h2>Good uses</h2>
+    <ul>
+      <li>Salary slips, Form 16, bank statements and ID copies you email to a landlord, HR or a loan agent.</li>
+      <li>Invoices and contracts shared with clients.</li>
+      <li>Medical reports sent over WhatsApp.</li>
+    </ul>
+    <p>Send the password through a different channel (for example by SMS if the file goes by email). Need a strong one? Use the <a href="/password-generator">password generator</a>.</p>
+  </Fragment>
+</ToolLayout>
