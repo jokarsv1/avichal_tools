@@ -4,6 +4,16 @@
 
 PDF, image, video, exam-form and finance tools. Your files never leave your device: everything is processed locally with WebAssembly and WebCodecs, so there are no servers to pay for, no limits, and nothing to leak.
 
+## Screenshots
+
+| Home | EMI with prepayment | Salary abroad vs India |
+|---|---|---|
+| ![Home page](docs/screenshots/01-home-desktop.png) | ![EMI calculator with prepayment panel](docs/screenshots/04-emi-with-prepayment.png) | ![USA salary vs India calculator](docs/screenshots/05-salary-abroad-vs-india.png) |
+
+| Phone | Exam photo resizer | Dark mode | Time zone planner |
+|---|---|---|---|
+| ![Home on a phone](docs/screenshots/02-home-phone.png) | ![SSC photo resizer](docs/screenshots/03-exam-photo-resizer.png) | ![Compress PDF in dark mode](docs/screenshots/07-compress-pdf-dark-phone.png) | ![Time zone meeting planner](docs/screenshots/08-time-zone-planner-phone.png) |
+
 ## What's inside (73 tools, 131 pages)
 
 Every tool shows the promise up front (**🆓 free forever · 👤 no account, ever · 🔒 no data stored**) and offers **⚡ one-click presets** for the most common jobs.
