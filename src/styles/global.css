@@ -263,10 +263,16 @@ table.data tr.hl td { background: var(--primary-soft); font-weight: 700; }
 @media (max-width: 640px) { .ad-slot { --ad-h: 250px; } }
 
 /* Support box */
-.support { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; margin-top: 30px; }
-.support .emoji { font-size: 36px; }
-.support h2 { margin: 0 0 4px; font-size: 1.1rem; }
-.support p { margin: 0 0 10px; color: var(--muted); }
+.support { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px; align-items: center; margin-top: 36px; }
+.support h2 { margin: 0 0 6px; font-size: 1.15rem; }
+.support p { margin: 0 0 12px; color: var(--muted); }
+.support-qr { margin: 0; display: grid; justify-items: center; gap: 6px; text-align: center; padding: 12px; border: 1px solid var(--border); border-radius: 14px; background: #fff; color: #111; }
+.support-qr .paytm-logo { height: 26px; width: auto; }
+.support-qr .qr { width: 168px; height: 168px; object-fit: contain; image-rendering: pixelated; }
+.support-qr figcaption { font-size: .8rem; max-width: 180px; color: #333; }
+.support-qr .hint { color: #555; font-size: .8rem; }
+@media (max-width: 640px) { .support { grid-template-columns: minmax(0, 1fr); } }
+@media (hover: hover) and (pointer: fine) { .upi-only-mobile { display: none; } }
 
 /* Preview & image compare */
 .preview-box { background: repeating-conic-gradient(var(--surface-2) 0% 25%, var(--surface) 0% 50%) 50% / 20px 20px; border: 1px solid var(--border); border-radius: 12px; display: grid; place-items: center; padding: 10px; min-height: 160px; overflow: hidden; }

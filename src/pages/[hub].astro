@@ -2,7 +2,6 @@
 import Base from '../layouts/Base.astro';
 import ToolTile from '../components/ToolTile.astro';
 import AdSlot from '../components/AdSlot.astro';
-import SupportBox from '../components/SupportBox.astro';
 import { SITE } from '../config/site';
 import { CATEGORIES, toolsIn, type Category } from '../data/tools';
 import { EXAMS, KB_PAGES } from '../data/exams';
@@ -34,6 +33,5 @@ const schema = [
       </section>
     )}
     <AdSlot slot="belowTool" />
-    <SupportBox />
   </div>
 </Base>

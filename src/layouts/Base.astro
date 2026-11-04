@@ -2,6 +2,8 @@
 import '../styles/global.css';
 import { SITE, ADS, ANALYTICS, USP } from '../config/site';
 import { CATEGORIES, LIVE_TOOLS } from '../data/tools';
+import SupportBox from '../components/SupportBox.astro';
+import { langFromPath, useT } from '../i18n';
 
 interface Props {
   title: string;
@@ -28,6 +30,8 @@ const ogUrl = ogImage.startsWith('http') ? ogImage : SITE.url + ogImage;
 const popular = LIVE_TOOLS.filter((t) => t.popular).slice(0, 8);
 const year = new Date().getFullYear();
 const isProd = import.meta.env.PROD;
+const lang = langFromPath(Astro.url.pathname);
+const t = useT(lang);
 const cfBeacon = ANALYTICS.cloudflareToken ? JSON.stringify({ token: ANALYTICS.cloudflareToken }) : '';
 ---
 <!doctype html>
@@ -79,6 +83,7 @@ const cfBeacon = ANALYTICS.cloudflareToken ? JSON.stringify({ token: ANALYTICS.c
 
     <main id="main">
       <slot />
+      <div class="container"><SupportBox t={t} /></div>
     </main>
 
     <footer class="site-footer">

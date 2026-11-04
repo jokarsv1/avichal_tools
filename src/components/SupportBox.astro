@@ -1,15 +1,35 @@
 ---
-import { SITE } from '../config/site';
+/**
+ * "Buy me a coffee" box shown at the bottom of every page (rendered by Base.astro).
+ * Shows, when configured: your Paytm QR + logo (public/donate/), a UPI button (UPI_ID),
+ * and Buy Me a Coffee / Ko-fi links (src/config/site.ts → DONATE).
+ */
+import { SITE, DONATE } from '../config/site';
+import { DONATE_ASSETS } from '../config/donate-assets';
+interface Props { t?: (k: string) => string }
+const { t = (k: string) => k } = Astro.props;
+const { paytmQr, paytmLogo } = DONATE_ASSETS;
+const upi = DONATE.upiId ? `upi://pay?pa=${encodeURIComponent(DONATE.upiId)}&pn=${encodeURIComponent(DONATE.upiName)}&cu=INR&tn=${encodeURIComponent('Coffee for ' + SITE.name)}` : '';
+const intl = DONATE.buyMeACoffee || DONATE.kofi;
 ---
-<aside class="card support no-print">
-  <div class="emoji" aria-hidden="true">☕</div>
-  <div>
-    <h2>Found this useful?</h2>
-    <p>{SITE.name} is free and open source, with no login and no watermark. A small tip keeps the servers fast and the tools free.</p>
+<aside class="card support no-print" aria-label={t('Buy me a coffee')}>
+  <div class="support-text">
+    <h2>☕ {t('Buy me a coffee')}</h2>
+    <p>{t('support.body')}</p>
     <div class="btn-row">
-      <a class="btn btn-primary btn-sm" href="/support">Buy me a coffee</a>
-      <a class="btn btn-sm" href={SITE.github} rel="noopener">⭐ Star on GitHub</a>
-      <a class="btn btn-sm" href="/roadmap">Request a tool</a>
+      {upi && <a class="btn btn-primary btn-sm upi-only-mobile" href={upi} data-donate="upi">📲 {t('Pay with any UPI app')}</a>}
+      {intl && <a class="btn btn-sm" href={intl} rel="noopener" data-donate={DONATE.buyMeACoffee ? 'buymeacoffee' : 'kofi'}>☕ {DONATE.buyMeACoffee ? 'Buy Me a Coffee' : 'Ko-fi'}</a>}
+      {!paytmQr && !upi && !intl && <a class="btn btn-primary btn-sm" href="/support" data-donate="support-page">☕ {t('Buy me a coffee')}</a>}
+      <a class="btn btn-sm" href={SITE.github} rel="noopener">⭐ {t('Star on GitHub')}</a>
+      <a class="btn btn-sm" href="/roadmap">💡 {t('Request a tool')}</a>
     </div>
   </div>
+  {paytmQr && (
+    <figure class="support-qr">
+      {paytmLogo ? <img class="paytm-logo" src={paytmLogo} alt="Paytm" width="96" height="30" loading="lazy" decoding="async" /> : <b>Paytm</b>}
+      <img class="qr" src={paytmQr} alt={t('Paytm QR code to support the site')} width="168" height="168" loading="lazy" decoding="async" />
+      <figcaption>{t('Scan with Paytm, GPay, PhonePe or any UPI app')}</figcaption>
+      <a class="hint" href={paytmQr} download="paytm-qr" data-donate="paytm-qr-save">⬇ {t('Save QR')}</a>
+    </figure>
+  )}
 </aside>

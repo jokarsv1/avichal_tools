@@ -9,7 +9,6 @@
 import Base from './Base.astro';
 import AdSlot from '../components/AdSlot.astro';
 import ToolTile from '../components/ToolTile.astro';
-import SupportBox from '../components/SupportBox.astro';
 import { SITE, ADS, USP } from '../config/site';
 import { getTool, getCategory, relatedTools } from '../data/tools';
 
@@ -154,7 +153,6 @@ if (faqs.length) {
             <div class="tool-grid">{related.map((t) => <ToolTile tool={t} />)}</div>
           </section>
         )}
-        <SupportBox />
       </div>
       {hasSidebar && (
         <aside class="tool-aside" aria-label="Sidebar">
