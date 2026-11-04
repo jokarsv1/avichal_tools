@@ -102,7 +102,7 @@ export function catText(c: Category, lang: Lang) {
 
 /** Which generic how-to steps fit a tool. */
 export function toolKind(t: Tool): 'file' | 'calc' | 'maker' | 'text' {
-  if (['invoice-generator', 'salary-slip-generator', 'rent-receipt-generator', 'resume-builder', 'qr-code-generator', 'upi-qr-code-generator', 'text-to-handwriting', 'password-generator'].includes(t.slug)) return 'maker';
+  if (['invoice-generator', 'quotation-generator', 'salary-slip-generator', 'rent-receipt-generator', 'resume-builder', 'qr-code-generator', 'upi-qr-code-generator', 'text-to-handwriting', 'password-generator'].includes(t.slug)) return 'maker';
   if (['word-counter', 'json-formatter'].includes(t.slug)) return 'text';
   if (['pdf', 'image', 'video', 'exam'].includes(t.category)) return 'file';
   return 'calc';

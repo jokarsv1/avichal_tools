@@ -18,7 +18,7 @@
 - ✅ Fast: about 6 KB of JS loads up front per page; heavy engines lazy-load; fonts are system fonts (except handwriting and signature fonts on those two pages).
 - 👉 Search Console + Bing Webmaster + Crawler Hints (see `DEPLOY-CLOUDFLARE.md`).
 - 👉 **Backlinks:** launch the repo on GitHub (good README), post on Product Hunt, Hacker News ("Show HN: 70+ browser tools that never upload your files"), r/india, r/Indian_Academia, r/UPSC, r/SSC, Telegram exam groups, Quora answers. Offer free embeds to coaching sites.
-- ✅ **Six languages:** English plus Hindi, Bengali, Marathi, Telugu and Tamil (`/hi`, `/bn`, `/mr`, `/te`, `/ta`) for the home page, every category page and every tool page, with `hreflang` and per-language canonicals. A header picker switches language and remembers the choice.
+- ✅ **Six languages:** English plus Hindi, Bengali, Marathi, Telugu and Tamil (`/hi`, `/bn`, `/mr`, `/te`, `/ta`) for the home page, every category page, every tool page and the exam photo and KB-size pages, with `hreflang` and per-language canonicals. A header picker switches language and remembers the choice.
 - ✅ **Searches land on the exact page:** every tool and landing page has its own URL; `/search?q=…` jumps straight to the best match (also used by the home search box and Chrome's site search via OpenSearch); short alias URLs (`/emi`, `/pdf-password-remover`) redirect with 301; the 404 page suggests the closest tools.
 - 👉 Ask a native speaker of each language to skim the tool names and the home page once; fix any awkward word in `src/i18n/lang/<code>.ts`.
 

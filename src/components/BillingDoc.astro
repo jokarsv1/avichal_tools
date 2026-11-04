@@ -1,0 +1,226 @@
+---
+/**
+ * GST invoice and quotation generator (one engine, two modes). Business details are shared between
+ * the two and saved only in this browser. Quotations add a validity date, an optional discount,
+ * optional GST, and a "Convert to invoice" button.
+ */
+interface Props { kind: 'invoice' | 'quotation' }
+const { kind } = Astro.props;
+const q = kind === 'quotation';
+const STATES = ['Andaman and Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chandigarh', 'Chhattisgarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir', 'Jharkhand', 'Karnataka', 'Kerala', 'Ladakh', 'Lakshadweep', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Puducherry', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal'];
+---
+<datalist id="states">{STATES.map((s) => <option value={s} />)}</datalist>
+<div class="stack" id="bill" data-kind={kind}>
+  <div class="grid-2">
+    <fieldset class="card stack-sm" style="box-shadow:none">
+      <legend><b>From (your business)</b></legend>
+      <div class="field"><label for="s-name">Business name</label><input id="s-name" data-save type="text" placeholder="Sharma Traders" /></div>
+      <div class="field"><label for="s-addr">Address</label><textarea id="s-addr" data-save rows="2"></textarea></div>
+      <div class="grid-2">
+        <div class="field"><label for="s-gstin">GSTIN{q ? ' (optional)' : ''}</label><input id="s-gstin" data-save type="text" maxlength="15" style="text-transform:uppercase" /></div>
+        <div class="field"><label for="s-state">State</label><input id="s-state" data-save type="text" list="states" value="Maharashtra" /></div>
+        <div class="field"><label for="s-phone">Phone / email</label><input id="s-phone" data-save type="text" /></div>
+        <div class="field"><label for="s-upi">UPI ID (for QR)</label><input id="s-upi" data-save type="text" placeholder="shop@okicici" /></div>
+      </div>
+    </fieldset>
+    <fieldset class="card stack-sm" style="box-shadow:none">
+      <legend><b>{q ? 'Quotation for' : 'Bill to'}</b></legend>
+      <div class="field"><label for="b-name">Customer name</label><input id="b-name" type="text" /></div>
+      <div class="field"><label for="b-addr">Address</label><textarea id="b-addr" rows="2"></textarea></div>
+      <div class="grid-2">
+        <div class="field"><label for="b-gstin">GSTIN (if registered)</label><input id="b-gstin" type="text" maxlength="15" style="text-transform:uppercase" /></div>
+        <div class="field"><label for="b-state">Place of supply (state)</label><input id="b-state" type="text" list="states" value="Maharashtra" /></div>
+        <div class="field"><label for="i-no">{q ? 'Quotation no.' : 'Invoice no.'}</label><input id="i-no" type="text" /></div>
+        <div class="field"><label for="i-date">{q ? 'Quotation date' : 'Invoice date'}</label><input id="i-date" type="date" /></div>
+        {q && <div class="field"><label for="q-valid">Valid until</label><input id="q-valid" type="date" /></div>}
+        {q && <div class="field"><label for="q-disc">Discount (%)</label><input id="q-disc" type="number" min="0" max="100" step="any" value="0" /></div>}
+      </div>
+      {q && <label class="check"><input type="checkbox" id="q-gst" checked /> Add GST to the prices</label>}
+    </fieldset>
+  </div>
+  <div class="table-wrap" style="max-height:none">
+    <table class="data" id="items">
+      <thead><tr><th>Description</th><th>HSN/SAC</th><th>Qty</th><th>Rate (₹)</th><th class="gst-col">GST %</th><th>Amount</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="row"><button type="button" class="btn btn-sm" id="add-item">➕ Add item</button><span class="spacer"></span><span class="hint" id="supply-type"></span></div>
+  <div class="grid-2">
+    <div class="stack-sm">
+      <div class="field"><label for="i-notes">{q ? 'Terms & notes' : 'Notes / bank details / terms'}</label><textarea id="i-notes" data-save={q ? undefined : ''} rows="4" placeholder={q ? '50% advance, balance on delivery.\nDelivery within 7 days of confirmation.\nPrices exclude transport.' : 'Bank: HDFC Bank, A/c 1234567890, IFSC HDFC0001234\nPayment due within 15 days.'}></textarea></div>
+    </div>
+    <div class="result result-rows" id="totals"></div>
+  </div>
+  <div class="status" id="inv-status"></div>
+  <div class="btn-row">
+    <button type="button" class="btn btn-primary btn-lg" id="inv-go">⬇ Download {q ? 'quotation' : 'invoice'} (PDF)</button>
+    {q && <button type="button" class="btn" id="q-convert">🧾 Convert to invoice</button>}
+    <button type="button" class="btn" id="inv-new">New {q ? 'quotation' : 'invoice'}</button>
+  </div>
+</div>
+<style is:global>
+  #bill.no-gst .gst-col, #bill.no-gst td.gst-cell { display: none; }
+</style>
+<script>
+  import { loadPdfLib, pdfBlob } from '../lib/pdf';
+  import { latin, para, money, rightText, hasNonLatin } from '../lib/pdfdoc';
+  import { numberToWords, rupees } from '../lib/format';
+  import { qrCanvas, upiPayload, isVpa } from '../lib/qr';
+  import { canvasToBlob } from '../lib/image';
+  import { downloadBlob, setStatus, store, h } from '../lib/ui';
+  const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
+  const root = document.getElementById('bill')!;
+  const Q = root.dataset.kind === 'quotation';
+  const K = Q ? { items: 'qt-items', next: 'qt-next', prefix: 'QT', notes: 'qt-notes' } : { items: 'inv-items', next: 'inv-next', prefix: 'INV', notes: '' };
+  interface Item { desc: string; hsn: string; qty: number; rate: number; gst: number }
+  let items: Item[] = store.get(K.items, [{ desc: 'Website design services', hsn: '998314', qty: 1, rate: 25000, gst: 18 }]);
+  const saved = store.get<Record<string, string>>('inv-seller', {});
+  document.querySelectorAll<HTMLInputElement>('[data-save]').forEach((el) => { if (saved[el.id]) el.value = saved[el.id]; });
+  if (Q) $('i-notes').value = store.get<string>(K.notes, '');
+  // A quotation converted to an invoice arrives with its customer details.
+  const prefill = !Q && store.get<Record<string, string> | null>('inv-prefill', null);
+  if (prefill) { for (const [id, v] of Object.entries(prefill)) if ($(id)) $(id).value = v; store.set('inv-prefill', null); }
+  const nextNo = store.get<number>(K.next, 1);
+  $('i-no').value = `${K.prefix}-${new Date().getFullYear()}-${String(nextNo).padStart(3, '0')}`;
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  $('i-date').value = iso(new Date());
+  if (Q) { const v = new Date(); v.setDate(v.getDate() + 15); $('q-valid').value = iso(v); }
+  const tbody = document.querySelector('#items tbody')!;
+  const intra = () => $('s-state').value.trim().toLowerCase() === $('b-state').value.trim().toLowerCase();
+  const gstOn = () => !Q || $('q-gst').checked;
+  const discPct = () => (Q ? Math.min(100, Math.max(0, +$('q-disc').value || 0)) : 0);
+  const dmy = (s: string) => s.split('-').reverse().join('/');
+  function totals() {
+    const subtotal = items.reduce((s, i) => s + i.qty * i.rate, 0);
+    const f = 1 - discPct() / 100;
+    const discount = subtotal - subtotal * f;
+    const taxable = subtotal - discount;
+    const tax = gstOn() ? items.reduce((s, i) => s + (i.qty * i.rate * f * i.gst) / 100, 0) : 0;
+    const total = Math.round((taxable + tax) * 100) / 100;
+    return { subtotal, discount, taxable, tax, total, rounded: Math.round(total) };
+  }
+  function renderItems() {
+    tbody.replaceChildren(...items.map((it, idx) => {
+      const inp = (k: keyof Item, type = 'text', w = '') => {
+        const e = h('input', { type, value: String(it[k]), style: `min-height:36px;padding:6px 8px;${w}`, 'aria-label': k });
+        e.addEventListener('input', () => { (it as any)[k] = type === 'number' ? +e.value || 0 : e.value; update(false); });
+        return e;
+      };
+      const gst = h('select', { style: 'min-height:36px;padding:4px 6px;width:auto', 'aria-label': 'GST rate' }, ...[0, 0.25, 3, 5, 12, 18, 28, 40].map((r) => h('option', { value: r, text: `${r}%`, selected: r === it.gst })));
+      gst.addEventListener('change', () => { it.gst = +gst.value; update(false); });
+      return h('tr', {},
+        h('td', { style: 'min-width:180px' }, inp('desc', 'text', 'width:100%')), h('td', {}, inp('hsn', 'text', 'width:90px')),
+        h('td', {}, inp('qty', 'number', 'width:70px')), h('td', {}, inp('rate', 'number', 'width:110px')), h('td', { class: 'gst-cell' }, gst),
+        h('td', { class: 'amt', text: rupees(it.qty * it.rate) }),
+        h('td', {}, h('button', { type: 'button', class: 'icon-btn', text: '✕', 'aria-label': 'Remove item', onclick: () => { items.splice(idx, 1); renderItems(); update(); } })));
+    }));
+  }
+  function update(rerender = true) {
+    if (!rerender) tbody.querySelectorAll<HTMLElement>('.amt').forEach((td, i) => (td.textContent = rupees(items[i].qty * items[i].rate)));
+    store.set(K.items, items);
+    store.set('inv-seller', Object.fromEntries(Array.from(document.querySelectorAll<HTMLInputElement>('[data-save]')).map((e) => [e.id, e.value])));
+    if (Q) store.set(K.notes, $('i-notes').value);
+    root.classList.toggle('no-gst', !gstOn());
+    const t = totals();
+    document.getElementById('supply-type')!.textContent = !gstOn() ? 'Prices without GST' : intra() ? 'Same state → CGST + SGST' : 'Different states → IGST';
+    let rows = '';
+    if (t.discount > 0) rows += `<div><span>Subtotal</span><b>${rupees(t.subtotal, true)}</b></div><div><span>Discount (${discPct()}%)</span><b>− ${rupees(t.discount, true)}</b></div>`;
+    rows += `<div><span>${gstOn() ? 'Taxable value' : 'Amount'}</span><b>${rupees(t.taxable, true)}</b></div>`;
+    if (gstOn()) rows += intra() ? `<div><span>CGST</span><b>${rupees(t.tax / 2, true)}</b></div><div><span>SGST</span><b>${rupees(t.tax / 2, true)}</b></div>` : `<div><span>IGST</span><b>${rupees(t.tax, true)}</b></div>`;
+    rows += `<div><span>Round off</span><b>${rupees(t.rounded - t.total, true)}</b></div><div><span><b>Total</b></span><b style="font-size:1.2rem">${rupees(t.rounded)}</b></div><div><span class="hint">${numberToWords(String(t.rounded), 'indian', 'inr')}</span></div>`;
+    document.getElementById('totals')!.innerHTML = rows;
+  }
+  document.getElementById('add-item')!.addEventListener('click', () => { items.push({ desc: '', hsn: '', qty: 1, rate: 0, gst: 18 }); renderItems(); update(); });
+  root.querySelectorAll('input, textarea').forEach((e) => { e.addEventListener('input', () => update(false)); e.addEventListener('change', () => update(false)); });
+  renderItems(); update();
+  document.getElementById('inv-new')!.addEventListener('click', () => { items = [{ desc: '', hsn: '', qty: 1, rate: 0, gst: 18 }]; ['b-name', 'b-addr', 'b-gstin'].forEach((id) => ($(id).value = '')); renderItems(); update(); });
+
+  document.getElementById('q-convert')?.addEventListener('click', () => {
+    // Carry the items (after discount) and the customer into the invoice generator.
+    const f = 1 - discPct() / 100;
+    store.set('inv-items', items.map((i) => ({ ...i, rate: Math.round(i.rate * f * 100) / 100, gst: gstOn() ? i.gst : 0 })));
+    store.set('inv-prefill', { 'b-name': $('b-name').value, 'b-addr': $('b-addr').value, 'b-gstin': $('b-gstin').value, 'b-state': $('b-state').value });
+    const lang = location.pathname.match(/^\/(hi|bn|mr|te|ta)\//)?.[1];
+    location.href = `${lang ? `/${lang}` : ''}/invoice-generator`;
+  });
+
+  document.getElementById('inv-go')!.addEventListener('click', async () => {
+    const st = document.getElementById('inv-status')!;
+    if (!$('s-name').value || !$('b-name').value || !items.length) return setStatus(st, 'Add your business name, the customer name and at least one item.', 'warn');
+    const { PDFDocument, StandardFonts, rgb } = await loadPdfLib();
+    const doc = await PDFDocument.create();
+    const f = await doc.embedFont(StandardFonts.Helvetica), b = await doc.embedFont(StandardFonts.HelveticaBold);
+    const L = (s: string) => latin(s, f);
+    const page = doc.addPage([595.28, 841.89]);
+    const grey = rgb(0.4, 0.4, 0.45), ink = rgb(0.1, 0.1, 0.18), accent = Q ? rgb(0.02, 0.55, 0.42) : rgb(0.31, 0.27, 0.9);
+    const X = 40, R = 555;
+    page.drawText(Q ? 'QUOTATION' : 'TAX INVOICE', { x: X, y: 790, size: 20, font: b, color: accent });
+    rightText(page, L($('i-no').value), R, 795, 11, b, ink);
+    rightText(page, `Date: ${dmy($('i-date').value)}`, R, 780, 10, f, grey);
+    if (Q && $('q-valid').value) rightText(page, `Valid until: ${dmy($('q-valid').value)}`, R, 766, 10, b, accent);
+    // Seller
+    page.drawText(L($('s-name').value), { x: X, y: 755, size: 13, font: b, color: ink });
+    let y = para(page, L($('s-addr').value), { x: X, y: 740, width: 250, size: 9.5, font: f, color: grey });
+    if ($('s-gstin').value) { page.drawText(`GSTIN: ${L($('s-gstin').value.toUpperCase())}`, { x: X, y, size: 9.5, font: b, color: ink }); y -= 13; }
+    page.drawText(`State: ${L($('s-state').value)}${$('s-phone').value ? '  |  ' + L($('s-phone').value) : ''}`, { x: X, y, size: 9.5, font: f, color: grey });
+    // Buyer
+    page.drawText(Q ? 'QUOTATION FOR' : 'BILL TO', { x: 320, y: 745, size: 9, font: b, color: grey });
+    page.drawText(L($('b-name').value), { x: 320, y: 730, size: 12, font: b, color: ink });
+    let yb = para(page, L($('b-addr').value), { x: 320, y: 715, width: 235, size: 9.5, font: f, color: grey });
+    if ($('b-gstin').value) { page.drawText(`GSTIN: ${L($('b-gstin').value.toUpperCase())}`, { x: 320, y: yb, size: 9.5, font: b, color: ink }); yb -= 13; }
+    if (gstOn()) page.drawText(`Place of supply: ${L($('b-state').value)}`, { x: 320, y: yb, size: 9.5, font: f, color: grey });
+    // Table
+    let ty = Math.min(y, yb) - 28;
+    const cols = [X, 260, 320, 365, 440, 480];
+    const head = ['Description', 'HSN/SAC', 'Qty', 'Rate', gstOn() ? 'GST' : '', 'Amount'];
+    page.drawRectangle({ x: X - 4, y: ty - 6, width: R - X + 8, height: 20, color: rgb(0.94, 0.94, 0.98) });
+    head.forEach((t, i) => (i >= 2 ? rightText(page, t, i === 5 ? R : cols[i + 1] - 8, ty, 9, b, ink) : page.drawText(t, { x: cols[i], y: ty, size: 9, font: b, color: ink })));
+    ty -= 22;
+    for (const it of items) {
+      const lines = para(page, L(it.desc), { x: cols[0], y: ty, width: 210, size: 9.5, font: f, color: ink });
+      page.drawText(L(it.hsn), { x: cols[1], y: ty, size: 9.5, font: f, color: ink });
+      rightText(page, String(it.qty), cols[3] - 8, ty, 9.5, f, ink);
+      rightText(page, it.rate.toLocaleString('en-IN', { minimumFractionDigits: 2 }), cols[4] - 8, ty, 9.5, f, ink);
+      if (gstOn()) rightText(page, `${it.gst}%`, cols[5] - 8, ty, 9.5, f, ink);
+      rightText(page, (it.qty * it.rate).toLocaleString('en-IN', { minimumFractionDigits: 2 }), R, ty, 9.5, f, ink);
+      ty = Math.min(lines, ty - 14) - 6;
+      page.drawLine({ start: { x: X - 4, y: ty + 8 }, end: { x: R + 4, y: ty + 8 }, thickness: 0.4, color: rgb(0.85, 0.85, 0.9) });
+      if (ty < 200) break; // keep to one page in this simple generator
+    }
+    // Totals
+    const t = totals();
+    const rows: [string, string][] = [];
+    if (t.discount > 0) rows.push(['Subtotal', money(t.subtotal)], [`Discount (${discPct()}%)`, `- ${money(t.discount)}`]);
+    rows.push([gstOn() ? 'Taxable value' : 'Amount', money(t.taxable)]);
+    if (gstOn()) { if (intra()) rows.push(['CGST', money(t.tax / 2)], ['SGST', money(t.tax / 2)]); else rows.push(['IGST', money(t.tax)]); }
+    rows.push(['Round off', money(t.rounded - t.total)]);
+    let yt = ty - 10;
+    rows.forEach(([k, v]) => { page.drawText(k, { x: 380, y: yt, size: 10, font: f, color: grey }); rightText(page, v, R, yt, 10, f, ink); yt -= 15; });
+    page.drawRectangle({ x: 372, y: yt - 8, width: R - 372 + 4, height: 22, color: accent });
+    page.drawText('TOTAL', { x: 380, y: yt - 1, size: 11, font: b, color: rgb(1, 1, 1) });
+    rightText(page, money(t.rounded), R - 2, yt - 1, 11, b, rgb(1, 1, 1));
+    para(page, `Amount in words: ${numberToWords(String(t.rounded), 'indian', 'inr')}`, { x: X, y: ty - 10, width: 320, size: 9.5, font: b, color: ink });
+    if (Q && !gstOn()) page.drawText('Prices are exclusive of GST.', { x: X, y: ty - 40, size: 9, font: f, color: grey });
+    // Notes + UPI QR
+    let yn = Math.min(yt - 40, ty - 60);
+    if ($('i-notes').value) {
+      page.drawText(Q ? 'Terms & notes' : 'Notes', { x: X, y: yn, size: 9, font: b, color: grey });
+      yn = para(page, L($('i-notes').value), { x: X, y: yn - 13, width: 330, size: 9, font: f, color: ink });
+    }
+    const vpa = $('s-upi').value.trim();
+    if (isVpa(vpa)) {
+      // Invoices ask for the exact amount; quotations leave the amount open (for an advance).
+      const qr = await qrCanvas(upiPayload(vpa, $('s-name').value, Q ? '' : String(t.rounded), $('i-no').value), 300, { fg: '#111111', bg: '#ffffff', ecc: 'M', margin: 1 });
+      const png = await doc.embedPng(new Uint8Array(await (await canvasToBlob(qr, 'image/png')).arrayBuffer()));
+      page.drawImage(png, { x: R - 100, y: 70, width: 100, height: 100 });
+      rightText(page, Q ? 'Scan to pay an advance with any UPI app' : 'Scan to pay with any UPI app', R, 58, 8, f, grey);
+    }
+    page.drawLine({ start: { x: X, y: 90 }, end: { x: X + 160, y: 90 }, thickness: 0.6, color: grey });
+    page.drawText(`For ${L($('s-name').value)}`, { x: X, y: 76, size: 9, font: f, color: grey });
+    page.drawText('Authorised signatory', { x: X, y: 64, size: 9, font: f, color: grey });
+    page.drawText(Q ? `This is a quotation, not a tax invoice.${$('q-valid').value ? ` Prices are valid until ${dmy($('q-valid').value)}.` : ''}` : 'This is a computer-generated invoice.', { x: X, y: 36, size: 7.5, font: f, color: grey });
+    downloadBlob(pdfBlob(await doc.save()), `${$('i-no').value || (Q ? 'quotation' : 'invoice')}.pdf`);
+    store.set(K.next, nextNo + 1);
+    setStatus(st, `${Q ? 'Quotation' : 'Invoice'} downloaded.${items.length > 14 ? ' Note: only the first items that fit on one page were included.' : ''}${hasNonLatin($('s-name').value, $('b-name').value, ...items.map((i) => i.desc)) ? ' Non-English characters were replaced; please use English text.' : ''}`, 'ok');
+  });
+</script>

@@ -83,8 +83,10 @@ Two adjustments decide the **build order** for ad revenue. They don't change the
 | 60 | Salary slip generator | 4 | 4 | 4 | **64** | **High** | Med | ✅ |
 | 61 | Compound / simple interest, inflation, discount | 5 | 1 | 5 | **25** | Med | High | ✅ |
 | 62 | Hindi, Bengali, Marathi, Telugu, Tamil versions of every tool | – | – | – | – | Med | **Low** | ✅ |
+| 63 | Translated exam photo pages (6 exams) and KB-size pages (7 sizes) × 5 languages | 4 | 4 | 5 | **80** | Med | **Very low** | ✅ |
+| 64 | Quotation generator (converts to GST invoice) | 4 | 4 | 4 | **64** | **High** | Med | ✅ |
 
-**Built now: 82 tools and 603 pages in 6 languages** (tools plus exam, KB-size, PDF-size, loan-type, country and currency-pair landing pages, and the translated pages).
+**Built now: 83 tools and 674 pages in 6 languages** (tools plus exam, KB-size, PDF-size, loan-type, country and currency-pair landing pages, and the translated pages).
 
 ## 3. Build order from here
 
@@ -93,8 +95,8 @@ Done since the first plan: Edit PDF, background remover (MediaPipe, Apache-2.0),
 Next, in order (shared engines first, then high RPM):
 
 1. **Native-speaker review** of the five language packs, then translate the most-visited tools' FAQs fully (starting with Hindi).
-2. **Translated exam pages** (`/hi/ssc-photo-resizer` …) and Hindi KB-size pages: huge Hindi search volume, very low competition.
-3. **Quotation generator** and **GST e-way-bill-style delivery challan** on the invoice engine.
+2. **More exams** in `src/data/exams.ts` (RRB, CTET, state police and PSC forms): each new exam automatically gets an English page and five translated pages.
+3. **Delivery challan** and **proforma invoice** on the shared invoice/quotation engine.
 4. **Aadhaar card print layout** (front + back on one A4 page) and **PDF to text** for e-Aadhaar/e-PAN.
 5. **More country pages** for the abroad calculator as Search Console shows demand.
 6. **Bank statement analyzer** (on-device PDF parsing). Strong privacy story, very high RPM, low competition.

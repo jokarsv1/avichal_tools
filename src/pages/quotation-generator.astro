@@ -1,0 +1,27 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import BillingDoc from '../components/BillingDoc.astro';
+const faqs = [
+  { q: 'What should a quotation include?', a: 'Your business name and contact details, the customer\'s name, a quotation number and date, how long the prices are valid, each item with quantity and rate, taxes (GST) if you are registered, the total, and your terms: advance, delivery time, payment terms and what is not included.' },
+  { q: 'Is a quotation the same as a proforma invoice or an estimate?', a: 'They are close. A quotation or estimate offers prices before the customer agrees. A proforma invoice is usually sent after the customer agrees, to ask for an advance. None of them is a tax invoice, so no GST is due until you issue the actual invoice.' },
+  { q: 'Do I need GST on a quotation?', a: 'If you are GST-registered, show GST so the customer sees the final cost. If you are not registered, untick "Add GST" and the quotation shows plain prices.' },
+  { q: 'How do I turn the quotation into an invoice?', a: 'When the customer accepts, press <b>Convert to invoice</b>. The items (after discount) and the customer\'s details move to the GST invoice generator, where you download the tax invoice.' },
+  { q: 'Is my data saved?', a: 'Your business details, terms and the next quotation number are saved only in this browser. Nothing is uploaded.' },
+];
+const steps = ['Fill in your business details (shared with the invoice generator and saved on this device).', 'Add the customer, the validity date and any discount; untick GST if you are not registered.', 'Add the items, check the total and download the PDF.', 'When the customer agrees, press <b>Convert to invoice</b>.'];
+---
+<ToolLayout slug="quotation-generator" h1="Quotation Generator (Estimate PDF)" lead="Make a professional quotation or estimate PDF in a minute: items, discount, GST (optional), validity date, terms and amount in words. Convert it to a GST invoice with one click when the customer agrees. Free, no login."
+  presets={[{ label: '🏗️ Contractor / interior work', set: { '#q-gst': false, '#i-notes': '50% advance, balance on completion.\nMaterial and labour included.\nWork to start within 7 days of confirmation.' } }, { label: '💻 Freelance / agency (with GST)', set: { '#q-gst': true, '#i-notes': '50% advance to start, 50% on delivery.\nTwo rounds of revisions included.\nPayment within 7 days of invoice.' } }, { label: '🎁 10% discount offer', set: { '#q-disc': '10' } }, { label: '🧾 Need an invoice instead?', href: '/invoice-generator' }]}
+  steps={steps} faqs={faqs} badges={['📅 Valid-until date', '🏷️ Discount', '🧾 One click to invoice', '💾 Saves your details']}>
+  <BillingDoc kind="quotation" />
+  <Fragment slot="content">
+    <h2>Quotation tips that win more work</h2>
+    <ul>
+      <li><b>Keep validity short</b> (7–15 days) when material prices move, and say so on the quote.</li>
+      <li><b>Write clear terms:</b> advance amount, delivery time, what is not included (transport, installation, taxes).</li>
+      <li><b>Itemise:</b> customers trust a quote with separate lines more than a single lump sum.</li>
+      <li><b>Follow up</b> a day or two before the validity date.</li>
+    </ul>
+    <p>Related: <a href="/invoice-generator">GST invoice generator</a> · <a href="/gst-calculator">GST calculator</a> · <a href="/discount-calculator">Discount calculator</a> · <a href="/upi-qr-code-generator">UPI QR code</a></p>
+  </Fragment>
+</ToolLayout>

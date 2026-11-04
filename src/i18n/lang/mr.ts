@@ -182,6 +182,7 @@ const pack: LangPack = {
     'video-to-gif': ['व्हिडिओ ते GIF', 'क्लिपला ॲनिमेटेड GIF मध्ये बदला.'],
     'audio-cutter': ['MP3 कटर आणि रिंगटोन', 'ऑडिओ कापा, फेड करा, रिंगटोन बनवा.'],
     'invoice-generator': ['GST इनव्हॉइस जनरेटर', 'UPI QR सह GST इनव्हॉइस PDF.'],
+    'quotation-generator': ['कोटेशन जनरेटर', 'कोटेशन PDF, एका क्लिकवर इनव्हॉइस.'],
     'salary-slip-generator': ['पगार स्लिप जनरेटर', 'कर्मचाऱ्यांसाठी मासिक पे-स्लिप PDF.'],
     'rent-receipt-generator': ['भाडे पावती जनरेटर', 'HRA साठी मासिक भाडे पावत्या.'],
     'salary-calculator': ['पगार कॅल्क्युलेटर', 'CTC वरून दरमहा हातात येणारा पगार.'],

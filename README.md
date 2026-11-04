@@ -14,9 +14,9 @@ PDF, image, video, exam-form and finance tools. Your files never leave your devi
 |---|---|---|---|
 | ![Home on a phone](docs/screenshots/02-home-phone.png) | ![SSC photo resizer](docs/screenshots/03-exam-photo-resizer.png) | ![Compress PDF in dark mode](docs/screenshots/07-compress-pdf-dark-phone.png) | ![Time zone meeting planner](docs/screenshots/08-time-zone-planner-phone.png) |
 
-## What's inside (82 tools, 603 pages, 6 languages)
+## What's inside (83 tools, 674 pages, 6 languages)
 
-Every tool shows the promise up front (**🆓 free forever · 👤 no account, ever · 🔒 no data stored**) and offers **⚡ one-click presets** for the most common jobs. The home page, category pages and every tool are available in **English, हिन्दी, বাংলা, मराठी, తెలుగు and தமிழ்** (`/hi`, `/bn`, `/mr`, `/te`, `/ta`).
+Every tool shows the promise up front (**🆓 free forever · 👤 no account, ever · 🔒 no data stored**) and offers **⚡ one-click presets** for the most common jobs. The home page, category pages, every tool and the exam and KB-size pages are available in **English, हिन्दी, বাংলা, मराठी, తెలుగు and தமிழ்** (`/hi`, `/bn`, `/mr`, `/te`, `/ta`), e.g. `/hi/ssc-photo-resizer`, `/ta/compress-image-to-20kb`.
 
 | Category | Tools |
 |---|---|
@@ -24,7 +24,7 @@ Every tool shows the promise up front (**🆓 free forever · 👤 no account, e
 | **Image** (11) | **Resize to exact KB** (min + max, DPI, padding), Compressor (TinyPNG-style PNG), Resizer, Crop (circle), HEIC→JPG, PNG↔JPG, WebP→JPG, Converter, **Background remover** (on-device AI), **Image to text / OCR** (English + Hindi) |
 | **Exam & Govt** (3 + 13 pages) | Exam photo & signature resizer with presets for **SSC, IBPS/SBI, UPSC, NEET, JEE Main, PAN**, signature cleaner, **Passport photo maker** (white background, 4×6 print sheet), `/compress-image-to-{10…500}kb` pages |
 | **Video** (8) | **Compress** (quality or target MB), Trim, Video→MP3/M4A/WAV, MOV/MKV/WebM→MP4, Mute, **Screen recorder**, **Video→GIF**, **MP3 cutter & ringtone maker** |
-| **Finance** (27 + 6 loan pages) | EMI (with a "what if you prepay?" panel), **Loan prepayment** (tenure saved vs EMI saved), Loan eligibility, Balance transfer, Compare loan offers, Home/car/personal/education/bike/gold loan EMI pages, SIP (step-up), Lumpsum, SWP, RD, FD, PPF, CAGR, EPF, Sukanya Samriddhi, Gratuity, **NPS (Dec 2025 exit rules)**, **Retirement planner**, Compound and simple interest, Inflation, **Income tax FY 2026-27 new vs old**, **Salary CTC → in-hand**, HRA, GST 2.0, **GST invoice**, **Salary slip** and **Rent receipt** generators |
+| **Finance** (28 + 6 loan pages) | EMI (with a "what if you prepay?" panel), **Loan prepayment** (tenure saved vs EMI saved), Loan eligibility, Balance transfer, Compare loan offers, Home/car/personal/education/bike/gold loan EMI pages, SIP (step-up), Lumpsum, SWP, RD, FD, PPF, CAGR, EPF, Sukanya Samriddhi, Gratuity, **NPS (Dec 2025 exit rules)**, **Retirement planner**, Compound and simple interest, Inflation, **Income tax FY 2026-27 new vs old**, **Salary CTC → in-hand**, HRA, GST 2.0, **GST invoice**, **Quotation** (convert to invoice in one click), **Salary slip** and **Rent receipt** generators |
 | **Abroad** (4 + 23 pages) | **Salary abroad vs India** (tax, living costs by lifestyle and family size, savings in ₹ at live rates, PPP, equivalent Indian CTC) with 12 country pages, Salary to ask for abroad, Live currency converter with 11 pair pages, **Time zone converter & meeting planner** |
 | **Student** (4) | Attendance (75% rule), CGPA→percentage, Text→handwriting (Hindi support), **Resume builder** (ATS-friendly PDF) |
 | **Everyday** (12) | QR code generator (static, never expires, logo), UPI QR poster, Word counter, Age calculator, Percentage, Discount, Number→words (lakh/crore), **Unit converter** (gaj, bigha, marla, cent, guntha), BMI (Indian cut-offs), Days between dates, Password generator, JSON formatter |
