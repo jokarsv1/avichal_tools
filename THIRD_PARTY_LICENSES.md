@@ -19,4 +19,6 @@ This project's own code is MIT-licensed. It bundles or loads these open-source c
 | [@tesseract.js-data/eng, hin](https://github.com/naptha/tessdata) | OCR language models | MIT (models: Apache-2.0, Google Tesseract) | |
 | Google Fonts (Caveat, Kalam, Homemade Apple, Indie Flower, Shadows Into Light, Gloria Hallelujah, Reenie Beanie, Dancing Script, Great Vibes, Satisfy) | Handwriting and signature styles | SIL Open Font License / Apache-2.0 | Loaded from fonts.googleapis.com on two pages |
 
+| [MediaPipe Selfie Segmentation](https://github.com/google-ai-edge/mediapipe) | Background removal for portraits (passport/exam white background) | Apache-2.0 | Model + WASM self-hosted under /vendor/mediapipe |
+
 **Deliberately not used** because of licence conflicts with an ad-supported site: ffmpeg.wasm builds with x264 (GPL), @imgly/background-removal (AGPL), BRIA RMBG models (non-commercial).

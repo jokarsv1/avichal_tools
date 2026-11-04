@@ -21,6 +21,7 @@
     "@astrojs/sitemap": "^3.7.4",
     "@mediabunny/aac-encoder": "^1.65.1",
     "@mediabunny/mp3-encoder": "^1.65.1",
+    "@mediapipe/selfie_segmentation": "^0.1.1675465747",
     "@tesseract.js-data/eng": "^1.0.0",
     "@tesseract.js-data/hin": "^1.0.0",
     "astro": "^7.4.5",

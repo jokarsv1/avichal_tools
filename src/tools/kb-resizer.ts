@@ -21,11 +21,14 @@ export function initKbResizer(root: HTMLElement) {
   const fmtEl = q<HTMLSelectElement>('.kb-fmt');
   const cleanEl = q<HTMLInputElement>('.kb-clean');
   const grayEl = q<HTMLInputElement>('.kb-gray');
+  const whiteEl = q<HTMLInputElement>('.kb-white');
   const statusEl = q('.kb-status');
   const outImg = q<HTMLImageElement>('.kb-out-img');
   const dlBtn = q<HTMLButtonElement>('.kb-download');
 
   let src: HTMLCanvasElement | null = null; // working copy, already rotated
+  let original: HTMLCanvasElement | null = null;
+  let whitened: HTMLCanvasElement | null = null;
   let fileName = 'photo';
   let zoom = 1, panX = 0, panY = 0;
   let fit: 'cover' | 'contain' = 'cover';
@@ -140,8 +143,21 @@ export function initKbResizer(root: HTMLElement) {
     ctx.translate(r.width, 0);
     ctx.rotate(Math.PI / 2);
     ctx.drawImage(src, 0, 0);
-    src = r; panX = panY = 0; redraw(); schedule();
+    src = original = r; whitened = null; panX = panY = 0;
+    if (whiteEl.checked) applyWhite(); else { redraw(); schedule(); }
   });
+
+  async function applyWhite() {
+    if (!original) return;
+    if (!whiteEl.checked) { src = original; redraw(); schedule(); return; }
+    setStatus(statusEl, '', 'info'); statusEl.textContent = 'Making the background white (AI on your device)…';
+    try {
+      const { removeBackground } = await import('../lib/segment');
+      whitened ??= await removeBackground(original, { bg: '#ffffff', feather: 1, tightness: 1.6 });
+      src = whitened; redraw(); schedule();
+    } catch (e) { setStatus(statusEl, '', 'err'); statusEl.textContent = 'Could not change the background.'; }
+  }
+  whiteEl.addEventListener('change', applyWhite);
 
   // ---------- processing ----------
   let timer: number | undefined;
@@ -235,11 +251,12 @@ export function initKbResizer(root: HTMLElement) {
         const c = makeCanvas(bmp.width, bmp.height); c.getContext('2d')!.drawImage(bmp, 0, 0); return c;
       })();
       bmp.close?.();
+      original = src; whitened = null;
       zoom = 1; panX = panY = 0; zoomEl.value = '1';
       drop.classList.add('hidden');
       editor.classList.remove('hidden');
       redraw();
-      process();
+      if (whiteEl.checked) await applyWhite(); else process();
     } catch (e) {
       alert('Could not open this image. ' + (e instanceof Error ? e.message : ''));
     }

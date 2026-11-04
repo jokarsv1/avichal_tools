@@ -1,0 +1,45 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import Dropzone from '../components/Dropzone.astro';
+const faqs = [
+  { q: 'How do I remove the background from a photo for free?', a: 'Choose a photo of a person. The background is removed automatically on your device. Pick transparent, white, a colour or a blurred background and download in full resolution, with no watermark and no credits.' },
+  { q: 'Does it work for products or objects?', a: 'This tool is tuned for people: portraits, selfies, profile and passport photos. For products and objects results vary; a general-purpose remover is on our <a href="/roadmap">roadmap</a>.' },
+  { q: 'Can I get a white background for a passport or visa photo?', a: 'Yes. Choose <b>White</b>, download, then make the print sheet in the <a href="/passport-photo-maker">passport photo maker</a> (which also has a built-in white-background option).' },
+  { q: 'Is my photo uploaded?', a: 'No. The AI model (Google MediaPipe, open source) runs inside your browser. Your photo never leaves your device.' },
+  { q: 'Why are the edges around hair soft?', a: 'The on-device model is small so it runs fast on phones. Use <b>Edge sharpness</b> for crisper outlines, or <b>Edge softness</b> to blend naturally.' },
+];
+const steps = ['Choose a photo of a person (selfie, portrait, profile photo).', 'Wait a second while the background is removed on your device.', 'Pick transparent, white, colour or blur.', 'Download PNG (transparent) or JPG.'];
+---
+<ToolLayout slug="background-remover" h1="Remove Background From Photo" lead="Remove the background from photos of people in one click: transparent PNG, white background for passport photos, any colour or a blurred 'portrait mode' effect. Free, HD, no watermark." steps={steps} faqs={faqs} badges={['🪄 AI on your device', '🖼️ Full resolution', '🚫 No watermark', '∞ No credits']}>
+  <div class="stack">
+    <Dropzone id="bg-drop" accept="image/*,.heic,.heif" title="Choose a photo of a person" hint="Selfies, portraits, profile and passport photos · drag & drop or paste" icon="🪄" />
+    <div id="bg-panel" class="stack-sm hidden">
+      <div class="row">
+        <div class="seg" role="group" aria-label="Background">
+          <button type="button" data-bg="transparent" aria-pressed="true">Transparent</button>
+          <button type="button" data-bg="white" aria-pressed="false">White</button>
+          <button type="button" data-bg="color" aria-pressed="false">Colour</button>
+          <button type="button" data-bg="blur" aria-pressed="false">Blur</button>
+        </div>
+        <input id="bg-color" type="color" value="#2563eb" aria-label="Background colour" />
+        <label class="field" style="min-width:150px">Edge softness <input id="bg-soft" type="range" min="0" max="4" step="0.5" value="1" /></label>
+        <label class="field" style="min-width:150px">Edge sharpness <input id="bg-tight" type="range" min="0" max="20" step="1" value="6" /></label>
+      </div>
+      <div class="preview-box"><canvas id="bg-preview" aria-label="Result preview" style="max-height:520px"></canvas></div>
+      <div class="status" id="bg-status"></div>
+      <div class="btn-row"><button type="button" class="btn btn-primary btn-lg" id="bg-png">⬇ Download PNG</button><button type="button" class="btn" id="bg-jpg">⬇ Download JPG</button></div>
+    </div>
+  </div>
+  <script>import '../tools/bg-remover';</script>
+  <Fragment slot="content">
+    <h2>Background removal without uploading your photo</h2>
+    <p>Most background removers upload your photo to their servers and charge for full-resolution downloads. This one runs Google's open-source MediaPipe segmentation model inside your browser, so it is free at full resolution and your photo stays private.</p>
+    <h3>Ideas</h3>
+    <ul>
+      <li>White-background passport, visa and exam photos.</li>
+      <li>Clean LinkedIn and resume profile pictures (try a soft blue or grey).</li>
+      <li>Blurred-background "portrait mode" for phones without it.</li>
+    </ul>
+    <p>Related: <a href="/passport-photo-maker">passport photo maker</a> · <a href="/exam-photo-resizer">exam photo resizer</a> · <a href="/crop-image">crop image</a></p>
+  </Fragment>
+</ToolLayout>

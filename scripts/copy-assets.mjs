@@ -22,3 +22,11 @@ for (const lang of ['eng', 'hin']) {
   fs.copyFileSync(path.resolve(`node_modules/@tesseract.js-data/${lang}/4.0.0_best_int/${lang}.traineddata.gz`), path.join(tdst, 'lang', `${lang}.traineddata.gz`));
 }
 console.log('tesseract assets copied to public/vendor/tesseract');
+
+// MediaPipe selfie segmentation (Apache-2.0): portrait background removal, fully self-hosted.
+const mdst = path.resolve('public/vendor/mediapipe');
+fs.mkdirSync(mdst, { recursive: true });
+for (const f of fs.readdirSync(path.resolve('node_modules/@mediapipe/selfie_segmentation'))) {
+  if (/\.(js|wasm|data|tflite|binarypb)$/.test(f)) fs.copyFileSync(path.resolve('node_modules/@mediapipe/selfie_segmentation', f), path.join(mdst, f));
+}
+console.log('mediapipe assets copied to public/vendor/mediapipe');

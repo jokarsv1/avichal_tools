@@ -10,6 +10,8 @@ const view = $<HTMLCanvasElement>('#pp-view');
 const status = $('#pp-status');
 const el = (id: string) => document.getElementById(id) as HTMLInputElement;
 let src: HTMLCanvasElement | null = null;
+let original: HTMLCanvasElement | null = null;
+let whitened: HTMLCanvasElement | null = null;
 let zoom = 1, panX = 0, panY = 0;
 
 const size = () => { const [w, h] = el('pp-size').value.split('x').map(Number); return { w, h }; };
@@ -93,15 +95,32 @@ $('#pp-rotate').addEventListener('click', () => {
   if (!src) return;
   const r = makeCanvas(src.height, src.width), x = r.getContext('2d')!;
   x.translate(r.width, 0); x.rotate(Math.PI / 2); x.drawImage(src, 0, 0);
-  src = r; panX = panY = 0; redraw();
+  src = r; original = r; whitened = null; panX = panY = 0;
+  if (el('pp-white').checked) applyWhite(); else redraw();
 });
+
+async function applyWhite() {
+  if (!original) return;
+  if (!el('pp-white').checked) { src = original; redraw(); return; }
+  setStatus(status, 'Making the background white (AI on your device)…', 'info');
+  try {
+    const { removeBackground } = await import('../lib/segment');
+    whitened ??= await removeBackground(original, { bg: '#ffffff', feather: 1, tightness: 1.6 });
+    src = whitened;
+    redraw();
+    setStatus(status, 'White background applied. Check the edges, then align your face with the guide.', 'ok');
+  } catch (e) { setStatus(status, 'Could not change the background: ' + errorMessage(e), 'err'); }
+}
+el('pp-white').addEventListener('change', applyWhite);
 
 onFiles($('#pp-drop'), async ([f]) => {
   try {
     const bmp = await decodeImage(f);
     const s = Math.min(1, 2400 / Math.max(bmp.width, bmp.height));
-    src = drawScaled(bmp, Math.round(bmp.width * s), Math.round(bmp.height * s));
+    src = original = drawScaled(bmp, Math.round(bmp.width * s), Math.round(bmp.height * s));
+    whitened = null;
     bmp.close();
+    if (el('pp-white').checked) await applyWhite();
     zoom = 1; panX = panY = 0; el('pp-zoom').value = '1';
     $('#pp-panel').classList.remove('hidden');
     $('#pp-drop').classList.add('compact');

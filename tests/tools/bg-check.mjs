@@ -1,0 +1,18 @@
+import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path';
+import { createRequire } from 'node:module';
+const pw = createRequire(import.meta.url)('/opt/node-tools/node_modules/playwright');
+const DIST = path.resolve('dist');
+const T = { '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.html': 'text/html', '.wasm': 'application/wasm' };
+const s = http.createServer((q, r) => { const p = decodeURIComponent(new URL(q.url, 'http://x').pathname); let f = path.join(DIST, p); if (!path.extname(p)) f += '.html'; if (!fs.existsSync(f)) { r.writeHead(404); r.end(); return; } r.writeHead(200, { 'content-type': T[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(r); });
+await new Promise((r) => s.listen(4393, r));
+const b = await pw.chromium.launch();
+const pg = await b.newPage({ viewport: { width: 1280, height: 1000 } });
+pg.on('console', (m) => m.type() === 'error' && console.log('console', m.text().slice(0, 200)));
+pg.on('pageerror', (e) => console.log('pageerror', e.message));
+await pg.goto('http://localhost:4393/background-remover');
+await pg.setInputFiles('#bg-drop input[type=file]', 'tests/fixtures/astronaut.png');
+await pg.waitForSelector('#bg-status.ok, #bg-status.err', { timeout: 60000 });
+console.log('status:', await pg.textContent('#bg-status'));
+await pg.click('[data-bg=white]');
+await pg.locator('#bg-preview').screenshot({ path: 'tests/output/bg-white.png' });
+await b.close(); s.close();

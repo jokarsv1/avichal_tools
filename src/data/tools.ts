@@ -294,7 +294,10 @@ export const TOOLS: Tool[] = [
     short: 'Amount in words, lakh/crore or million.', keywords: 'amount in words rupees in words cheque' },
 
   // ---------- Planned (shown on /roadmap only) ----------
-  { slug: 'background-remover', name: 'Background Remover', category: 'image', icon: '🪄', status: 'planned', title: '', description: '', short: 'AI background removal on your device (MIT/Apache models).' },
+  { slug: 'background-remover', name: 'Background Remover', category: 'image', icon: '🪄', status: 'live', popular: true,
+    title: 'Remove Background From Photo Free – HD, No Watermark',
+    description: 'Remove the background from photos of people: transparent PNG, white passport background, any colour or blur. AI runs on your device. Free, HD.',
+    short: 'Remove or replace photo backgrounds.', keywords: 'remove bg background eraser transparent png white background passport photo' },
   { slug: 'resume-builder', name: 'Resume Builder', category: 'student', icon: '📃', status: 'planned', title: '', description: '', short: 'ATS-friendly resume, free PDF download.' },
   { slug: 'passport-photo-maker', name: 'Passport Photo Maker', category: 'exam', icon: '🛂', status: 'live', popular: true,
     title: 'Passport Size Photo Maker – 4x6 Print Sheet, Free',
