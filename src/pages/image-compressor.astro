@@ -1,0 +1,25 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import BatchImage from '../components/BatchImage.astro';
+const faqs = [
+  { q: 'How much can I compress an image without losing quality?', a: 'Photos usually shrink 50–80% at 70–80% quality with no difference you can see on a phone or laptop. Screenshots and graphics saved as PNG shrink 60–80% with smart colour reduction.' },
+  { q: 'Is there a limit on the number or size of images?', a: 'No. Because compression runs on your device, there is no upload limit. Very large batches only depend on your device memory.' },
+  { q: 'Does it remove EXIF and GPS data?', a: 'Yes. Re-encoding removes camera and location metadata, which is good for privacy when you share photos online.' },
+  { q: 'Should I choose JPG, PNG or WebP?', a: 'JPG for photos, PNG for screenshots, logos and images with transparency, and WebP for websites (smaller than both, supported by all modern browsers).' },
+  { q: 'Why is one of my files "already optimised"?', a: 'If re-compressing would make the file larger, we keep your original so you never download a bigger file.' },
+];
+const steps = ['Choose or drop your images (JPG, PNG, WebP, HEIC).', 'Adjust <b>Quality</b> (75% is a great default) and, optionally, a maximum width.', 'Check the savings for each file.', 'Download one by one or press <b>Download all (ZIP)</b>.'];
+---
+<ToolLayout slug="image-compressor" h1="Image Compressor" lead="Compress JPG, PNG and WebP images in bulk with no visible quality loss. Unlimited files, no upload, no sign-up." steps={steps} faqs={faqs}>
+  <BatchImage mode="compress" dropTitle="Choose images to compress" />
+  <Fragment slot="content">
+    <h2>Compress images online without uploading them</h2>
+    <p>Most image compressors upload your photos to a server and cap you at 20 images or 5 MB. This one runs inside your browser, so there are no caps and your photos stay private. Photos are re-encoded with the browser's JPEG/WebP encoder, and PNGs use colour quantisation (the same idea behind TinyPNG) to cut file size by up to 80%.</p>
+    <h3>When to compress images</h3>
+    <ul>
+      <li>Email attachments and WhatsApp/Telegram sharing without "file too large" errors.</li>
+      <li>Faster websites and better Core Web Vitals: smaller images load faster and rank better.</li>
+      <li>Job and exam portals with size limits. For an exact KB size use <a href="/resize-image-to-kb">resize image to KB</a>.</li>
+    </ul>
+  </Fragment>
+</ToolLayout>

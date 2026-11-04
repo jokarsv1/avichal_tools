@@ -1,0 +1,23 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import BatchImage from '../components/BatchImage.astro';
+const faqs = [
+  { q: 'Which formats can I convert?', a: 'Input: JPG, PNG, WebP, GIF (first frame), BMP, SVG and iPhone HEIC/HEIF. Output: JPG, PNG or WebP.' },
+  { q: 'What happens to transparency when converting to JPG?', a: 'JPG has no transparency, so transparent areas are filled with the colour you choose (white by default).' },
+  { q: 'Is the conversion lossless?', a: 'Converting to PNG is lossless. JPG and WebP are lossy; at 90% quality the difference is not visible for photos.' },
+];
+const steps = ['Choose your images.', 'Pick the output format and quality.', 'Download each file or all as a ZIP.'];
+---
+<ToolLayout slug="image-converter" h1="Image Converter" lead="Convert images between JPG, PNG, WebP and HEIC in bulk, right in your browser." steps={steps} faqs={faqs}>
+  <BatchImage mode="convert" format="image/jpeg" dropTitle="Choose images to convert" />
+  <Fragment slot="content">
+    <h2>Pick the right format</h2>
+    <ul>
+      <li><b>JPG</b>: best for photos; opens everywhere; no transparency.</li>
+      <li><b>PNG</b>: lossless; best for screenshots, text, logos and transparency.</li>
+      <li><b>WebP</b>: 25–35% smaller than JPG at the same quality; ideal for websites.</li>
+      <li><b>HEIC</b>: iPhone's default; small, but many Windows apps and websites cannot open it. See <a href="/heic-to-jpg">HEIC to JPG</a>.</li>
+    </ul>
+    <p>Quick converters: <a href="/png-to-jpg">PNG to JPG</a> · <a href="/jpg-to-png">JPG to PNG</a> · <a href="/webp-to-jpg">WebP to JPG</a> · <a href="/heic-to-jpg">HEIC to JPG</a></p>
+  </Fragment>
+</ToolLayout>

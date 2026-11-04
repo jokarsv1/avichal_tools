@@ -1,0 +1,19 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import BatchImage from '../components/BatchImage.astro';
+const faqs = [
+  { q: 'How do I convert WebP to JPG?', a: 'Choose your WebP files above, check the quality setting and download. Each file converts in under a second on most devices.' },
+  { q: 'Is there a file limit?', a: 'No. Convert as many images as you like; nothing is uploaded, so there are no server limits.' },
+  { q: 'Will I lose quality?', a: 'Animated WebP files are converted to a still image of the first frame.' },
+  { q: 'Is it safe?', a: 'Yes. Conversion happens in your browser and your images never leave your device.' },
+];
+const steps = ['Choose or drop your WebP images.', 'JPG is pre-selected; adjust quality if you like.', 'Download each image or all as a ZIP.'];
+---
+<ToolLayout slug="webp-to-jpg" h1="WebP to JPG Converter" lead="Convert WebP images to JPG in bulk. Free, instant and private. No upload and no sign-up." steps={steps} faqs={faqs}>
+  <BatchImage mode="convert" format="image/jpeg" accept=".webp,image/webp" dropTitle="Choose WebP images" />
+  <Fragment slot="content">
+    <h2>Why convert WebP to JPG?</h2>
+    <p>Images saved from websites are often WebP, which some apps, printers and older software cannot open. JPG works everywhere.</p>
+    <p>Other converters: <a href="/image-converter">all formats</a> · <a href="/heic-to-jpg">HEIC to JPG</a> · <a href="/image-compressor">compress images</a></p>
+  </Fragment>
+</ToolLayout>

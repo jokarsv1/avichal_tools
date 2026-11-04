@@ -1,0 +1,43 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import Dropzone from '../components/Dropzone.astro';
+const faqs = [
+  { q: 'How do I make a circle profile picture?', a: 'Choose <b>Circle</b> as the shape. The ratio switches to 1:1 and the output to PNG, so the corners are transparent. Upload it to WhatsApp, LinkedIn, Discord or your website.' },
+  { q: 'How do I crop to an exact pixel size?', a: 'Type the width and height in the boxes. With a ratio selected, the other side updates automatically.' },
+  { q: 'Does cropping reduce quality?', a: 'No. Cropping just cuts away pixels; the remaining area keeps its original resolution.' },
+  { q: 'Can I crop on my phone?', a: 'Yes. Drag the corners with your finger to resize the crop box, or drag inside it to move it.' },
+];
+const steps = ['Choose an image.', 'Pick a ratio (Free, 1:1, 4:5, 16:9…) and a shape (rectangle or circle).', 'Drag the box or its handles, or type the exact size in pixels.', 'Press <b>Download</b>.'];
+---
+<ToolLayout slug="crop-image" h1="Crop Image" lead="Crop photos to any size or aspect ratio, or make a round profile picture. Fast, free and private." steps={steps} faqs={faqs}>
+  <Dropzone id="crop-drop" accept="image/*,.heic,.heif" title="Choose an image to crop" hint="JPG, PNG, WebP, HEIC · drag & drop or paste" icon="✂️" />
+  <div class="crop-editor stack hidden">
+    <div class="grid-4">
+      <div class="field"><label for="crop-ratio">Aspect ratio</label>
+        <select id="crop-ratio">
+          <option value="free">Free</option><option value="1:1">1:1 Square</option><option value="4:5">4:5 Instagram portrait</option>
+          <option value="9:16">9:16 Story / Reels</option><option value="16:9">16:9 YouTube / widescreen</option><option value="4:3">4:3</option>
+          <option value="3:2">3:2 Photo</option><option value="35:45">35:45 Passport photo</option><option value="3:1">3:1 Twitter/X header</option>
+        </select>
+      </div>
+      <div class="field"><label for="crop-shape">Shape</label><select id="crop-shape"><option value="rect">Rectangle</option><option value="circle">Circle</option></select></div>
+      <div class="field"><label for="crop-w">Width (px)</label><input id="crop-w" type="number" min="8" inputmode="numeric" /></div>
+      <div class="field"><label for="crop-h">Height (px)</label><input id="crop-h" type="number" min="8" inputmode="numeric" /></div>
+    </div>
+    <div class="preview-box" style="padding:0"><canvas id="crop-view" style="touch-action:none;display:block"></canvas></div>
+    <p class="hint" id="crop-info"></p>
+    <div class="btn-row">
+      <button type="button" class="btn btn-sm" id="crop-rotate">⟳ Rotate</button>
+      <button type="button" class="btn btn-sm" id="crop-flip">⇋ Flip</button>
+      <span class="spacer"></span>
+      <select id="crop-fmt" aria-label="Output format" style="width:auto"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select>
+      <button type="button" class="btn btn-primary btn-lg" id="crop-download">⬇ Download</button>
+      <button type="button" class="btn" id="crop-reset">New image</button>
+    </div>
+  </div>
+  <script>import '../tools/crop-image';</script>
+  <Fragment slot="content">
+    <h2>Crop images for social media, documents and profiles</h2>
+    <p>Pick a ratio to match where the image is going: 1:1 for profile pictures and Instagram posts, 4:5 for Instagram portrait, 9:16 for Stories and Shorts, 16:9 for YouTube and presentations, and 35:45 for passport-size photos. The crop happens in your browser at full resolution.</p>
+  </Fragment>
+</ToolLayout>

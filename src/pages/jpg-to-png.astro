@@ -1,0 +1,19 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import BatchImage from '../components/BatchImage.astro';
+const faqs = [
+  { q: 'How do I convert JPG to PNG?', a: 'Choose your JPG files above, check the quality setting and download. Each file converts in under a second on most devices.' },
+  { q: 'Is there a file limit?', a: 'No. Convert as many images as you like; nothing is uploaded, so there are no server limits.' },
+  { q: 'Will I lose quality?', a: 'PNG cannot restore detail already lost in JPG compression, but it stops further loss when you edit and re-save.' },
+  { q: 'Is it safe?', a: 'Yes. Conversion happens in your browser and your images never leave your device.' },
+];
+const steps = ['Choose or drop your JPG images.', 'PNG is pre-selected; adjust quality if you like.', 'Download each image or all as a ZIP.'];
+---
+<ToolLayout slug="jpg-to-png" h1="JPG to PNG Converter" lead="Convert JPG images to PNG in bulk. Free, instant and private. No upload and no sign-up." steps={steps} faqs={faqs}>
+  <BatchImage mode="convert" format="image/png" accept=".jpg,.jpeg,image/jpeg" dropTitle="Choose JPG images" />
+  <Fragment slot="content">
+    <h2>Why convert JPG to PNG?</h2>
+    <p>Some sites and design tools want PNG. Converting to PNG is lossless, so the image will not lose any more quality, although the file will be larger.</p>
+    <p>Other converters: <a href="/image-converter">all formats</a> · <a href="/heic-to-jpg">HEIC to JPG</a> · <a href="/image-compressor">compress images</a></p>
+  </Fragment>
+</ToolLayout>

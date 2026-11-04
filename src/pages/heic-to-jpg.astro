@@ -1,0 +1,18 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import BatchImage from '../components/BatchImage.astro';
+const faqs = [
+  { q: 'Why can\'t I open HEIC photos on Windows or upload them to websites?', a: 'HEIC is Apple\'s high-efficiency format. Many Windows apps, older Android phones and government or job portals only accept JPG or PNG. Converting fixes that.' },
+  { q: 'Is my iPhone photo uploaded?', a: 'No. The HEIC decoder (libheif) is downloaded to your browser once and the conversion happens on your device.' },
+  { q: 'Can I stop my iPhone from saving HEIC?', a: 'Yes: Settings → Camera → Formats → Most Compatible. New photos will be saved as JPG.' },
+  { q: 'Does it keep the photo quality?', a: 'Yes. At the default 90% quality the JPG looks the same as the original HEIC.' },
+];
+const steps = ['Choose your .heic or .heif photos (AirDrop or copy them from your iPhone first).', 'Keep JPG selected, or pick PNG.', 'Download each photo or all of them as a ZIP.'];
+---
+<ToolLayout slug="heic-to-jpg" h1="HEIC to JPG Converter" lead="Convert iPhone HEIC/HEIF photos to JPG or PNG in bulk, privately in your browser. No app to install." steps={steps} faqs={faqs}>
+  <BatchImage mode="convert" format="image/jpeg" accept=".heic,.heif,image/heic,image/heif,image/*" dropTitle="Choose HEIC photos" />
+  <Fragment slot="content">
+    <h2>Convert HEIC to JPG on Windows, Android or Mac</h2>
+    <p>This converter works in Chrome, Edge, Firefox and Safari. On Safari, the browser decodes HEIC natively; in other browsers we load an open-source HEIC decoder the first time you use the page (about 3 MB), and then it works offline.</p>
+  </Fragment>
+</ToolLayout>

@@ -1,0 +1,97 @@
+---
+/**
+ * Bulk image engine UI: compress, resize or convert many images at once.
+ * Pages: /image-compressor, /resize-image, /image-converter, /heic-to-jpg, /png-to-jpg, /jpg-to-png, /webp-to-jpg
+ */
+import Dropzone from './Dropzone.astro';
+interface Props {
+  mode: 'compress' | 'resize' | 'convert';
+  /** Default output format. 'keep' = same as input. */
+  format?: 'keep' | 'image/jpeg' | 'image/png' | 'image/webp';
+  accept?: string;
+  dropTitle?: string;
+  quality?: number;
+}
+const { mode, format = mode === 'convert' ? 'image/jpeg' : 'keep', accept = 'image/*,.heic,.heif', dropTitle = 'Choose images', quality = mode === 'compress' ? 75 : 90 } = Astro.props;
+const presets = [
+  ['', 'Custom size'],
+  ['1080x1080', 'Instagram post 1080×1080'],
+  ['1080x1350', 'Instagram portrait 1080×1350'],
+  ['1080x1920', 'Story / Reels / Shorts 1080×1920'],
+  ['1280x720', 'YouTube thumbnail 1280×720'],
+  ['1920x1080', 'Full HD 1920×1080'],
+  ['500x500', 'WhatsApp / profile picture 500×500'],
+  ['820x312', 'Facebook cover 820×312'],
+  ['1584x396', 'LinkedIn banner 1584×396'],
+  ['1200x630', 'Open Graph / link preview 1200×630'],
+  ['413x531', 'Passport photo 3.5×4.5 cm (300 DPI)'],
+];
+---
+<div class="bi stack" data-bi data-mode={mode}>
+  <Dropzone id="bi-drop" accept={accept} multiple title={dropTitle} hint="Add as many as you like · drag & drop or paste" icon="🖼️" />
+
+  <div class="bi-options stack-sm">
+    {mode === 'resize' && (
+      <>
+        <div class="grid-3">
+          <div class="field"><label for="bi-preset">Preset</label>
+            <select id="bi-preset" class="bi-preset">{presets.map(([v, l]) => <option value={v}>{l}</option>)}</select>
+          </div>
+          <div class="field"><label for="bi-w">Width (px)</label><input id="bi-w" class="bi-w" type="number" min="1" placeholder="auto" inputmode="numeric" /></div>
+          <div class="field"><label for="bi-h">Height (px)</label><input id="bi-h" class="bi-h" type="number" min="1" placeholder="auto" inputmode="numeric" /></div>
+        </div>
+        <div class="grid-3">
+          <div class="field"><label for="bi-pct">Or scale (%)</label><input id="bi-pct" class="bi-pct" type="number" min="1" max="1000" placeholder="e.g. 50" inputmode="numeric" /></div>
+          <div class="field"><label for="bi-fit">When both sides are set</label>
+            <select id="bi-fit" class="bi-fit">
+              <option value="fill">Crop to fill exactly</option>
+              <option value="fit">Fit inside (keep ratio)</option>
+              <option value="pad">Fit + pad with background</option>
+              <option value="stretch">Stretch (ignore ratio)</option>
+            </select>
+          </div>
+          <div class="field"><label for="bi-bg">Background</label><input id="bi-bg" class="bi-bg" type="color" value="#ffffff" /></div>
+        </div>
+      </>
+    )}
+    <div class="grid-3">
+      <div class="field"><label for="bi-fmt">Output format</label>
+        <select id="bi-fmt" class="bi-fmt">
+          {mode !== 'convert' && <option value="keep" selected={format === 'keep'}>Same as input</option>}
+          <option value="image/jpeg" selected={format === 'image/jpeg'}>JPG</option>
+          <option value="image/png" selected={format === 'image/png'}>PNG</option>
+          <option value="image/webp" selected={format === 'image/webp'}>WebP</option>
+        </select>
+      </div>
+      <div class="field"><label for="bi-q">Quality: <output class="bi-qv">{quality}</output>%</label>
+        <input id="bi-q" class="bi-q" type="range" min="10" max="100" value={quality} />
+      </div>
+      {mode === 'compress' ? (
+        <div class="field"><label for="bi-max">Max width</label>
+          <select id="bi-max" class="bi-max">
+            <option value="0">Keep original</option><option value="3840">3840 px (4K)</option><option value="2560">2560 px</option>
+            <option value="1920">1920 px</option><option value="1280">1280 px</option><option value="800">800 px</option>
+          </select>
+        </div>
+      ) : mode === 'convert' ? (
+        <div class="field"><label for="bi-bg">Fill transparent areas (JPG)</label><input id="bi-bg" class="bi-bg" type="color" value="#ffffff" /></div>
+      ) : null}
+    </div>
+    <p class="hint">{mode === 'compress' ? 'PNGs are compressed with smart colour reduction (like TinyPNG). Metadata such as GPS location is removed.' : 'Photos are re-encoded in your browser. Location and camera metadata are removed for privacy.'}</p>
+  </div>
+
+  <div class="bi-results stack-sm hidden">
+    <div class="row">
+      <b class="bi-summary"></b>
+      <span class="spacer"></span>
+      <button type="button" class="btn btn-sm bi-clear">Clear</button>
+      <button type="button" class="btn btn-primary bi-zip" disabled>⬇ Download all (ZIP)</button>
+    </div>
+    <ul class="file-list bi-list"></ul>
+  </div>
+</div>
+
+<script>
+  import { initBatchImage } from '../tools/batch-image';
+  document.querySelectorAll<HTMLElement>('[data-bi]').forEach(initBatchImage);
+</script>

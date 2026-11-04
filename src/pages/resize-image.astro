@@ -1,0 +1,30 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import BatchImage from '../components/BatchImage.astro';
+const faqs = [
+  { q: 'How do I resize an image without stretching it?', a: 'Enter only the width (or only the height) and the other side is calculated automatically. If you set both, choose "Crop to fill" or "Fit inside" to keep the proportions.' },
+  { q: 'What size is an Instagram post?', a: '1080 × 1080 px for square posts, 1080 × 1350 px for portrait and 1080 × 1920 px for Stories and Reels. Pick them from the Preset list.' },
+  { q: 'Can I resize many photos at once?', a: 'Yes. Add as many images as you like; the same settings apply to all, and you can download them as one ZIP.' },
+  { q: 'Will resizing reduce quality?', a: 'Making an image smaller keeps it sharp because we downscale in steps. Enlarging (upscaling) cannot add detail, so it may look softer.' },
+  { q: 'How do I resize to a specific file size in KB?', a: 'Use the <a href="/resize-image-to-kb">resize image to KB</a> tool, which targets a file size instead of pixels.' },
+];
+const steps = ['Choose your images.', 'Pick a preset (Instagram, YouTube, WhatsApp, passport…) or type a width, height or percentage.', 'Choose how to handle a different aspect ratio: crop, fit, pad or stretch.', 'Download each image or all of them as a ZIP.'];
+---
+<ToolLayout slug="resize-image" h1="Resize Image" lead="Change image dimensions in pixels or percent, or use presets for Instagram, YouTube, WhatsApp, LinkedIn and passport photos. Bulk, private and free." steps={steps} faqs={faqs}>
+  <BatchImage mode="resize" dropTitle="Choose images to resize" />
+  <Fragment slot="content">
+    <h2>Common image sizes</h2>
+    <table>
+      <thead><tr><th>Use</th><th>Size (px)</th></tr></thead>
+      <tbody>
+        <tr><td>Instagram square / portrait</td><td>1080 × 1080 / 1080 × 1350</td></tr>
+        <tr><td>Stories, Reels, YouTube Shorts</td><td>1080 × 1920</td></tr>
+        <tr><td>YouTube thumbnail</td><td>1280 × 720</td></tr>
+        <tr><td>Facebook cover</td><td>820 × 312</td></tr>
+        <tr><td>LinkedIn banner</td><td>1584 × 396</td></tr>
+        <tr><td>Link preview (Open Graph)</td><td>1200 × 630</td></tr>
+        <tr><td>Passport photo 3.5 × 4.5 cm at 300 DPI</td><td>413 × 531</td></tr>
+      </tbody>
+    </table>
+  </Fragment>
+</ToolLayout>
