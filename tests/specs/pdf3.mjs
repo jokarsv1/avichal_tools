@@ -8,6 +8,7 @@ export default (test, { BASE, newPage, download, fixture, assert }) => {
     const canvas = page.locator('.ov-page canvas').first();
     await canvas.scrollIntoViewIfNeeded();
     const cb = await canvas.boundingBox();
+    await page.click('[data-tool=text]');
     await canvas.click({ position: { x: cb.width * 0.2, y: Math.min(cb.height * 0.3, 300) } });
     await page.waitForSelector('.ov-text');
     await page.keyboard.type('Hello Edited 2026');
@@ -25,6 +26,67 @@ export default (test, { BASE, newPage, download, fixture, assert }) => {
     const d2 = await download(page, '#ep-save', 60000);
     const txt2 = await pdfText(d2.path);
     assert(!txt2.includes('Doc A'), 'flatten did not remove text');
+    assert(page.errors.length === 0, page.errors.join('\n'));
+  });
+
+  test('edit-pdf: change existing text, undo, draw', async () => {
+    const page = await newPage();
+    await page.goto(`${BASE}/edit-pdf`);
+    await page.setInputFiles('#ep-drop input[type=file]', fixture('a.pdf'));
+    const run = page.locator('.ov-page[data-page="1"] .ov-run[aria-label*="Doc A page 1"]');
+    await run.waitFor({ timeout: 20000 });
+    assert((await page.$$('.ov-page[data-page="1"] .ov-run')).length >= 30, 'lines detected');
+    await run.click();
+    await page.waitForSelector('.ov-text');
+    assert((await page.textContent('.ov-text')) === 'Doc A page 1', 'prefilled with original text');
+    await page.keyboard.type('Doc Z page 1');
+    assert((await page.$$('.ov-item')).length === 2, 'cover + text');
+    const d = await download(page, '#ep-save');
+    assert((await pdfText(d.path)).includes('Doc Z page 1'), 'edited text in PDF');
+    await page.click('#ep-undo');
+    assert((await page.$$('.ov-item')).length === 0, 'undo removed both');
+    assert(await run.isVisible(), 'run clickable again after undo');
+    // Freehand drawing becomes a movable item.
+    await page.click('[data-tool=draw]');
+    const box = await page.locator('.ov-page canvas').first().boundingBox();
+    await page.mouse.move(box.x + 100, box.y + 150);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 180, box.y + 190, { steps: 8 });
+    await page.mouse.move(box.x + 260, box.y + 140, { steps: 8 });
+    await page.mouse.up();
+    await page.waitForSelector('.ov-item.ov-k-image');
+    const d2 = await download(page, '#ep-save');
+    assert(d2.size > 1000, 'saved with drawing');
+    assert(page.errors.length === 0, page.errors.join('\n'));
+  });
+
+  test('edit-pdf: fill a fillable form (text, checkbox, dropdown)', async () => {
+    const { PDFDocument } = await import('pdf-lib');
+    const fs = await import('node:fs');
+    const doc = await PDFDocument.create();
+    const pg = doc.addPage([595, 842]);
+    const form = doc.getForm();
+    form.createTextField('applicant.name').addToPage(pg, { x: 60, y: 700, width: 250, height: 24 });
+    form.createCheckBox('agree').addToPage(pg, { x: 60, y: 650, width: 16, height: 16 });
+    const dd = form.createDropdown('city');
+    dd.addOptions(['Delhi', 'Pune', 'Chennai']);
+    dd.addToPage(pg, { x: 60, y: 600, width: 150, height: 24 });
+    const formPath = 'tests/output/form.pdf';
+    fs.writeFileSync(formPath, await doc.save());
+    const page = await newPage();
+    await page.goto(`${BASE}/edit-pdf`);
+    await page.setInputFiles('#ep-drop input[type=file]', formPath);
+    await page.waitForSelector('#ep-form:not(.hidden)');
+    assert((await page.textContent('#ep-form-count')) === '3', 'three fields');
+    await page.fill('#ep-f-0', 'Ravi Kumar');
+    await page.check('#ep-f-1');
+    await page.selectOption('#ep-f-2', 'Pune');
+    const d = await download(page, '#ep-save');
+    const out = await PDFDocument.load(fs.readFileSync(d.path));
+    const f = out.getForm();
+    assert(f.getTextField('applicant.name').getText() === 'Ravi Kumar', 'text field');
+    assert(f.getCheckBox('agree').isChecked(), 'checkbox');
+    assert(f.getDropdown('city').getSelected()[0] === 'Pune', 'dropdown');
     assert(page.errors.length === 0, page.errors.join('\n'));
   });
 };

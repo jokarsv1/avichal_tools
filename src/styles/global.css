@@ -319,6 +319,12 @@ table.data tr.hl td { background: var(--primary-soft); font-weight: 700; }
 .ov-del { position: absolute; top: -12px; right: -12px; width: 24px; height: 24px; border-radius: 50%; border: 0; background: #e11d48; color: #fff; cursor: pointer; font-size: 12px; z-index: 2; }
 .ov-resize { position: absolute; right: -7px; bottom: -7px; width: 16px; height: 16px; background: #4f46e5; border-radius: 4px; cursor: nwse-resize; }
 .ov-pages.mode-draw .ov-page { cursor: crosshair; }
+.ov-run { position: absolute; padding: 0; border: 0; background: transparent; cursor: text; border-radius: 2px; display: none; }
+.ov-pages.mode-edittext .ov-run { display: block; }
+.ov-pages.mode-edittext .ov-page { cursor: default; }
+.ov-run:hover, .ov-run:focus-visible { background: rgba(79, 70, 229, .12); outline: 1.5px dashed #4f46e5; }
+.ov-live { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
+.ov-pages.mode-pen .ov-page { touch-action: none; }
 
 /* One-click quick starts */
 .quick { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 12px; }

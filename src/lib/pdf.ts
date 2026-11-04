@@ -67,7 +67,7 @@ export async function loadDoc(bytes: Uint8Array): Promise<PdfLib.PDFDocument> {
     if (/encrypt/i.test(String(e?.message))) {
       // Owner-password-only PDFs (printing/editing restrictions) can still be processed.
       const doc = await PDFDocument.load(bytes, { ignoreEncryption: true, updateMetadata: false });
-      if ((doc as any).isEncrypted) throw new Error('This PDF is password-protected. Remove the password first, then try again.');
+      if ((doc as any).isEncrypted) throw new Error('This PDF is password-protected. Remove the password with Unlock PDF (/unlock-pdf) first, then try again.');
       return doc;
     }
     throw new Error('This file does not look like a valid PDF.');

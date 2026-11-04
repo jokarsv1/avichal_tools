@@ -78,7 +78,7 @@ export class PdfOverlay {
   /** Add an item to the page and make it draggable/resizable. */
   add(partial: Omit<OverlayItem, 'el'>, opts: { keepRatio?: boolean; select?: boolean } = {}): OverlayItem {
     const wrap = this.wrapOf(partial.page)!;
-    const el = h('div', { class: `ov-item ov-${partial.kind}`, tabindex: '0' });
+    const el = h('div', { class: `ov-item ov-k-${partial.kind}`, tabindex: '0' });
     const it: OverlayItem = { ...partial, el };
     if (it.kind === 'image' && it.png) el.append(h('img', { src: it.png.toDataURL('image/png'), alt: '', draggable: 'false' }));
     if (it.kind === 'text') {
@@ -87,10 +87,8 @@ export class PdfOverlay {
       span.addEventListener('pointerdown', (e) => e.stopPropagation());
       el.append(h('span', { class: 'ov-move', title: 'Drag to move', text: '✥' }), span);
     }
-    el.append(
-      h('button', { type: 'button', class: 'ov-del', title: 'Remove', 'aria-label': 'Remove', text: '✕', onclick: () => this.remove(it) }),
-      it.kind !== 'text' ? h('span', { class: 'ov-resize', title: 'Resize' }) : null,
-    );
+    el.append(h('button', { type: 'button', class: 'ov-del', title: 'Remove', 'aria-label': 'Remove', text: '✕', onclick: () => this.remove(it) }));
+    if (it.kind !== 'text') el.append(h('span', { class: 'ov-resize', title: 'Resize' }));
     wrap.append(el);
     this.items.push(it);
     this.style(it);

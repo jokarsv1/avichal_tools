@@ -2,23 +2,27 @@
 import ToolLayout from '../layouts/ToolLayout.astro';
 import Dropzone from '../components/Dropzone.astro';
 const faqs = [
-  { q: 'How do I edit a PDF for free?', a: 'Choose your PDF, pick <b>Text</b> and click where you want to type. Use <b>White-out</b> to hide something, <b>Highlight</b> to mark text, <b>Box</b> to draw a rectangle and <b>Image</b> to add a picture or stamp. Then press <b>Download</b>.' },
-  { q: 'Can I change the existing text in my PDF?', a: 'PDFs don\'t store text like a Word file, so no browser tool can reflow it reliably. The practical way is what professionals do: white-out the old words and type the new words on top in a matching size.' },
+  { q: 'How do I edit text in a PDF for free?', a: 'Choose your PDF and keep <b>Edit text</b> selected. Click any line: the old words are covered and a text box appears in the same place and size with the same words, ready to change. Then press <b>Download</b>.' },
+  { q: 'Can I fill a PDF form?', a: 'Yes. If the PDF has fillable fields, a <b>Fill the form</b> box lists them all. Type your answers, tick boxes and pick options, then download. Tick <b>Lock the form</b> to stop further changes. For forms without fields, use <b>Add text</b> and <b>Tick</b> on the lines.' },
+  { q: 'Will edited text look exactly like the original?', a: 'It matches the position and size. The font is a standard one (Helvetica), so a different original font may look slightly different. For scanned PDFs there is no text to edit: use White-out and Add text instead.' },
   { q: 'Is white-out the same as redaction?', a: 'Not by itself: a white box hides text visually, but the text is still in the file and can be copied. Tick <b>Flatten pages</b> before downloading to turn each page into an image. Then the hidden text is permanently gone (true redaction).' },
   { q: 'Can I type in Hindi or other languages?', a: 'Yes. English text is added as real, selectable PDF text; Hindi and other scripts are added as sharp images using your device\'s fonts.' },
   { q: 'Is my PDF uploaded?', a: 'No. Editing happens entirely in your browser.' },
 ];
-const steps = ['Choose a PDF.', 'Pick a tool: Text, White-out, Highlight, Box or Image.', 'Click or drag on the page; move and resize items as needed.', 'Optionally tick <b>Flatten pages</b> for permanent redaction, then press <b>Download</b>.'];
+const steps = ['Choose a PDF.', 'Click text to change it, or pick Add text, White-out, Highlight, Draw, Tick, Box or Image.', 'Fill the form fields if the PDF has any. Move, resize or undo as needed.', 'Optionally tick <b>Flatten pages</b> for permanent redaction, then press <b>Download</b>.'];
 ---
-<ToolLayout slug="edit-pdf" h1="Edit PDF" lead="Add text, white-out, highlights, boxes and images to any PDF, right in your browser. Free, no sign-up, no watermark." steps={steps} faqs={faqs}>
+<ToolLayout presets={[{ label: "✏️ Change existing text", set: { "[data-tool=edittext]": true } }, { label: "📝 Fill a form", set: { "[data-tool=text]": true }, hint: "Fillable fields appear in a box; for plain forms click on the lines" }, { label: "✓ Tick boxes", set: { "[data-tool=tick]": true } }, { label: "🙈 Hide Aadhaar / account no.", set: { "[data-tool=whiteout]": true, "#ep-flatten": true } }, { label: "✍️ Sign", href: "/sign-pdf" }]} slug="edit-pdf" h1="Edit PDF" lead="Change existing text, fill forms, add text, ticks, drawings, highlights and images to any PDF, right in your browser. Free, no sign-up, no watermark, nothing uploaded." steps={steps} faqs={faqs}>
   <div class="stack">
     <Dropzone id="ep-drop" accept=".pdf,application/pdf" title="Choose a PDF to edit" icon="📝" />
     <div id="ep-panel" class="stack-sm hidden">
       <div class="row ep-toolbar">
-        <div class="seg" role="group" aria-label="Edit tool">
-          <button type="button" data-tool="text" aria-pressed="true">🔤 Text</button>
+        <div class="seg ep-tools" role="group" aria-label="Edit tool">
+          <button type="button" data-tool="edittext" aria-pressed="true">✏️ Edit text</button>
+          <button type="button" data-tool="text" aria-pressed="false">🔤 Add text</button>
           <button type="button" data-tool="whiteout" aria-pressed="false">⬜ White-out</button>
           <button type="button" data-tool="highlight" aria-pressed="false">🖍 Highlight</button>
+          <button type="button" data-tool="draw" aria-pressed="false">✍️ Draw</button>
+          <button type="button" data-tool="tick" aria-pressed="false">✓ Tick</button>
           <button type="button" data-tool="rect" aria-pressed="false">▭ Box</button>
           <button type="button" data-tool="image" aria-pressed="false">🖼 Image</button>
         </div>
@@ -28,8 +32,15 @@ const steps = ['Choose a PDF.', 'Pick a tool: Text, White-out, Highlight, Box or
           <input id="ep-color" type="color" value="#000000" aria-label="Text colour" />
         </span>
         <span id="ep-rect-opts" class="row hidden" style="gap:8px"><label class="hint" for="ep-stroke">Border</label><input id="ep-stroke" type="color" value="#e11d48" /></span>
+        <span id="ep-pen-opts" class="row hidden" style="gap:8px"><input id="ep-pen" type="color" value="#1d4ed8" aria-label="Pen colour" /><select id="ep-pen-w" style="width:auto" aria-label="Pen width"><option value="1.5">Thin</option><option value="3" selected>Medium</option><option value="5">Thick</option></select></span>
+        <button type="button" class="btn btn-sm" id="ep-undo" disabled title="Undo (Ctrl+Z)">↶ Undo</button>
         <input id="ep-image" type="file" accept="image/*,.heic" class="hidden" />
       </div>
+      <details class="card hidden" id="ep-form" open style="box-shadow:none;padding:12px 14px">
+        <summary><b>📝 Fill the form (<span id="ep-form-count">0</span> fields)</b></summary>
+        <div class="grid-2" id="ep-form-fields" style="margin-top:10px"></div>
+        <label class="check" style="margin-top:10px"><input type="checkbox" id="ep-form-flatten" /> Lock the form after filling (no further changes)</label>
+      </details>
       <div class="status" id="ep-status"></div>
       <div id="ep-pages" class="ov-pages"></div>
       <div class="row" style="position:sticky;bottom:10px;justify-content:center;gap:16px">
@@ -42,7 +53,8 @@ const steps = ['Choose a PDF.', 'Pick a tool: Text, White-out, Highlight, Box or
   <Fragment slot="content">
     <h2>What you can do</h2>
     <ul>
-      <li><b>Fill in forms</b> that aren't fillable: type your name, address and dates onto the lines.</li>
+      <li><b>Change existing text:</b> fix a wrong name, date or amount by clicking it.</li>
+      <li><b>Fill in forms:</b> fillable fields appear in a list; for plain forms, type and tick on the lines.</li>
       <li><b>Correct mistakes:</b> white-out a wrong figure and type the right one on top.</li>
       <li><b>Hide personal details</b> (Aadhaar number, account number) before sharing; tick Flatten so they're permanently removed.</li>
       <li><b>Mark up documents:</b> highlight important lines, draw boxes and add a logo or stamp.</li>
