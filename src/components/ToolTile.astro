@@ -1,9 +1,11 @@
 ---
 import type { Tool } from '../data/tools';
-interface Props { tool: Tool }
-const { tool } = Astro.props;
+import { type Lang, toolText, localize } from '../i18n';
+interface Props { tool: Tool; lang?: Lang }
+const { tool, lang = 'en' } = Astro.props;
+const { name, short } = toolText(tool, lang);
 ---
-<a class="tool-tile" href={`/${tool.slug}`} data-search={`${tool.name} ${tool.short} ${tool.keywords ?? ''}`.toLowerCase()}>
+<a class="tool-tile" href={localize(`/${tool.slug}`, lang)} data-search={`${name} ${short} ${tool.name} ${tool.short} ${tool.keywords ?? ''}`.toLowerCase()}>
   <span class="ti" aria-hidden="true">{tool.icon}</span>
-  <span><b>{tool.name}</b><span>{tool.short}</span></span>
+  <span><b>{name}</b><span>{short}</span></span>
 </a>

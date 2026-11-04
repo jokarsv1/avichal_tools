@@ -8,11 +8,14 @@ import { PDF_SIZES } from './pdf-sizes';
 import { LOANS } from './loans';
 import { PAIRS } from './fx-pairs';
 import { COUNTRIES } from '../lib/abroad';
+import { PACKS } from '../i18n';
 
 export interface SearchItem { u: string; n: string; k: string; i: string }
 
 export function searchIndex(): SearchItem[] {
-  const items: SearchItem[] = LIVE_TOOLS.map((t) => ({ u: `/${t.slug}`, n: t.name, i: t.icon, k: `${t.slug.replace(/-/g, ' ')} ${t.short} ${t.keywords ?? ''}` }));
+  // Tool names in Hindi, Bengali, Marathi, Telugu and Tamil are searchable too.
+  const local = (slug: string) => Object.values(PACKS).map((p) => p.tools[slug]?.[0] ?? '').join(' ');
+  const items: SearchItem[] = LIVE_TOOLS.map((t) => ({ u: `/${t.slug}`, n: t.name, i: t.icon, k: `${t.slug.replace(/-/g, ' ')} ${t.short} ${t.keywords ?? ''} ${local(t.slug)}` }));
   for (const e of EXAMS) items.push({ u: `/${e.slug}-photo-resizer`, n: `${e.name} photo & signature resizer`, i: '🏛️', k: `${e.slug.replace(/-/g, ' ')} ${e.name} ${e.fullName} photo signature size resize form` });
   for (const p of KB_PAGES) items.push({ u: `/compress-image-to-${p.kb}kb`, n: `Compress image to ${p.kb} KB`, i: '🎯', k: `${p.kb}kb image photo jpg jpeg picture compress resize reduce` });
   for (const s of PDF_SIZES) items.push({ u: `/compress-pdf-to-${s.slug}`, n: `Compress PDF to ${s.value} ${s.unit}`, i: '🎯', k: `${s.slug} pdf compress reduce size` });

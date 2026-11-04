@@ -5,26 +5,31 @@ import AdSlot from '../components/AdSlot.astro';
 import { SITE } from '../config/site';
 import { CATEGORIES, toolsIn, type Category } from '../data/tools';
 import { EXAMS, KB_PAGES } from '../data/exams';
+import { langFromPath, useT, localize, catText, toolText } from '../i18n';
 
 export function getStaticPaths() {
   return CATEGORIES.map((c) => ({ params: { hub: c.path.slice(1) }, props: { cat: c } }));
 }
 const { cat } = Astro.props as { cat: Category };
 const tools = toolsIn(cat.id);
+const lang = langFromPath(Astro.url.pathname);
+const t = useT(lang);
+const L = (p: string) => localize(p, lang);
+const ct = catText(cat, lang);
 const schema = [
-  { '@context': 'https://schema.org', '@type': 'CollectionPage', name: cat.title, description: cat.description, url: SITE.url + cat.path },
-  { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: tools.map((t, i) => ({ '@type': 'ListItem', position: i + 1, name: t.name, url: `${SITE.url}/${t.slug}` })) },
+  { '@context': 'https://schema.org', '@type': 'CollectionPage', name: ct.title, description: ct.description, url: SITE.url + L(cat.path), inLanguage: lang },
+  { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: tools.map((x, i) => ({ '@type': 'ListItem', position: i + 1, name: toolText(x, lang).name, url: SITE.url + L(`/${x.slug}`) })) },
 ];
 ---
-<Base title={cat.title} description={cat.description} path={cat.path} schema={schema} activeCategory={cat.id} pageType="hub">
+<Base title={ct.title} description={ct.description} path={L(cat.path)} schema={schema} activeCategory={cat.id} pageType="hub">
   <div class="container">
-    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> › {cat.label} tools</nav>
+    <nav class="breadcrumb" aria-label="Breadcrumb"><a href={L('/')}>{t('Home')}</a> › {t('{cat} tools', { cat: ct.label })}</nav>
     <header class="tool-hero">
-      <h1>{cat.icon} {cat.title}</h1>
-      <p class="lead">{cat.description}</p>
+      <h1>{cat.icon} {ct.title}</h1>
+      <p class="lead">{ct.description}</p>
     </header>
-    <div class="tool-grid">{tools.map((t) => <ToolTile tool={t} />)}</div>
-    {cat.id === 'exam' && (
+    <div class="tool-grid">{tools.map((x) => <ToolTile tool={x} lang={lang} />)}</div>
+    {cat.id === 'exam' && lang === 'en' && (
       <section class="prose">
         <h2>Exam-specific resizers</h2>
         <ul>{EXAMS.map((e) => <li><a href={`/${e.slug}-photo-resizer`}>{e.name} photo &amp; signature resizer</a>: {e.fullName}</li>)}</ul>

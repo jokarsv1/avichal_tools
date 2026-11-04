@@ -130,6 +130,24 @@ eq('Discount 1000 -20% -10%', discount(1000, 20, 10).afterExtra, 720);
 eq('Discount effective %', Math.round(discount(1000, 20, 10).effectivePct), 28);
 eq('Discount + 18% GST', discount(1000, 20, 0, 18).final, 944);
 
+// i18n completeness: every language has every UI string, category, tool page name and in-tool phrase.
+{
+  const fs = await import('node:fs');
+  const { UI_EN } = await import('../src/i18n/ui-en.ts');
+  const { LIVE_TOOLS, CATEGORIES } = await import('../src/data/tools.ts');
+  const packs = {};
+  for (const l of ['hi', 'bn', 'mr', 'te', 'ta']) packs[l] = (await import(`../src/i18n/lang/${l}.ts`)).default;
+  const pageTools = LIVE_TOOLS.filter((t) => fs.existsSync(`src/pages/${t.slug}.astro`)).map((t) => t.slug);
+  const phraseKeys = Object.keys(packs.hi.phrases);
+  for (const [l, p] of Object.entries(packs)) {
+    const missUi = Object.keys(UI_EN).filter((k) => !(k in p.ui));
+    const missTools = pageTools.filter((s) => !p.tools[s]);
+    const missCats = CATEGORIES.map((c) => c.id).filter((c) => !p.cats[c]);
+    const missPhr = phraseKeys.filter((k) => !(k in p.phrases));
+    eq(`i18n ${l}: complete (${missUi.length + missTools.length + missCats.length + missPhr.length} missing: ${[...missUi, ...missTools, ...missCats, ...missPhr].slice(0, 6).join(', ')})`, missUi.length + missTools.length + missCats.length + missPhr.length, 0, 0);
+  }
+}
+
 // Words
 eq('Words 1,25,00,050 INR', numberToWords('12500050', 'indian', 'inr'), 'Rupees One Crore Twenty-Five Lakh Fifty Only');
 eq('Words paise', numberToWords('101.5', 'indian', 'inr'), 'Rupees One Hundred One and Fifty Paise Only');

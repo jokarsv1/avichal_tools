@@ -13,6 +13,7 @@
  *  preset_used {preset}                Adoption of one-click presets
  *  share_clicked                       Referral
  *  related_tool_clicked {to}           Engagement / cross-tool adoption
+ *  language_changed {to}               Adoption of translated pages (all events also carry the lang super-property)
  *  search_used {query}                 Discovery
  *  donate_clicked {method}             Revenue (donations)
  *  ad_filled {slot, est_revenue_usd}   Revenue (estimated ad revenue)
@@ -85,7 +86,7 @@ export function initAnalytics() {
         return ev;
       },
     } as any);
-    posthog.register({ page_type: body().pageType || 'content', tool: body().tool || undefined, category: body().category || undefined });
+    posthog.register({ page_type: body().pageType || 'content', tool: body().tool || undefined, category: body().category || undefined, lang: body().lang || 'en' });
     ph = posthog;
     if (debug) (window as any).__ph = posthog;
     for (const [e, p] of queue.splice(0)) ph.capture(e, p);
@@ -97,7 +98,9 @@ export function initAnalytics() {
   document.addEventListener('click', (e) => {
     const t = e.target as HTMLElement;
     const tile = t.closest<HTMLAnchorElement>('a.tool-tile');
-    if (tile) capture('related_tool_clicked', { to: tile.getAttribute('href')?.slice(1) });
+    if (tile) capture('related_tool_clicked', { to: (tile.getAttribute('href') || '').replace(/^\/(hi|bn|mr|te|ta)(?=\/)/, '').slice(1) });
+    const langLink = t.closest<HTMLElement>('a[data-lang]');
+    if (langLink) capture('language_changed', { to: langLink.dataset.lang });
     const donate = t.closest<HTMLElement>('[data-donate]');
     if (donate) capture('donate_clicked', { method: donate.dataset.donate });
     const btn = t.closest<HTMLElement>('button[id$="-copy"]');

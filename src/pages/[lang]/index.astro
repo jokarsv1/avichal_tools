@@ -1,0 +1,9 @@
+---
+/** Localized home pages: /hi, /bn, /mr, /te, /ta. */
+import { OTHER_LANGS } from '../../i18n';
+import Home from '../index.astro';
+export function getStaticPaths() {
+  return OTHER_LANGS.map((l) => ({ params: { lang: l.code } }));
+}
+---
+<Home />

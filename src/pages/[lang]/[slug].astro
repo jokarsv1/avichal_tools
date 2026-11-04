@@ -1,0 +1,23 @@
+---
+/**
+ * Localized tool and category pages: /hi/compress-pdf, /ta/finance-calculators, …
+ * Renders the same page component as English; layouts read the language from the URL.
+ */
+import { OTHER_LANGS, LOCALIZED_TOOLS } from '../../i18n';
+import { CATEGORIES, type Category } from '../../data/tools';
+
+const pages = import.meta.glob('../*.astro', { eager: true }) as Record<string, { default: any }>;
+
+export function getStaticPaths() {
+  const out: { params: { lang: string; slug: string }; props: { cat?: Category } }[] = [];
+  for (const l of OTHER_LANGS) {
+    for (const t of LOCALIZED_TOOLS) out.push({ params: { lang: l.code, slug: t.slug }, props: {} });
+    for (const c of CATEGORIES) out.push({ params: { lang: l.code, slug: c.path.slice(1) }, props: { cat: c } });
+  }
+  return out;
+}
+const { slug } = Astro.params;
+const { cat } = Astro.props;
+const Page = cat ? pages['../[hub].astro'].default : pages[`../${slug}.astro`].default;
+---
+<Page cat={cat} />

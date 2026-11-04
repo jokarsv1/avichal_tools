@@ -17,7 +17,7 @@
   --radius: 14px;
   --radius-sm: 9px;
   --shadow: 0 1px 2px rgba(20, 22, 40, .06), 0 6px 24px rgba(20, 22, 40, .06);
-  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, "Nirmala UI", "Noto Sans Devanagari", "Noto Sans Bengali", "Noto Sans Telugu", "Noto Sans Tamil", "Kohinoor Devanagari", "Kohinoor Bangla", "Kohinoor Telugu", "Tamil Sangam MN", sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   color-scheme: light;
 }
@@ -83,10 +83,20 @@ code { font-family: var(--mono); font-size: .9em; background: var(--surface-2); 
 .cat-nav a:hover { background: var(--surface-2); color: var(--text); }
 .cat-nav a[aria-current="page"] { background: var(--primary-soft); color: var(--primary); }
 .header-cta { white-space: nowrap; font-size: .9rem; font-weight: 700; text-decoration: none; color: var(--text); padding: 7px 12px; border: 1px solid var(--border); border-radius: 999px; }
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.lang-pick { position: relative; }
+.lang-pick summary { list-style: none; cursor: pointer; white-space: nowrap; font-size: .9rem; font-weight: 700; padding: 7px 12px; border: 1px solid var(--border); border-radius: 999px; user-select: none; }
+.lang-pick summary::-webkit-details-marker { display: none; }
+.lang-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 60; display: grid; min-width: 170px; padding: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.15); }
+.lang-menu a { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; padding: 9px 12px; border-radius: 8px; color: var(--text); text-decoration: none; font-weight: 600; }
+.lang-menu a small { color: var(--muted); font-weight: 500; font-size: .78rem; }
+.lang-menu a:hover { background: var(--surface-2); }
+.lang-menu a[aria-current] { background: var(--primary-soft); color: var(--primary); }
+@media (max-width: 420px) { .header-cta .cta-text { display: none; } .lang-pick summary, .header-cta { padding: 7px 10px; } }
 @media (max-width: 760px) {
   .site-header .bar { flex-wrap: wrap; gap: 4px 12px; padding-top: 8px; }
   .cat-nav { order: 3; flex-basis: 100%; padding-bottom: 6px; }
-  .header-cta { margin-left: auto; }
+  .header-actions { margin-left: auto; }
 }
 
 /* ---------- Footer ---------- */

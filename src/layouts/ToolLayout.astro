@@ -11,6 +11,7 @@ import AdSlot from '../components/AdSlot.astro';
 import ToolTile from '../components/ToolTile.astro';
 import { SITE, ADS, USP } from '../config/site';
 import { getTool, getCategory, relatedTools } from '../data/tools';
+import { langFromPath, useT, localize, localizeHref, toolText, catText, toolKind } from '../i18n';
 
 export interface Faq { q: string; a: string }
 /** One-click "Popular uses": either set form fields (CSS selector -> value) or link to a pre-filled URL. */
@@ -35,25 +36,35 @@ interface Props {
 
 const tool = getTool(Astro.props.slug);
 const cat = getCategory(tool.category);
+const lang = langFromPath(Astro.url.pathname);
+const t = useT(lang);
+const en = lang === 'en';
+const tt = toolText(tool, lang), ct = catText(cat, lang);
+const props = Astro.props;
+// Translated pages use the translated name and short text plus generic, accurate how-to steps and FAQs.
+// The English long-form copy (content slot) is shown only on English pages.
+const kind = toolKind(tool);
 const {
-  path = `/${tool.slug}`,
-  title = tool.title,
-  description = tool.description,
-  h1 = tool.name,
-  lead = tool.description,
+  path = en ? `/${tool.slug}` : localize(`/${tool.slug}`, lang),
+  title = en ? tool.title : `${tt.name} – ${t('tool.titleSuffix')}`,
+  description = en ? tool.description : `${tt.short} ${t('tool.leadSuffix')}`,
+  h1 = en ? tool.name : tt.name,
+  lead = en ? tool.description : `${tt.short} ${t('tool.leadSuffix')}`,
   steps = [],
   faqs = [],
   badges: extraBadges = ['📵 Files never leave your device', '🚫 No watermark', '∞ No limits'],
   crumb,
   presets = [],
-} = Astro.props;
+} = en ? props : { slug: props.slug, presets: props.presets?.map((p) => (p.href ? { ...p, href: localizeHref(p.href, lang) } : p)), steps: [1, 2, 3].map((i) => t(`steps.${kind}.${i}`)), faqs: ['free', 'upload', 'account', 'mobile'].map((k) => ({ q: t(`faq.${k}.q`), a: t(`faq.${k}.a`) })), badges: [`📵 ${t('Files never leave your device')}`, `🚫 ${t('No watermark')}`, `∞ ${t('No limits')}`] } as typeof props;
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const strip = (s: string) => s.replace(/<[^>]+>/g, '');
 // The USP badges always come first; page-specific badges follow (duplicates of the USP are dropped).
-const badges = [...USP.short, ...extraBadges.filter((b) => !/no login|no account|free forever|no data/i.test(b))];
+const usp = en ? USP.short : [`🆓 ${t('Free forever')}`, `👤 ${t('No account, ever')}`, `🔒 ${t('No data stored')}`];
+const badges = [...usp, ...extraBadges.filter((b) => !/no login|no account|free forever|no data/i.test(b))];
 const url = SITE.url + path;
 const related = relatedTools(tool.slug);
 const hasSidebar = !!(ADS.client && ADS.slots.sidebar) || (import.meta.env.DEV && ADS.showPlaceholdersInDev);
+const L = (p: string) => localize(p, lang);
 
 const schema: Record<string, unknown>[] = [
   {
@@ -68,18 +79,19 @@ const schema: Record<string, unknown>[] = [
     isAccessibleForFree: true,
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
     publisher: { '@type': 'Organization', name: SITE.name, url: SITE.url },
+    inLanguage: lang,
   },
   {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE.url + '/' },
-      { '@type': 'ListItem', position: 2, name: `${cat.label} tools`, item: SITE.url + cat.path },
+      { '@type': 'ListItem', position: 1, name: t('Home'), item: SITE.url + (en ? '/' : L('/')) },
+      { '@type': 'ListItem', position: 2, name: t('{cat} tools', { cat: ct.label }), item: SITE.url + L(cat.path) },
       { '@type': 'ListItem', position: 3, name: h1, item: url },
     ],
   },
 ];
-if (faqs.length) {
+if (faqs.length && en) {
   schema.push({
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -91,7 +103,7 @@ if (faqs.length) {
   <slot name="head" slot="head" />
   <div class="container">
     <nav class="breadcrumb" aria-label="Breadcrumb">
-      <a href="/">Home</a> › <a href={cat.path}>{cat.label} tools</a> › {crumb ? <><a href={`/${tool.slug}`}>{tool.name}</a> › {crumb}</> : <span>{h1}</span>}
+      <a href={L('/')}>{t('Home')}</a> › <a href={L(cat.path)}>{t('{cat} tools', { cat: ct.label })}</a> › {crumb ? <><a href={`/${tool.slug}`}>{tool.name}</a> › {crumb}</> : <span>{h1}</span>}
     </nav>
     <div class={`tool-layout${hasSidebar ? '' : ' no-aside'}`}>
       <div>
@@ -99,44 +111,45 @@ if (faqs.length) {
           <h1>{h1}</h1>
           <p class="lead" set:html={lead} />
           <div class="trust">{badges.map((b) => <span>{b}</span>)}</div>
-          {tool.desktopOnly && <p class="hint" style="margin-top:8px">💻 Works best on a desktop or laptop browser (Chrome, Edge, Firefox).</p>}
+          {tool.desktopOnly && <p class="hint" style="margin-top:8px">💻 {t('desktopOnly')}</p>}
+          {!en && <p class="hint lang-note" style="margin-top:8px">🌐 {t('lang.note')} <a href={`/${tool.slug}`} data-lang="en" hreflang="en">{t('Read in English')}</a></p>}
         </header>
 
         {presets.length > 0 && (
-          <div class="quick" role="group" aria-label="Popular uses">
-            <span class="quick-label">⚡ One-click:</span>
+          <div class="quick" role="group" aria-label={t('Popular uses')}>
+            <span class="quick-label">⚡ {t('One-click')}:</span>
             {presets.map((p) => p.href
               ? <a class="chip" href={p.href} title={p.hint}>{p.label}</a>
               : <button type="button" class="chip" data-preset={JSON.stringify(p.set ?? {})} data-preset-id={slugify(p.label)} title={p.hint}>{p.label}</button>)}
           </div>
         )}
         <section class="card tool-card" aria-label={h1}>
-          <noscript><p class="status warn">This tool needs JavaScript. It runs entirely in your browser.</p></noscript>
+          <noscript><p class="status warn">{t('noscript')}</p></noscript>
           <slot />
         </section>
 
         <AdSlot slot="belowTool" />
 
         <article class="prose">
-          <slot name="content" />
+          {en && <slot name="content" />}
           {steps.length > 0 && (
             <>
-              <h2>How to use the {tool.name} tool</h2>
+              <h2>{t('How to use the {tool} tool', { tool: h1 })}</h2>
               <ol>{steps.map((s) => <li set:html={s} />)}</ol>
             </>
           )}
           <AdSlot slot="inContent" />
-          <h2>Why {SITE.name}?</h2>
+          <h2>{t('Why {site}?', { site: SITE.name })}</h2>
           <ul>
-            <li><b>Free forever:</b> no "credits", no trial, no premium tier, no watermark and no daily limit.</li>
-            <li><b>No account, ever:</b> nothing to sign up for. Just open the page and use it.</li>
-            <li><b>No data stored:</b> your files and the numbers you type are processed by your own browser. We never upload, store or see them.</li>
-            <li><b>Works offline:</b> once the page has loaded, most tools keep working without internet.</li>
-            <li><b>Open source:</b> anyone can read the code on <a href={SITE.github} rel="noopener">GitHub</a>.</li>
+            <li set:html={t('why.free')} />
+            <li set:html={t('why.account')} />
+            <li set:html={t('why.data')} />
+            <li set:html={t('why.offline')} />
+            <li set:html={t('why.open').replace('GitHub', `<a href="${SITE.github}" rel="noopener">GitHub</a>`)} />
           </ul>
           {faqs.length > 0 && (
             <section class="faq">
-              <h2>Frequently asked questions</h2>
+              <h2>{t('Frequently asked questions')}</h2>
               {faqs.map((f) => (
                 <details>
                   <summary>{f.q}</summary>
@@ -149,8 +162,8 @@ if (faqs.length) {
 
         {related.length > 0 && (
           <section>
-            <div class="section-head"><h2>Related tools</h2><a href={cat.path}>All {cat.label.toLowerCase()} tools →</a></div>
-            <div class="tool-grid">{related.map((t) => <ToolTile tool={t} />)}</div>
+            <div class="section-head"><h2>{t('Related tools')}</h2><a href={L(cat.path)}>{t('All {cat} tools', { cat: en ? ct.label.toLowerCase() : ct.label })} →</a></div>
+            <div class="tool-grid">{related.map((x) => <ToolTile tool={x} lang={lang} />)}</div>
           </section>
         )}
       </div>
@@ -183,6 +196,28 @@ if (faqs.length) {
       if (scroll && card && card.getBoundingClientRect().top > innerHeight * 0.6) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     document.querySelectorAll<HTMLElement>('.quick [data-preset]').forEach((b) => b.addEventListener('click', () => apply(b)));
+    // Translated pages: swap common English labels inside the tool (buttons, fields, results) for the visitor's language.
+    const uiLang = document.body.dataset.lang;
+    if (uiLang && uiLang !== 'en') {
+      fetch(`/i18n/${uiLang}.json`).then((r) => r.json()).then((dict: Record<string, string>) => {
+        const root = document.querySelector('.tool-card');
+        if (!root) return;
+        const tr = (node: Node) => {
+          if (node.nodeType === 3) {
+            const v = node.nodeValue || '', k = v.trim();
+            if (k && dict[k] && !(node.parentElement?.closest('.ov-pages, textarea, [contenteditable], code, pre'))) node.nodeValue = v.replace(k, dict[k]);
+            return;
+          }
+          if (node.nodeType !== 1) return;
+          const el = node as Element;
+          if (el.matches('.ov-pages, textarea, [contenteditable], script, style, code, pre')) return;
+          for (const a of ['placeholder', 'aria-label', 'title']) { const v = el.getAttribute(a)?.trim(); if (v && dict[v]) el.setAttribute(a, dict[v]); }
+          el.childNodes.forEach(tr);
+        };
+        tr(root);
+        new MutationObserver((ms) => ms.forEach((m) => (m.type === 'characterData' ? tr(m.target) : m.addedNodes.forEach(tr)))).observe(root, { childList: true, subtree: true, characterData: true });
+      }).catch(() => {});
+    }
     const want = new URLSearchParams(location.search).get('preset');
     const match = want && document.querySelector<HTMLElement>(`.quick [data-preset-id="${CSS.escape(want)}"]`);
     if (match) setTimeout(() => apply(match, false), 0);

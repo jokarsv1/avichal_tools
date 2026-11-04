@@ -13,12 +13,12 @@ const SYN: Record<string, string[]> = {
 
 const STOP_WORDS = ['to', 'in', 'a', 'the', 'my', 'for', 'of', 'online', 'free', 'how', 'kaise', 'kare', 'karein', 'tool', 'and', 'with', 'from'];
 export function normalize(q: string): string[] {
-  const s = q.toLowerCase().replace(/(\d+(?:\.\d+)?)\s*(kb|mb)\b/g, '$1$2').replace(/[^a-z0-9.\s]/g, ' ');
+  const s = q.toLowerCase().replace(/(\d+(?:\.\d+)?)\s*(kb|mb)\b/g, '$1$2').replace(/[^\p{L}\p{M}\p{N}.\s]/gu, ' ');
   return s.split(/\s+/).filter((w) => w && !STOP_WORDS.includes(w));
 }
 
 const STOP = STOP_WORDS;
-const wordStart = (w: string) => new RegExp(`(^|[^a-z0-9])${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`);
+const wordStart = (w: string) => new RegExp(`(^|[^\\p{L}\\p{M}\\p{N}])${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'u');
 /** Query words with "to" kept and synonyms applied, for direction-sensitive phrases like "jpg to pdf". */
 const canonical = (q: string) => q.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean).map((w) => SYN[w]?.[0] && !['photo', 'size', 'remove', 'password', 'interest'].includes(w) ? SYN[w][0] : w).join(' ');
 

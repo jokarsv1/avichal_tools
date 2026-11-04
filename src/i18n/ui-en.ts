@@ -79,6 +79,9 @@ export const UI_EN = {
   'steps.maker.1': 'Fill in your details.',
   'steps.maker.2': 'Check the live preview.',
   'steps.maker.3': 'Download or print. Nothing is saved on our side.',
+  'steps.text.1': 'Paste or type your text.',
+  'steps.text.2': 'See the result instantly.',
+  'steps.text.3': 'Copy or download the result.',
   // generic FAQs
   'faq.free.q': 'Is it really free?',
   'faq.free.a': 'Yes. There is no trial, no premium plan, no watermark and no daily limit. The site is supported by ads and donations.',
@@ -89,8 +92,7 @@ export const UI_EN = {
   'faq.mobile.q': 'Does it work on mobile?',
   'faq.mobile.a': 'Yes. It works in Chrome, Safari and other modern browsers on Android, iPhone, Windows and Mac.',
   'lang.note': 'Some labels inside the tool are still in English. We are translating them.',
-  // hubs
-  'hub.lead': '{desc}',
+  'Read in English': 'Read this page in English',
   'Exam-specific resizers': 'Exam-specific resizers',
   'Compress to a fixed size': 'Compress to a fixed size',
 };

@@ -3,7 +3,7 @@ import '../styles/global.css';
 import { SITE, ADS, ANALYTICS, USP } from '../config/site';
 import { CATEGORIES, LIVE_TOOLS } from '../data/tools';
 import SupportBox from '../components/SupportBox.astro';
-import { langFromPath, useT } from '../i18n';
+import { LANGS, langFromPath, useT, localize, unlocalize, isLocalizable, catText, toolText } from '../i18n';
 
 interface Props {
   title: string;
@@ -32,16 +32,29 @@ const year = new Date().getFullYear();
 const isProd = import.meta.env.PROD;
 const lang = langFromPath(Astro.url.pathname);
 const t = useT(lang);
+const L = (p: string) => localize(p, lang);
+const meta = LANGS.find((l) => l.code === lang)!;
+// Pages with translations (home, hubs, tool pages) get hreflang links and a language switcher that keeps the page.
+const enPath = unlocalize(path);
+const hasAlt = !noindex && isLocalizable(enPath);
 const cfBeacon = ANALYTICS.cloudflareToken ? JSON.stringify({ token: ANALYTICS.cloudflareToken }) : '';
 ---
 <!doctype html>
-<html lang={SITE.locale}>
+<html lang={meta.locale} data-alt={hasAlt ? '1' : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {hasAlt && LANGS.map((l) => <link rel="alternate" hreflang={l.code} href={SITE.url + (localize(enPath, l.code) === '/' ? '/' : localize(enPath, l.code))} />)}
+    {hasAlt && <link rel="alternate" hreflang="x-default" href={SITE.url + (enPath === '/' ? '/' : enPath)} />}
+    {hasAlt && lang === 'en' && (
+      <script is:inline>
+        // A visitor who chose a language earlier sees that version (crawlers have no saved choice, so they always get English).
+        try { var l = localStorage.getItem('lang'); if (l && /^(hi|bn|mr|te|ta)$/.test(l)) location.replace('/' + l + (location.pathname === '/' ? '' : location.pathname) + location.search + location.hash); } catch (e) {}
+      </script>
+    )}
     {noindex && <meta name="robots" content="noindex, follow" />}
     <meta name="theme-color" content={SITE.themeColor} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -62,23 +75,39 @@ const cfBeacon = ANALYTICS.cloudflareToken ? JSON.stringify({ token: ANALYTICS.c
     {ADS.client && <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin />}
     <slot name="head" />
   </head>
-  <body data-page-type={pageType} data-tool={tool} data-category={activeCategory}>
-    <a class="skip-link" href="#main">Skip to content</a>
-    <div class="usp-strip" role="note"><div class="container"><span class="usp-long">{USP.strip}</span><span class="usp-short">{USP.stripShort}</span></div></div>
+  <body data-page-type={pageType} data-tool={tool} data-category={activeCategory} data-lang={lang}>
+    <a class="skip-link" href="#main">{t('Skip to content')}</a>
+    <div class="usp-strip" role="note"><div class="container"><span class="usp-long">{lang === 'en' ? USP.strip : t('usp.strip')}</span><span class="usp-short">{lang === 'en' ? USP.stripShort : t('usp.stripShort')}</span></div></div>
     <header class="site-header">
       <div class="container bar">
-        <a class="brand" href="/" aria-label={`${SITE.name} home`}>
+        <a class="brand" href={L('/')} aria-label={`${SITE.name} ${t('home')}`}>
           <span class="brand-mark" aria-hidden="true">✦</span>{SITE.name}
         </a>
         <nav class="cat-nav" aria-label="Tool categories">
           {CATEGORIES.map((c) => (
-            <a href={c.path} aria-current={activeCategory === c.id ? 'page' : undefined}>{c.label}</a>
+            <a href={L(c.path)} aria-current={activeCategory === c.id ? 'page' : undefined}>{catText(c, lang).label}</a>
           ))}
         </nav>
-        <a class="header-cta" href="/support">☕ Support</a>
+        <div class="header-actions">
+          <details class="lang-pick">
+            <summary aria-label={`${t('Language')}: ${meta.native}`}>🌐 <span>{meta.native}</span></summary>
+            <div class="lang-menu">
+              {LANGS.map((l) => (
+                <a href={hasAlt ? localize(enPath, l.code) : localize('/', l.code)} hreflang={l.code} lang={l.code} data-lang={l.code} aria-current={l.code === lang ? 'true' : undefined}>{l.native}<small>{l.english}</small></a>
+              ))}
+            </div>
+          </details>
+          <a class="header-cta" href="/support">☕ <span class="cta-text">{t('Support')}</span></a>
+        </div>
       </div>
       <script is:inline>
         (function () { var n = document.querySelector('.cat-nav'), a = n && n.querySelector('[aria-current]'); if (a && n.scrollWidth > n.clientWidth) n.scrollLeft = a.offsetLeft - (n.clientWidth - a.offsetWidth) / 2; })();
+        // Remember the language a visitor picks; close the menu when clicking elsewhere.
+        document.addEventListener('click', function (e) {
+          var a = e.target.closest && e.target.closest('a[data-lang]');
+          if (a) { try { localStorage.setItem('lang', a.getAttribute('data-lang')); } catch (x) {} }
+          document.querySelectorAll('details.lang-pick[open]').forEach(function (d) { if (!d.contains(e.target)) d.removeAttribute('open'); });
+        });
       </script>
     </header>
 
@@ -91,35 +120,35 @@ const cfBeacon = ANALYTICS.cloudflareToken ? JSON.stringify({ token: ANALYTICS.c
       <div class="container">
         <div class="footer-grid">
           <div>
-            <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">✦</span>{SITE.name}</a>
-            <p style="margin-top:10px">{USP.long}</p>
-            <p class="usp-foot">{USP.short.map((u) => <span>{u}</span>)}<span>📵 Works offline</span><span>💻 Open source</span></p>
-            <p>Contact: <a href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
+            <a class="brand" href={L('/')}><span class="brand-mark" aria-hidden="true">✦</span>{SITE.name}</a>
+            <p style="margin-top:10px">{lang === 'en' ? USP.long : t('usp.long')}</p>
+            <p class="usp-foot"><span>🆓 {t('Free forever')}</span><span>👤 {t('No account, ever')}</span><span>🔒 {t('No data stored')}</span><span>📵 {t('Works offline')}</span><span>💻 {t('Open source')}</span></p>
+            <p>{t('Contact')}: <a href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
           </div>
           <div>
-            <h2>Popular tools</h2>
-            <ul>{popular.map((t) => <li><a href={`/${t.slug}`}>{t.name}</a></li>)}</ul>
+            <h2>{t('Popular tools')}</h2>
+            <ul>{popular.map((x) => <li><a href={L(`/${x.slug}`)}>{toolText(x, lang).name}</a></li>)}</ul>
           </div>
           <div>
-            <h2>Categories</h2>
-            <ul>{CATEGORIES.map((c) => <li><a href={c.path}>{c.label} tools</a></li>)}</ul>
+            <h2>{t('Categories')}</h2>
+            <ul>{CATEGORIES.map((c) => <li><a href={L(c.path)}>{t('{cat} tools', { cat: catText(c, lang).label })}</a></li>)}</ul>
           </div>
           <div>
-            <h2>About</h2>
+            <h2>{t('About')}</h2>
             <ul>
-              <li><a href="/about">About us</a></li>
-              <li><a href="/contact">Contact</a></li>
-              <li><a href="/roadmap">Roadmap &amp; requests</a></li>
-              <li><a href="/support">Support the project</a></li>
-              <li><a href="/privacy-policy">Privacy policy</a></li>
-              <li><a href="/terms">Terms of use</a></li>
-              <li><a href={SITE.github} rel="noopener">Source code (GitHub)</a></li>
+              <li><a href="/about">{t('About us')}</a></li>
+              <li><a href="/contact">{t('Contact')}</a></li>
+              <li><a href="/roadmap">{t('Roadmap & requests')}</a></li>
+              <li><a href="/support">{t('Support the project')}</a></li>
+              <li><a href="/privacy-policy">{t('Privacy policy')}</a></li>
+              <li><a href="/terms">{t('Terms of use')}</a></li>
+              <li><a href={SITE.github} rel="noopener">{t('Source code (GitHub)')}</a></li>
             </ul>
           </div>
         </div>
         <div class="footer-bottom">
-          <span>© {year} {SITE.name}. Open source under the MIT licence.</span>
-          <span>Made in India 🇮🇳 for everyone.</span>
+          <span>© {year} {SITE.name}. {t('footer.licence')}</span>
+          <span>{t('Made in India for everyone.')}</span>
         </div>
       </div>
     </footer>
