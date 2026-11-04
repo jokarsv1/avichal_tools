@@ -1,4 +1,5 @@
 import type { LangPack } from '../index';
+import pages from './pages-ta.ts';
 
 const pack: LangPack = {
   ui: {
@@ -222,5 +223,6 @@ const pack: LangPack = {
     '▭ Box': '▭ பெட்டி', '🖼 Image': '🖼 படம்', '↶ Undo': '↶ செயல்தவிர்', 'Flatten pages (true redaction)': 'பக்கங்களைத் தட்டையாக்கு (நிரந்தரமாக மறை)',
     'Interest': 'வட்டி', 'Principal paid': 'செலுத்திய அசல்', 'Interest paid': 'செலுத்திய வட்டி', 'Gains': 'லாபம்', 'Growth': 'வளர்ச்சி', 'Contributed': 'செலுத்தியது', '💡 What if you prepay?': '💡 முன்கூட்டியே செலுத்தினால்?',
   },
+  pages,
 };
 export default pack;

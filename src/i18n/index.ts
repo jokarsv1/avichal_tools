@@ -16,6 +16,7 @@ import mr from './lang/mr';
 import te from './lang/te';
 import ta from './lang/ta';
 import { LIVE_TOOLS, CATEGORIES, type Tool, type Category } from '../data/tools';
+import { EXAMS, KB_PAGES } from '../data/exams';
 
 export type Lang = 'en' | 'hi' | 'bn' | 'mr' | 'te' | 'ta';
 export interface LangPack {
@@ -23,6 +24,8 @@ export interface LangPack {
   cats: Record<string, [label: string, title: string, description: string]>;
   tools: Record<string, [name: string, short: string]>;
   phrases: Record<string, string>;
+  /** Templates for translated exam and "compress image to N KB" pages ({exam}, {kb}, {spec}… are filled in). */
+  pages: Record<string, string>;
 }
 export const LANGS: { code: Lang; native: string; english: string; locale: string }[] = [
   { code: 'en', native: 'English', english: 'English', locale: 'en-IN' },
@@ -38,7 +41,9 @@ export const PACKS: Record<Exclude<Lang, 'en'>, LangPack> = { hi, bn, mr, te, ta
 /** Tool pages that exist as a single .astro file can be localized (programmatic landing pages stay English). */
 const PAGE_FILES = Object.keys(import.meta.glob('../pages/*.astro')).map((p) => p.replace('../pages/', '').replace('.astro', ''));
 export const LOCALIZED_TOOLS = LIVE_TOOLS.filter((t) => PAGE_FILES.includes(t.slug));
-const LOCALIZED_PATHS = new Set(['/', ...CATEGORIES.map((c) => c.path), ...LOCALIZED_TOOLS.map((t) => `/${t.slug}`)]);
+export const LOCALIZED_EXAM_PATHS = EXAMS.map((e) => `/${e.slug}-photo-resizer`);
+export const LOCALIZED_KB_PATHS = KB_PAGES.map((p) => `/compress-image-to-${p.kb}kb`);
+const LOCALIZED_PATHS = new Set(['/', ...CATEGORIES.map((c) => c.path), ...LOCALIZED_TOOLS.map((t) => `/${t.slug}`), ...LOCALIZED_EXAM_PATHS, ...LOCALIZED_KB_PATHS]);
 export const isLocalizable = (enPath: string) => LOCALIZED_PATHS.has(enPath.split('?')[0].replace(/\/$/, '') || '/');
 
 /** Astro may report '/hi.html' or '/hi/' for the localized home page; normalise before reading the language. */
@@ -75,6 +80,16 @@ export function useT(lang: Lang) {
   };
 }
 export type T = ReturnType<typeof useT>;
+
+/** Page templates for translated exam / KB pages. */
+export function usePageT(lang: Exclude<Lang, 'en'>) {
+  const pages = PACKS[lang].pages;
+  return (key: string, vars: Record<string, string | number> = {}) => {
+    let s = pages[key] ?? key;
+    for (const [k, v] of Object.entries(vars)) s = s.replaceAll(`{${k}}`, String(v));
+    return s;
+  };
+}
 
 export function toolText(t: Tool, lang: Lang) {
   const tr = lang === 'en' ? undefined : PACKS[lang].tools[t.slug];

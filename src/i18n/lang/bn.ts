@@ -1,4 +1,5 @@
 import type { LangPack } from '../index';
+import pages from './pages-bn.ts';
 
 const pack: LangPack = {
   ui: {
@@ -222,5 +223,6 @@ const pack: LangPack = {
     '▭ Box': '▭ বাক্স', '🖼 Image': '🖼 ছবি', '↶ Undo': '↶ আগের মতো', 'Flatten pages (true redaction)': 'পেজ ফ্ল্যাটেন করুন (স্থায়ীভাবে লুকান)',
     'Interest': 'সুদ', 'Principal paid': 'শোধ করা আসল', 'Interest paid': 'শোধ করা সুদ', 'Gains': 'লাভ', 'Growth': 'বৃদ্ধি', 'Contributed': 'জমা', '💡 What if you prepay?': '💡 আগে কিছু শোধ করলে কী হবে?',
   },
+  pages,
 };
 export default pack;

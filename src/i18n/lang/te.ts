@@ -1,4 +1,5 @@
 import type { LangPack } from '../index';
+import pages from './pages-te.ts';
 
 const pack: LangPack = {
   ui: {
@@ -222,5 +223,6 @@ const pack: LangPack = {
     '▭ Box': '▭ బాక్స్', '🖼 Image': '🖼 ఇమేజ్', '↶ Undo': '↶ అన్‌డూ', 'Flatten pages (true redaction)': 'పేజీలు ఫ్లాటెన్ చేయండి (శాశ్వతంగా దాచండి)',
     'Interest': 'వడ్డీ', 'Principal paid': 'చెల్లించిన అసలు', 'Interest paid': 'చెల్లించిన వడ్డీ', 'Gains': 'లాభం', 'Growth': 'వృద్ధి', 'Contributed': 'జమ చేసినది', '💡 What if you prepay?': '💡 ముందుగా కొంత చెల్లిస్తే?',
   },
+  pages,
 };
 export default pack;

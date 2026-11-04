@@ -5,7 +5,7 @@ import AdSlot from '../components/AdSlot.astro';
 import { SITE } from '../config/site';
 import { CATEGORIES, toolsIn, type Category } from '../data/tools';
 import { EXAMS, KB_PAGES } from '../data/exams';
-import { langFromPath, useT, localize, catText, toolText } from '../i18n';
+import { langFromPath, useT, usePageT, localize, catText, toolText, type Lang } from '../i18n';
 
 export function getStaticPaths() {
   return CATEGORIES.map((c) => ({ params: { hub: c.path.slice(1) }, props: { cat: c } }));
@@ -16,6 +16,7 @@ const lang = langFromPath(Astro.url.pathname);
 const t = useT(lang);
 const L = (p: string) => localize(p, lang);
 const ct = catText(cat, lang);
+const tp = lang === 'en' ? null : usePageT(lang as Exclude<Lang, 'en'>);
 const schema = [
   { '@context': 'https://schema.org', '@type': 'CollectionPage', name: ct.title, description: ct.description, url: SITE.url + L(cat.path), inLanguage: lang },
   { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: tools.map((x, i) => ({ '@type': 'ListItem', position: i + 1, name: toolText(x, lang).name, url: SITE.url + L(`/${x.slug}`) })) },
@@ -29,12 +30,12 @@ const schema = [
       <p class="lead">{ct.description}</p>
     </header>
     <div class="tool-grid">{tools.map((x) => <ToolTile tool={x} lang={lang} />)}</div>
-    {cat.id === 'exam' && lang === 'en' && (
+    {cat.id === 'exam' && (
       <section class="prose">
-        <h2>Exam-specific resizers</h2>
-        <ul>{EXAMS.map((e) => <li><a href={`/${e.slug}-photo-resizer`}>{e.name} photo &amp; signature resizer</a>: {e.fullName}</li>)}</ul>
-        <h2>Compress to a fixed size</h2>
-        <ul>{KB_PAGES.map((p) => <li><a href={`/compress-image-to-${p.kb}kb`}>Compress image to {p.kb} KB</a></li>)}</ul>
+        <h2>{t('Exam-specific resizers')}</h2>
+        <ul>{EXAMS.map((e) => <li><a href={L(`/${e.slug}-photo-resizer`)}>{tp ? tp('exam.h1', { exam: e.name }) : `${e.name} photo & signature resizer`}</a>: {e.fullName}</li>)}</ul>
+        <h2>{t('Compress to a fixed size')}</h2>
+        <ul>{KB_PAGES.map((p) => <li><a href={L(`/compress-image-to-${p.kb}kb`)}>{tp ? tp('kb.h1', { kb: p.kb }) : `Compress image to ${p.kb} KB`}</a></li>)}</ul>
       </section>
     )}
     <AdSlot slot="belowTool" />

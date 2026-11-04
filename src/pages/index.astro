@@ -39,8 +39,8 @@ const schema = [
       <section id={c.id} data-cat>
         <div class="section-head"><h2>{c.icon} {t('{cat} tools', { cat: catText(c, lang).label })}</h2><a href={L(c.path)}>{t('View all')} →</a></div>
         <div class="tool-grid">{toolsIn(c.id).map((x) => <ToolTile tool={x} lang={lang} />)}</div>
-        {c.id === 'exam' && lang === 'en' && (
-          <p class="hint" style="margin-top:10px">Exam presets: {EXAMS.map((e, i) => <>{i ? ' · ' : ''}<a href={`/${e.slug}-photo-resizer`}>{e.name}</a></>)} · <a href="/compress-image-to-20kb">20 KB</a> · <a href="/compress-image-to-50kb">50 KB</a> · <a href="/compress-image-to-100kb">100 KB</a></p>
+        {c.id === 'exam' && (
+          <p class="hint" style="margin-top:10px">{lang === 'en' ? 'Exam presets' : t('Exam-specific resizers')}: {EXAMS.map((e, i) => <>{i ? ' · ' : ''}<a href={L(`/${e.slug}-photo-resizer`)}>{e.name}</a></>)} · <a href={L('/compress-image-to-20kb')}>20 KB</a> · <a href={L('/compress-image-to-50kb')}>50 KB</a> · <a href={L('/compress-image-to-100kb')}>100 KB</a></p>
         )}
       </section>
     ))}

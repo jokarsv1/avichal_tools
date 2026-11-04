@@ -1,40 +1,88 @@
 ---
 import ToolLayout from '../layouts/ToolLayout.astro';
 import KbResizer from '../components/KbResizer.astro';
-import { GENERIC_SPECS, KB_PAGES, EXAMS, type KbPage } from '../data/exams';
+import { GENERIC_SPECS, KB_PAGES, EXAMS, ALL_SPECS, type KbPage } from '../data/exams';
+import { langFromPath, localize, usePageT, type Lang } from '../i18n';
 
 export function getStaticPaths() {
   return KB_PAGES.map((p) => ({ params: { kb: String(p.kb) }, props: { page: p } }));
 }
 const { page } = Astro.props as { page: KbPage };
 const kb = page.kb;
+const lang = langFromPath(Astro.url.pathname);
+const en = lang === 'en';
 const spec = { id: `kb-${kb}`, label: `Under ${kb} KB`, kind: 'photo' as const, maxKB: kb };
 const others = GENERIC_SPECS.filter((s) => s.id !== spec.id);
 const groups = [{ label: 'Target', specs: [spec] }, { label: 'Other sizes', specs: others }, ...EXAMS.map((e) => ({ label: e.name, specs: e.specs }))];
-const faqs = [
+const presets = [{ label: `Under ${kb} KB`, id: `under-${kb}-kb`, set: { '.kb-preset': `kb-${kb}` } }, { label: 'SSC photo', id: 'ssc-photo', set: { '.kb-preset': 'ssc-photo' } }, { label: 'IBPS photo', id: 'ibps-photo', set: { '.kb-preset': 'ibps-photo' } }, { label: 'Signature 10–20 KB', id: 'signature-10-20-kb', set: { '.kb-preset': 'ibps-sign' } }];
+
+// ---------- English ----------
+let title = `Compress Image to ${kb} KB Online – JPG Under ${kb} KB Free`;
+let description = `Reduce photo size to ${kb} KB (or less) instantly. Free, no upload, no login. Optional minimum KB, pixel size and DPI for exam and job forms.`;
+let h1 = `Compress Image to ${kb} KB`;
+let lead = `Reduce a JPG, PNG or HEIC photo to under <b>${kb} KB</b> with the best possible quality. Used for ${page.uses}.`;
+let faqs = [
   { q: `How do I compress a JPG to ${kb} KB?`, a: `Choose your image above. The "Under ${kb} KB" preset is already selected, so the tool immediately finds the best quality under ${kb} KB. Then press Download.` },
   { q: `Can I compress to exactly ${kb} KB?`, a: `You can get just under ${kb} KB. If your form needs a range, for example ${Math.max(1, Math.round(kb * 0.4))}–${kb} KB, type the lower number in Min KB too.` },
   { q: `What is ${kb} KB used for?`, a: `Common uses: ${page.uses}.` },
   { q: 'Is it free and private?', a: 'Yes. No sign-up, no watermark, and the photo never leaves your device.' },
 ];
-const steps = [
+let steps = [
   'Choose or drop your image (JPG, PNG, WebP or HEIC).',
   `The <b>Under ${kb} KB</b> preset is pre-selected. Add a minimum size or pixel size if your portal needs it.`,
   'Wait a second for the result and check the ✓ badge.',
   'Press Download.',
 ];
+
+// ---------- Translated ----------
+const tp = en ? null : usePageT(lang as Exclude<Lang, 'en'>);
+// Which exam files use this size: the exact maximum first, then ranges that include it (from the exam data, so it stays accurate).
+const examOf = (id: string) => EXAMS.find((e) => e.specs.some((s) => s.id === id))!;
+const exact = ALL_SPECS.filter((s) => s.maxKB === kb);
+const within = ALL_SPECS.filter((s) => s.maxKB !== kb && (s.minKB ?? 0) <= kb && kb <= s.maxKB);
+const users = [...exact, ...within].slice(0, 5);
+let usedFor = '';
+if (tp) {
+  const kindName = (s: (typeof ALL_SPECS)[number]) => `${examOf(s.id).name} ${tp(`kind.${s.kind}`)} (${s.minKB ? tp('range', { min: s.minKB, max: s.maxKB }) : tp('upTo', { max: s.maxKB })})`;
+  usedFor = users.length ? tp('kb.usedFor', { kb, list: users.map(kindName).join(', ') }) : tp('kb.usedFor.generic', { kb });
+  title = tp('kb.title', { kb });
+  description = tp('kb.desc', { kb });
+  h1 = tp('kb.h1', { kb });
+  lead = `${tp('kb.lead', { kb })} ${usedFor}`;
+  faqs = [
+    { q: tp('kb.faq.how.q', { kb }), a: tp('kb.faq.how.a', { kb }) },
+    { q: tp('kb.faq.exact.q', { kb }), a: tp('kb.faq.exact.a', { kb, low: Math.max(1, Math.round(kb * 0.4)) }) },
+    { q: tp('kb.faq.use.q', { kb }), a: usedFor },
+    { q: tp('exam.faq.upload.q'), a: tp('exam.faq.upload.a') },
+  ];
+  steps = [tp('kb.step1'), tp('kb.step2', { kb }), tp('kb.step3')];
+  presets[0].label = `${kb} KB`;
+  presets[1].label = `SSC ${tp('kind.photo')}`;
+  presets[2].label = `IBPS ${tp('kind.photo')}`;
+  presets[3].label = `${tp('kind.signature')} 10–20 KB`;
+}
 ---
-<ToolLayout presets={[{ label: `Under ${kb} KB`, set: { '.kb-preset': `kb-${kb}` } }, { label: 'SSC photo', set: { '.kb-preset': 'ssc-photo' } }, { label: 'IBPS photo', set: { '.kb-preset': 'ibps-photo' } }, { label: 'Signature 10–20 KB', set: { '.kb-preset': 'ibps-sign' } }]} slug="resize-image-to-kb" path={`/compress-image-to-${kb}kb`}
-  title={`Compress Image to ${kb} KB Online – JPG Under ${kb} KB Free`}
-  description={`Reduce photo size to ${kb} KB (or less) instantly. Free, no upload, no login. Optional minimum KB, pixel size and DPI for exam and job forms.`}
-  h1={`Compress Image to ${kb} KB`} crumb={`${kb} KB`}
-  lead={`Reduce a JPG, PNG or HEIC photo to under <b>${kb} KB</b> with the best possible quality. Used for ${page.uses}.`} steps={steps} faqs={faqs}>
+<ToolLayout presets={presets} slug="resize-image-to-kb" path={`/compress-image-to-${kb}kb`} title={title} description={description}
+  h1={h1} crumb={`${kb} KB`} lead={lead} steps={steps} faqs={faqs} localized={!en}>
   <KbResizer groups={groups} defaultId={spec.id} />
   <Fragment slot="content">
-    <h2>Getting a photo under {kb} KB without making it blurry</h2>
-    <p>{page.tip}</p>
-    <p>The tool works in two steps. First it searches for the highest JPEG quality that fits under {kb} KB. Only if that is not enough does it reduce the pixel size, a little at a time. You see the final size in KB and bytes before you download.</p>
-    <h3>Other sizes</h3>
-    <p>{KB_PAGES.filter((p) => p.kb !== kb).map((p, i) => <>{i ? ' · ' : ''}<a href={`/compress-image-to-${p.kb}kb`}>{p.kb} KB</a></>)} · <a href="/resize-image-to-kb">custom KB size</a></p>
+    {tp ? (
+      <>
+        <h2>{tp('kb.h2', { kb })}</h2>
+        <p>{tp('kb.p', { kb })}</p>
+        <h3>{tp('kb.others')}</h3>
+        <p>{KB_PAGES.filter((p) => p.kb !== kb).map((p, i) => <>{i ? ' · ' : ''}<a href={localize(`/compress-image-to-${p.kb}kb`, lang)}>{p.kb} KB</a></>)} · <a href={localize('/resize-image-to-kb', lang)}>{tp('kb.custom')}</a></p>
+        <h3>{tp('exam.others')}</h3>
+        <p>{EXAMS.map((e, i) => <>{i ? ' · ' : ''}<a href={localize(`/${e.slug}-photo-resizer`, lang)}>{tp('exam.h1', { exam: e.name })}</a></>)}</p>
+      </>
+    ) : (
+      <>
+        <h2>Getting a photo under {kb} KB without making it blurry</h2>
+        <p>{page.tip}</p>
+        <p>The tool works in two steps. First it searches for the highest JPEG quality that fits under {kb} KB. Only if that is not enough does it reduce the pixel size, a little at a time. You see the final size in KB and bytes before you download.</p>
+        <h3>Other sizes</h3>
+        <p>{KB_PAGES.filter((p) => p.kb !== kb).map((p, i) => <>{i ? ' · ' : ''}<a href={`/compress-image-to-${p.kb}kb`}>{p.kb} KB</a></>)} · <a href="/resize-image-to-kb">custom KB size</a></p>
+      </>
+    )}
   </Fragment>
 </ToolLayout>

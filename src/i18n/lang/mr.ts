@@ -1,4 +1,5 @@
 import type { LangPack } from '../index';
+import pages from './pages-mr.ts';
 
 const pack: LangPack = {
   ui: {
@@ -222,5 +223,6 @@ const pack: LangPack = {
     '▭ Box': '▭ चौकट', '🖼 Image': '🖼 इमेज', '↶ Undo': '↶ पूर्ववत', 'Flatten pages (true redaction)': 'पाने फ्लॅटन करा (कायमचे लपवा)',
     'Interest': 'व्याज', 'Principal paid': 'फेडलेले मुद्दल', 'Interest paid': 'भरलेले व्याज', 'Gains': 'नफा', 'Growth': 'वाढ', 'Contributed': 'जमा केलेले', '💡 What if you prepay?': '💡 आधीच काही रक्कम फेडली तर?',
   },
+  pages,
 };
 export default pack;

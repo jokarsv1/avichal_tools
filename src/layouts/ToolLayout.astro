@@ -15,7 +15,7 @@ import { langFromPath, useT, localize, localizeHref, toolText, catText, toolKind
 
 export interface Faq { q: string; a: string }
 /** One-click "Popular uses": either set form fields (CSS selector -> value) or link to a pre-filled URL. */
-export interface Preset { label: string; hint?: string; set?: Record<string, string | boolean>; href?: string }
+export interface Preset { label: string; hint?: string; set?: Record<string, string | boolean>; href?: string; /** Stable id for ?preset= links (defaults to the slugified label). */ id?: string }
 interface Props {
   slug: string;
   /** Override registry values (used by programmatic pages like /ssc-photo-resizer). */
@@ -32,6 +32,8 @@ interface Props {
   crumb?: string;
   /** One-click quick starts for the most common tasks. */
   presets?: Preset[];
+  /** The page passes its own translated title/lead/steps/FAQs (exam and KB pages) instead of the generic ones. */
+  localized?: boolean;
 }
 
 const tool = getTool(Astro.props.slug);
@@ -55,7 +57,7 @@ const {
   badges: extraBadges = ['📵 Files never leave your device', '🚫 No watermark', '∞ No limits'],
   crumb,
   presets = [],
-} = en ? props : { slug: props.slug, presets: props.presets?.map((p) => (p.href ? { ...p, href: localizeHref(p.href, lang) } : p)), steps: [1, 2, 3].map((i) => t(`steps.${kind}.${i}`)), faqs: ['free', 'upload', 'account', 'mobile'].map((k) => ({ q: t(`faq.${k}.q`), a: t(`faq.${k}.a`) })), badges: [`📵 ${t('Files never leave your device')}`, `🚫 ${t('No watermark')}`, `∞ ${t('No limits')}`] } as typeof props;
+} = en ? props : props.localized ? { ...props, badges: props.badges ?? [`📵 ${t('Files never leave your device')}`, `🚫 ${t('No watermark')}`, `∞ ${t('No limits')}`], path: localize(props.path ?? `/${props.slug}`, lang), presets: props.presets?.map((p) => (p.href ? { ...p, href: localizeHref(p.href, lang) } : p)) } : { slug: props.slug, presets: props.presets?.map((p) => (p.href ? { ...p, href: localizeHref(p.href, lang) } : p)), steps: [1, 2, 3].map((i) => t(`steps.${kind}.${i}`)), faqs: ['free', 'upload', 'account', 'mobile'].map((k) => ({ q: t(`faq.${k}.q`), a: t(`faq.${k}.a`) })), badges: [`📵 ${t('Files never leave your device')}`, `🚫 ${t('No watermark')}`, `∞ ${t('No limits')}`] } as typeof props;
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const strip = (s: string) => s.replace(/<[^>]+>/g, '');
 // The USP badges always come first; page-specific badges follow (duplicates of the USP are dropped).
@@ -91,7 +93,7 @@ const schema: Record<string, unknown>[] = [
     ],
   },
 ];
-if (faqs.length && en) {
+if (faqs.length && (en || props.localized)) {
   schema.push({
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -103,7 +105,7 @@ if (faqs.length && en) {
   <slot name="head" slot="head" />
   <div class="container">
     <nav class="breadcrumb" aria-label="Breadcrumb">
-      <a href={L('/')}>{t('Home')}</a> › <a href={L(cat.path)}>{t('{cat} tools', { cat: ct.label })}</a> › {crumb ? <><a href={`/${tool.slug}`}>{tool.name}</a> › {crumb}</> : <span>{h1}</span>}
+      <a href={L('/')}>{t('Home')}</a> › <a href={L(cat.path)}>{t('{cat} tools', { cat: ct.label })}</a> › {crumb ? <><a href={L(`/${tool.slug}`)}>{tt.name}</a> › {crumb}</> : <span>{h1}</span>}
     </nav>
     <div class={`tool-layout${hasSidebar ? '' : ' no-aside'}`}>
       <div>
@@ -112,7 +114,7 @@ if (faqs.length && en) {
           <p class="lead" set:html={lead} />
           <div class="trust">{badges.map((b) => <span>{b}</span>)}</div>
           {tool.desktopOnly && <p class="hint" style="margin-top:8px">💻 {t('desktopOnly')}</p>}
-          {!en && <p class="hint lang-note" style="margin-top:8px">🌐 {t('lang.note')} <a href={`/${tool.slug}`} data-lang="en" hreflang="en">{t('Read in English')}</a></p>}
+          {!en && <p class="hint lang-note" style="margin-top:8px">🌐 {t('lang.note')} <a href={props.localized && props.path ? props.path : `/${tool.slug}`} data-lang="en" hreflang="en">{t('Read in English')}</a></p>}
         </header>
 
         {presets.length > 0 && (
@@ -120,7 +122,7 @@ if (faqs.length && en) {
             <span class="quick-label">⚡ {t('One-click')}:</span>
             {presets.map((p) => p.href
               ? <a class="chip" href={p.href} title={p.hint}>{p.label}</a>
-              : <button type="button" class="chip" data-preset={JSON.stringify(p.set ?? {})} data-preset-id={slugify(p.label)} title={p.hint}>{p.label}</button>)}
+              : <button type="button" class="chip" data-preset={JSON.stringify(p.set ?? {})} data-preset-id={p.id ?? slugify(p.label)} title={p.hint}>{p.label}</button>)}
           </div>
         )}
         <section class="card tool-card" aria-label={h1}>
@@ -131,7 +133,7 @@ if (faqs.length && en) {
         <AdSlot slot="belowTool" />
 
         <article class="prose">
-          {en && <slot name="content" />}
+          {(en || props.localized) && <slot name="content" />}
           {steps.length > 0 && (
             <>
               <h2>{t('How to use the {tool} tool', { tool: h1 })}</h2>

@@ -1,23 +1,29 @@
 ---
 /**
- * Localized tool and category pages: /hi/compress-pdf, /ta/finance-calculators, …
+ * Localized pages: /hi/compress-pdf (tools), /ta/finance-calculators (hubs),
+ * /bn/ssc-photo-resizer (exam presets) and /mr/compress-image-to-20kb (KB sizes).
  * Renders the same page component as English; layouts read the language from the URL.
  */
 import { OTHER_LANGS, LOCALIZED_TOOLS } from '../../i18n';
 import { CATEGORIES, type Category } from '../../data/tools';
+import { EXAMS, KB_PAGES, type Exam, type KbPage } from '../../data/exams';
 
 const pages = import.meta.glob('../*.astro', { eager: true }) as Record<string, { default: any }>;
 
+type Props = { cat?: Category; exam?: Exam; page?: KbPage };
 export function getStaticPaths() {
-  const out: { params: { lang: string; slug: string }; props: { cat?: Category } }[] = [];
+  const out: { params: { lang: string; slug: string }; props: Props }[] = [];
   for (const l of OTHER_LANGS) {
     for (const t of LOCALIZED_TOOLS) out.push({ params: { lang: l.code, slug: t.slug }, props: {} });
     for (const c of CATEGORIES) out.push({ params: { lang: l.code, slug: c.path.slice(1) }, props: { cat: c } });
+    for (const e of EXAMS) out.push({ params: { lang: l.code, slug: `${e.slug}-photo-resizer` }, props: { exam: e } });
+    for (const p of KB_PAGES) out.push({ params: { lang: l.code, slug: `compress-image-to-${p.kb}kb` }, props: { page: p } });
   }
   return out;
 }
 const { slug } = Astro.params;
-const { cat } = Astro.props;
-const Page = cat ? pages['../[hub].astro'].default : pages[`../${slug}.astro`].default;
+const { cat, exam, page } = Astro.props as Props;
+const file = cat ? '../[hub].astro' : exam ? '../[exam]-photo-resizer.astro' : page ? '../compress-image-to-[kb]kb.astro' : `../${slug}.astro`;
+const Page = pages[file].default;
 ---
-<Page cat={cat} />
+<Page cat={cat} exam={exam} page={page} />
