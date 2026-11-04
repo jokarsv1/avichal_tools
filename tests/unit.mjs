@@ -1,5 +1,5 @@
 // Unit tests for pure finance/format functions. Run: node tests/unit.mjs (Node 22.18+ strips TS types natively).
-import { emi, sip, fd, ppf, gst, incomeTax, breakEvenDeductions, hraExemption, attendance, salaryBreakup, prepayment, lumpsum, cagr, swp, rd, gratuity, epf, ssy } from '../src/lib/finance.ts';
+import { emi, sip, fd, ppf, gst, incomeTax, breakEvenDeductions, hraExemption, attendance, salaryBreakup, prepayment, lumpsum, cagr, swp, rd, gratuity, epf, ssy, outstanding, aprWithFees, balanceTransfer, eligibility } from '../src/lib/finance.ts';
 import { numberToWords, indianGrouping, rupeesShort } from '../src/lib/format.ts';
 import { COUNTRIES, foreignTax, livingCosts, equivalentIndianCtc, INDIA_CITIES } from '../src/lib/abroad.ts';
 
@@ -67,6 +67,15 @@ eq('Gratuity 50k x 10y 7m (=11y)', Math.round(gratuity(50000, 10, 7).amount), Ma
 const e1 = epf({ basic: 30000, age: 30, retireAge: 31, balance: 0, ratePct: 8.25, hikePct: 0 });
 eq('EPF 1 year contributions (30k basic)', Math.round(e1.invested), Math.round(12 * (3600 + 3600 - 1249.5)));
 eq('SSY 1.5L x 15y @8.2% maturity ~ 69-70L', ssy(150000, 8.2, 2).maturity > 6800000 && ssy(150000, 8.2, 2).maturity < 7200000 ? 1 : 0, 1);
+
+eq('Outstanding after full tenure = 0', Math.round(outstanding(1000000, 8.5, 240, 240)), 0, 2);
+eq('Outstanding after 0 = principal', Math.round(outstanding(1000000, 8.5, 240, 0)), 1000000);
+eq('APR without fees = rate', +aprWithFees(500000, 12, 36, 0).toFixed(2), 12, 0.01);
+eq('APR with 2% fee > rate', aprWithFees(500000, 12, 36, 10000) > 13.2 ? 1 : 0, 1);
+const bt = balanceTransfer({ outstanding: 4000000, months: 180, oldRate: 9.5, newRate: 8.5, fees: 20000 });
+eq('Balance transfer saves money', bt.saved > 200000 ? 1 : 0, 1);
+eq('Eligibility: 1L income, 50% FOIR, 0 EMIs -> max EMI 50k', eligibility({ netMonthly: 100000, existingEmis: 0, foirPct: 50, ratePct: 8.5, months: 240 }).maxEmi, 50000);
+eq('Eligibility loan for 50k EMI @8.5% 20y', Math.round(eligibility({ netMonthly: 100000, existingEmis: 0, foirPct: 50, ratePct: 8.5, months: 240 }).loan / 1000), Math.round(5761000 / 1000), 15);
 
 // Abroad tax models (2026 estimates)
 const C = (id) => COUNTRIES.find((c) => c.id === id);

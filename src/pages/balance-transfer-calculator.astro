@@ -1,0 +1,56 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+const faqs = [
+  { q: 'What is a home loan balance transfer?', a: 'Moving your outstanding loan to another bank that offers a lower interest rate. Your EMI or tenure drops, but you pay a processing fee and some charges (legal, valuation, stamp duty).' },
+  { q: 'When is a balance transfer worth it?', a: 'Usually when the rate difference is at least 0.5% and you have many years left. This calculator subtracts the fees and shows the net saving and the break-even month.' },
+  { q: 'Should I ask my current bank first?', a: 'Yes. Many banks reduce your rate for a small conversion fee if you ask, which avoids paperwork. Compare that offer with the transfer using this tool.' },
+];
+const steps = ['Enter the outstanding loan, remaining tenure and current rate.', 'Enter the new rate and the total switching fees.', 'See net savings after fees, the new EMI and the break-even point.'];
+---
+<ToolLayout slug="balance-transfer-calculator" h1="Loan Balance Transfer Calculator" lead="Should you switch your home loan to a lower rate? See your new EMI, total interest saved after fees, and how many months it takes to break even."
+  presets={[{ label: '₹40L, 9.5% → 8.5%', href: '/balance-transfer-calculator?o=4000000&m=180&r1=9.5&r2=8.5&f=20000' }, { label: '₹25L, 9% → 8.4%', href: '/balance-transfer-calculator?o=2500000&m=144&r1=9&r2=8.4&f=15000' }, { label: 'Personal loan 16% → 12%', href: '/balance-transfer-calculator?o=500000&m=36&r1=16&r2=12&f=10000' }]}
+  steps={steps} faqs={faqs} badges={['💸 Net of fees', '⏱️ Break-even month', '📤 Shareable link']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="o" key="o" label="Outstanding loan" unit="₹" min={50000} max={30000000} step={50000} value={4000000} />
+      <SliderField id="m" key="m" label="Remaining tenure" unit="months" min={6} max={360} step={6} value={180} />
+      <SliderField id="r1" key="r1" label="Current interest rate" unit="%" min={5} max={20} step={0.05} value={9.5} />
+      <SliderField id="r2" key="r2" label="New interest rate" unit="%" min={5} max={20} step={0.05} value={8.5} />
+      <SliderField id="f" key="f" label="Total switching fees" unit="₹" min={0} max={200000} step={1000} value={20000} hint="Processing fee + legal + valuation + stamp duty." />
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Net saving after fees</span><div class="big-number" id="o-s">–</div></div>
+      <div class="status" id="o-v"></div>
+      <div class="result-rows">
+        <div><span>Current EMI</span><b id="o-e1">–</b></div><div><span>New EMI</span><b id="o-e2">–</b></div>
+        <div><span>EMI lower by</span><b id="o-d">–</b></div><div><span>Fees recovered in</span><b id="o-b">–</b></div>
+      </div>
+      <button type="button" class="btn btn-sm" data-share="Balance transfer check">📤 Share</button>
+    </div>
+  </div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { balanceTransfer } from '../lib/finance';
+    import { rupees } from '../lib/format';
+    function update() {
+      const r = balanceTransfer({ outstanding: val('o'), months: Math.round(val('m')), oldRate: val('r1'), newRate: val('r2'), fees: val('f') });
+      setText('o-s', rupees(r.saved)); setText('o-e1', rupees(r.oldEmi)); setText('o-e2', rupees(r.newEmi));
+      setText('o-d', `${rupees(Math.max(0, r.oldEmi - r.newEmi))}/month`);
+      setText('o-b', Number.isFinite(r.breakEvenMonths) ? `${r.breakEvenMonths} months` : 'never');
+      const v = document.getElementById('o-v')!;
+      v.className = `status ${r.saved > 0 ? 'ok' : 'err'}`;
+      v.textContent = r.saved > 50000 ? '✅ Worth switching: you save more than the fees.' : r.saved > 0 ? '🤏 Small saving: ask your current bank to match the rate first.' : '❌ Not worth it: fees cost more than you save.';
+    }
+    initCalculator(update);
+  </script>
+  <Fragment slot="content">
+    <h2>Checklist before switching</h2>
+    <ul>
+      <li>Ask your current lender for a rate reduction ("conversion"); it is often cheaper than switching.</li>
+      <li>Check whether the new rate is a teaser that resets after 1–2 years.</li>
+      <li>Count all charges: processing fee, legal and valuation fees, MOD/stamp duty and any insurance the new bank bundles.</li>
+    </ul>
+    <p>Related: <a href="/emi-calculator">EMI calculator</a> · <a href="/home-loan-prepayment-calculator">prepayment planner</a> · <a href="/loan-comparison-calculator">compare loan offers</a></p>
+  </Fragment>
+</ToolLayout>

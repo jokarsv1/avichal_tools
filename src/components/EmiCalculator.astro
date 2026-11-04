@@ -1,0 +1,105 @@
+---
+/** EMI calculator + prepayment benefit panel. Used by /emi-calculator and the loan-type pages. */
+import SliderField from './SliderField.astro';
+interface Props { amount?: number; rate?: number; years?: number; maxAmount?: number; maxYears?: number; minRate?: number; maxRate?: number; label?: string; showPresets?: boolean }
+const { amount = 2500000, rate = 8.5, years = 20, maxAmount = 20000000, maxYears = 30, minRate = 1, maxRate = 30, label = 'Loan amount', showPresets = true } = Astro.props;
+---
+<div class="calc">
+  <div class="stack">
+    <SliderField id="amount" key="p" label={label} unit="₹" min={10000} max={maxAmount} step={10000} value={amount} />
+    <SliderField id="rate" key="r" label="Interest rate (p.a.)" unit="%" min={minRate} max={maxRate} step={0.05} value={rate} />
+    <SliderField id="years" key="y" label="Tenure" unit="years" min={0.5} max={maxYears} step={0.5} value={years} />
+    {showPresets && (
+      <div class="grid-3">
+        <button type="button" class="btn btn-sm" data-preset-loan="home">🏠 Home</button>
+        <button type="button" class="btn btn-sm" data-preset-loan="car">🚗 Car</button>
+        <button type="button" class="btn btn-sm" data-preset-loan="personal">💳 Personal</button>
+      </div>
+    )}
+  </div>
+  <div class="stack calc-out" aria-live="polite">
+    <div><span class="hint">Monthly EMI</span><div class="big-number" id="o-emi">–</div></div>
+    <div class="result-rows">
+      <div><span>Principal</span><b id="o-principal">–</b></div>
+      <div><span>Total interest</span><b id="o-interest">–</b></div>
+      <div><span>Total amount payable</span><b id="o-total">–</b></div>
+    </div>
+    <div id="o-split"></div>
+    <button type="button" class="btn btn-sm" data-share="My loan EMI calculation">📤 Share this calculation</button>
+  </div>
+</div>
+
+<section class="card stack-sm" style="box-shadow:none;margin-top:22px" aria-labelledby="pp-h">
+  <h2 id="pp-h" style="margin:0">💡 What if you prepay?</h2>
+  <p class="hint" style="margin:0">Part-prepayments early in a loan save the most interest. Try a bonus, an annual extra or a small monthly top-up.</p>
+  <div class="grid-3">
+    <div class="field"><label for="pp-lump">One-time prepayment (₹)</label><input id="pp-lump" data-key="pl" type="number" min="0" step="10000" value="200000" /></div>
+    <div class="field"><label for="pp-month">After month no.</label><input id="pp-month" data-key="pm" type="number" min="1" step="1" value="12" /></div>
+    <div class="field"><label for="pp-extra">Extra every month (₹)</label><input id="pp-extra" data-key="pe" type="number" min="0" step="500" value="0" /></div>
+  </div>
+  <div class="grid-2">
+    <div class="result stack-sm">
+      <b>⏩ Keep EMI, finish earlier</b>
+      <div class="result-rows">
+        <div><span>Interest saved</span><b id="pp-t-saved" style="color:var(--ok)">–</b></div>
+        <div><span>Loan ends earlier by</span><b id="pp-t-months">–</b></div>
+        <div><span>EMI</span><b id="pp-t-emi">–</b></div>
+      </div>
+    </div>
+    <div class="result stack-sm">
+      <b>⬇ Keep tenure, lower EMI</b>
+      <div class="result-rows">
+        <div><span>Interest saved</span><b id="pp-e-saved" style="color:var(--ok)">–</b></div>
+        <div><span>New EMI</span><b id="pp-e-emi">–</b></div>
+        <div><span>EMI lower by</span><b id="pp-e-diff">–</b></div>
+      </div>
+    </div>
+  </div>
+  <p class="hint" id="pp-tip" style="margin:0"></p>
+  <a class="btn btn-sm" id="pp-link" href="/home-loan-prepayment-calculator">Open the full prepayment planner →</a>
+</section>
+
+<h2 style="margin-top:28px">Payments by year</h2>
+<div id="o-chart" class="chart"></div>
+<div class="table-wrap" style="margin-top:14px"><table class="data"><thead><tr><th>Year</th><th>Principal paid</th><th>Interest paid</th><th>Balance</th></tr></thead><tbody id="o-table"></tbody></table></div>
+
+<script>
+  import { initCalculator, val, setText } from '../lib/calc-ui';
+  import { amortization, prepayment } from '../lib/finance';
+  import { rupees, rupeesShort } from '../lib/format';
+  import { splitBar, stackedColumns } from '../lib/charts';
+  const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const ym = (m: number) => (m >= 12 ? `${Math.floor(m / 12)} yr ${m % 12} mo` : `${m} months`);
+  function update() {
+    const P = val('amount'), r = val('rate'), n = Math.round(val('years') * 12);
+    if (P <= 0 || n <= 0) return;
+    const a = amortization(P, r, n);
+    setText('o-emi', rupees(a.emi)); setText('o-principal', rupees(P));
+    setText('o-interest', rupees(a.totalInterest)); setText('o-total', rupees(a.totalPaid));
+    splitBar(document.getElementById('o-split')!, [{ name: 'Principal', color: css('--series-1'), value: P }, { name: 'Interest', color: css('--series-2'), value: a.totalInterest }], rupeesShort);
+    stackedColumns(document.getElementById('o-chart')!, a.years.map((x) => `Y${x.year}`), [
+      { name: 'Principal paid', color: css('--series-1'), values: a.years.map((x) => x.a) },
+      { name: 'Interest paid', color: css('--series-2'), values: a.years.map((x) => x.b) },
+    ], rupeesShort, { title: 'Principal and interest paid each year' });
+    document.getElementById('o-table')!.innerHTML = a.years.map((x) => `<tr><td>Year ${x.year}</td><td>${rupees(x.a)}</td><td>${rupees(x.b)}</td><td>${rupees(x.balance)}</td></tr>`).join('');
+    // Prepayment benefit, both ways
+    const lump = val('pp-lump'), month = Math.max(1, Math.min(n, val('pp-month'))), extra = val('pp-extra');
+    const base = { principal: P, ratePct: r, months: n, lump, lumpMonth: month, monthlyExtra: extra, yearlyExtra: 0 };
+    const t = prepayment({ ...base, mode: 'tenure' }), e = prepayment({ ...base, mode: 'emi' });
+    setText('pp-t-saved', rupees(Math.max(0, t.saved))); setText('pp-t-months', t.monthsSaved > 0 ? ym(t.monthsSaved) : '–'); setText('pp-t-emi', `${rupees(t.baseEmi)} (same)`);
+    setText('pp-e-saved', rupees(Math.max(0, e.saved))); setText('pp-e-emi', rupees(e.finalEmi)); setText('pp-e-diff', `${rupees(Math.max(0, t.baseEmi - e.finalEmi))}/month`);
+    setText('pp-tip', lump || extra ? `Reducing tenure saves ${rupeesShort(Math.max(0, t.saved - e.saved))} more interest than reducing EMI. Choose lower EMI only if you need monthly breathing room.` : 'Enter a prepayment to see the benefit.');
+    (document.getElementById('pp-link') as HTMLAnchorElement).href = `/home-loan-prepayment-calculator?p=${P}&r=${r}&y=${n / 12}&l=${lump}&lm=${month}&me=${extra}&ye=0&m=tenure`;
+  }
+  const presets: Record<string, [number, number, number]> = { home: [5000000, 8.5, 20], car: [800000, 9.5, 5], personal: [500000, 12.5, 3] };
+  document.querySelectorAll<HTMLButtonElement>('[data-preset-loan]').forEach((b) => b.addEventListener('click', () => {
+    const [p, r, y] = presets[b.dataset.presetLoan!];
+    for (const [id, v] of [['amount', p], ['rate', r], ['years', y]] as const) {
+      const el = document.getElementById(id) as HTMLInputElement;
+      el.value = String(v);
+      el.dispatchEvent(new Event('input'));
+    }
+  }));
+  const extraInputs = Object.fromEntries(['pp-lump', 'pp-month', 'pp-extra'].map((id) => { const el = document.getElementById(id) as HTMLInputElement; return [el.dataset.key!, el]; }));
+  initCalculator(update, extraInputs);
+</script>

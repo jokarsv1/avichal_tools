@@ -380,3 +380,37 @@ export function ssy(yearly: number, ratePct: number, girlAge: number) {
   }
   return { maturity: bal, invested, interest: bal - invested, maturityAge: girlAge + 21, rows };
 }
+
+// ---------------- Loan helpers ----------------
+/** Remaining balance after `paid` EMIs. */
+export function outstanding(principal: number, annualRatePct: number, months: number, paid: number) {
+  const r = annualRatePct / 1200, e = emi(principal, annualRatePct, months);
+  if (r === 0) return Math.max(0, principal - e * paid);
+  return Math.max(0, principal * Math.pow(1 + r, paid) - (e * (Math.pow(1 + r, paid) - 1)) / r);
+}
+
+/** Effective annual rate (APR) including upfront fees: solves IRR of (P - fees) vs n x EMI. */
+export function aprWithFees(principal: number, annualRatePct: number, months: number, fees: number) {
+  const e = emi(principal, annualRatePct, months), net = principal - fees;
+  const pv = (r: number) => (r === 0 ? e * months : (e * (1 - Math.pow(1 + r, -months))) / r);
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 100; i++) { const mid = (lo + hi) / 2; if (pv(mid) > net) lo = mid; else hi = mid; }
+  return ((lo + hi) / 2) * 1200;
+}
+
+/** Balance transfer: switch the outstanding loan to a lower rate; savings net of fees. */
+export function balanceTransfer(o: { outstanding: number; months: number; oldRate: number; newRate: number; fees: number }) {
+  const oldEmi = emi(o.outstanding, o.oldRate, o.months), newEmi = emi(o.outstanding, o.newRate, o.months);
+  const oldInterest = oldEmi * o.months - o.outstanding, newInterest = newEmi * o.months - o.outstanding;
+  const saved = oldInterest - newInterest - o.fees;
+  const breakEvenMonths = oldEmi > newEmi ? Math.ceil(o.fees / (oldEmi - newEmi)) : Infinity;
+  return { oldEmi, newEmi, oldInterest, newInterest, saved, breakEvenMonths };
+}
+
+/** Loan eligibility from income using FOIR (fixed obligations to income ratio). */
+export function eligibility(o: { netMonthly: number; existingEmis: number; foirPct: number; ratePct: number; months: number }) {
+  const maxEmi = Math.max(0, (o.netMonthly * o.foirPct) / 100 - o.existingEmis);
+  const r = o.ratePct / 1200;
+  const loan = r === 0 ? maxEmi * o.months : (maxEmi * (1 - Math.pow(1 + r, -o.months))) / r;
+  return { maxEmi, loan };
+}

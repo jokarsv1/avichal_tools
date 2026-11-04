@@ -1,0 +1,47 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+const faqs = [
+  { q: 'How do banks decide how much I can borrow?', a: 'Mostly with FOIR (fixed obligations to income ratio): all your EMIs together should stay within about 40–60% of your monthly take-home pay, depending on income and lender. The maximum loan is the amount whose EMI fits in what is left.' },
+  { q: 'How can I increase my loan eligibility?', a: 'Add a co-applicant with income, close small loans or credit-card dues, choose a longer tenure, and keep your credit score above 750.' },
+  { q: 'Does my age matter?', a: 'Yes. Most home loans must be repaid by age 60–70, which limits the tenure and therefore the amount.' },
+];
+const steps = ['Enter your monthly take-home pay and existing EMIs.', 'Set the interest rate, tenure and FOIR (50% is common).', 'See the maximum EMI and loan amount you are likely to get.'];
+---
+<ToolLayout slug="loan-eligibility-calculator" h1="Loan Eligibility Calculator" lead="How much home, car or personal loan can you get? Enter your salary and existing EMIs to see the maximum loan amount banks are likely to approve."
+  presets={[{ label: '₹75k salary, home loan', href: '/loan-eligibility-calculator?n=75000&e=0&f=50&r=8.5&t=20&a=30' }, { label: '₹1.5L salary + car EMI', href: '/loan-eligibility-calculator?n=150000&e=15000&f=55&r=8.5&t=20&a=35' }, { label: 'Personal loan, ₹50k salary', href: '/loan-eligibility-calculator?n=50000&e=0&f=40&r=12&t=5&a=28' }]}
+  steps={steps} faqs={faqs} badges={['🏦 FOIR method', '🎂 Age limit check', '📤 Shareable link']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="n" key="n" label="Monthly take-home pay" unit="₹" min={10000} max={1000000} step={1000} value={100000} />
+      <SliderField id="e" key="e" label="Existing EMIs per month" unit="₹" min={0} max={500000} step={500} value={0} />
+      <SliderField id="f" key="f" label="FOIR (max share of pay for EMIs)" unit="%" min={30} max={70} step={1} value={50} />
+      <SliderField id="r" key="r" label="Interest rate" unit="%" min={6} max={20} step={0.05} value={8.5} />
+      <SliderField id="t" key="t" label="Tenure" unit="years" min={1} max={30} step={1} value={20} />
+      <SliderField id="a" key="a" label="Your age" unit="years" min={21} max={65} step={1} value={30} />
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">You can likely borrow up to</span><div class="big-number" id="o-l">–</div><span class="hint" id="o-ls"></span></div>
+      <div class="result-rows"><div><span>Maximum EMI</span><b id="o-e">–</b></div><div><span>Tenure used</span><b id="o-t">–</b></div></div>
+      <p class="hint" id="o-note"></p>
+      <button type="button" class="btn btn-sm" data-share="My loan eligibility">📤 Share</button>
+    </div>
+  </div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { eligibility } from '../lib/finance';
+    import { rupees, rupeesShort } from '../lib/format';
+    function update() {
+      const maxTenure = Math.max(1, Math.min(val('t'), 65 - val('a')));
+      const r = eligibility({ netMonthly: val('n'), existingEmis: val('e'), foirPct: val('f'), ratePct: val('r'), months: maxTenure * 12 });
+      setText('o-l', rupees(r.loan)); setText('o-ls', `≈ ${rupeesShort(r.loan)}`); setText('o-e', rupees(r.maxEmi));
+      setText('o-t', `${maxTenure} years`);
+      setText('o-note', maxTenure < val('t') ? `Tenure capped at ${maxTenure} years because most lenders want the loan repaid by about age 65.` : 'Actual approval also depends on credit score, employer and property value.');
+    }
+    initCalculator(update);
+  </script>
+  <Fragment slot="content">
+    <h2>Rule of thumb</h2>
+    <p>With 50% FOIR at 8.5% for 20 years, every ₹1 lakh of monthly take-home pay supports a home loan of roughly ₹57–58 lakh, if you have no other EMIs. Check the EMI with the <a href="/home-loan-emi-calculator">home loan EMI calculator</a> and plan prepayments with the <a href="/home-loan-prepayment-calculator">prepayment planner</a>.</p>
+  </Fragment>
+</ToolLayout>

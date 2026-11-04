@@ -1,0 +1,35 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import EmiCalculator from '../components/EmiCalculator.astro';
+import { LOANS, type LoanType } from '../data/loans';
+import { emi } from '../lib/finance';
+import { rupees } from '../lib/format';
+
+export function getStaticPaths() {
+  return LOANS.map((loan) => ({ params: { loan: loan.slug }, props: { loan } }));
+}
+const { loan } = Astro.props as { loan: LoanType };
+const path = `/${loan.slug}-loan-emi-calculator`;
+const ex = emi(loan.amount, loan.rate, loan.years * 12);
+const faqs = [
+  { q: `What is the EMI for a ${rupees(loan.amount)} ${loan.name.toLowerCase()}?`, a: `At ${loan.rate}% for ${loan.years} year${loan.years === 1 ? '' : 's'}, the EMI is about ${rupees(ex)} a month, and total interest is about ${rupees(ex * loan.years * 12 - loan.amount)}.` },
+  { q: `What are typical ${loan.name.toLowerCase()} interest rates?`, a: `In India, ${loan.rates}. Your rate depends on your credit score, income and lender.` },
+  { q: `Are there tax benefits on a ${loan.name.toLowerCase()}?`, a: loan.tax },
+  { q: 'How much tenure can I get?', a: `${loan.name}s are usually offered for ${loan.tenure}.` },
+];
+const steps = [`Enter the ${loan.name.toLowerCase()} amount, interest rate and tenure, or tap a quick option.`, 'See the EMI, total interest and year-wise schedule.', 'Try a prepayment to see the interest you save.'];
+---
+<ToolLayout slug="emi-calculator" path={path} title={`${loan.name} EMI Calculator – Monthly EMI, Interest & Prepayment`}
+  description={`Calculate your ${loan.name.toLowerCase()} EMI, total interest and year-wise schedule, and see how much a prepayment saves. Typical rates: ${loan.rates}.`.slice(0, 158)}
+  h1={`${loan.icon} ${loan.name} EMI Calculator`} crumb={loan.name}
+  lead={`Find your ${loan.name.toLowerCase()} EMI instantly, see the total interest, and check how much you save by prepaying.`}
+  presets={loan.presets.map((x) => ({ label: x.label, href: `${path}?p=${x.p}&r=${x.r}&y=${x.y}` }))} steps={steps} faqs={faqs} badges={['⚡ Instant', '💡 Prepayment savings', '📤 Shareable link']}>
+  <EmiCalculator amount={loan.amount} rate={loan.rate} years={loan.years} maxAmount={loan.maxAmount} maxYears={loan.maxYears} minRate={loan.minRate} maxRate={loan.maxRate} label={`${loan.name} amount`} showPresets={false} />
+  <Fragment slot="content">
+    <h2>{loan.name} at a glance</h2>
+    <ul><li><b>Typical rates:</b> {loan.rates}.</li><li><b>Tenure:</b> {loan.tenure}.</li><li><b>Tax:</b> {loan.tax}</li></ul>
+    <h3>Tips before you borrow</h3>
+    <ul>{loan.tips.map((t) => <li>{t}</li>)}</ul>
+    <p>Other loans: {LOANS.filter((l) => l.slug !== loan.slug).map((l, i) => <>{i ? ' · ' : ''}<a href={`/${l.slug}-loan-emi-calculator`}>{l.name}</a></>)} · <a href="/loan-comparison-calculator">compare offers</a> · <a href="/loan-eligibility-calculator">eligibility</a></p>
+  </Fragment>
+</ToolLayout>

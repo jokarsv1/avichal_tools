@@ -1,0 +1,65 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const offers = [
+  { name: 'Bank A', p: 1000000, r: 10.5, y: 5, fee: 1, fixed: 0 },
+  { name: 'Bank B', p: 1000000, r: 10.99, y: 5, fee: 0, fixed: 999 },
+  { name: 'NBFC C', p: 1000000, r: 9.99, y: 5, fee: 2.5, fixed: 0 },
+];
+const faqs = [
+  { q: 'Why can a lower interest rate cost more?', a: 'Processing fees are deducted upfront, so you receive less money but repay the full amount. A 2.5% fee can make a 9.99% loan more expensive than a 10.5% loan with a 1% fee. The APR here includes fees, so you can compare fairly.' },
+  { q: 'What is APR?', a: 'The annual percentage rate is the true yearly cost of the loan including fees, calculated from the money you actually receive and the EMIs you pay.' },
+  { q: 'Is GST charged on processing fees?', a: 'Yes, 18% GST applies to processing fees in India. Add it to the fee for an exact comparison.' },
+];
+const steps = ['Enter up to three loan offers: amount, rate, tenure and fees.', 'Compare EMI, total interest, total cost and the true APR.', 'Pick the offer with the lowest total cost or APR.'];
+---
+<ToolLayout slug="loan-comparison-calculator" h1="Compare Loan Offers (True Cost & APR)" lead="Got quotes from two or three lenders? Compare EMI, total interest, fees and the true APR side by side, and see which loan is actually cheapest."
+  steps={steps} faqs={faqs} badges={['⚖️ Up to 3 offers', '💸 Fees included', '📈 True APR']}>
+  <div class="table-wrap" style="max-height:none">
+    <table class="data" id="lc">
+      <thead><tr><th></th>{offers.map((_, i) => <th>Offer {i + 1}</th>)}</tr></thead>
+      <tbody>
+        <tr><td>Lender</td>{offers.map((o, i) => <td><input type="text" data-k="name" data-i={i} value={o.name} style="min-width:110px" /></td>)}</tr>
+        <tr><td>Loan amount (₹)</td>{offers.map((o, i) => <td><input type="number" data-k="p" data-i={i} value={o.p} style="min-width:110px" /></td>)}</tr>
+        <tr><td>Interest rate (%)</td>{offers.map((o, i) => <td><input type="number" step="0.01" data-k="r" data-i={i} value={o.r} /></td>)}</tr>
+        <tr><td>Tenure (years)</td>{offers.map((o, i) => <td><input type="number" step="0.5" data-k="y" data-i={i} value={o.y} /></td>)}</tr>
+        <tr><td>Processing fee (%)</td>{offers.map((o, i) => <td><input type="number" step="0.1" data-k="fee" data-i={i} value={o.fee} /></td>)}</tr>
+        <tr><td>Other charges (₹)</td>{offers.map((o, i) => <td><input type="number" step="100" data-k="fixed" data-i={i} value={o.fixed} /></td>)}</tr>
+        <tr class="hl"><td>Monthly EMI</td>{offers.map((_, i) => <td id={`lc-emi-${i}`}>–</td>)}</tr>
+        <tr><td>Total interest</td>{offers.map((_, i) => <td id={`lc-int-${i}`}>–</td>)}</tr>
+        <tr><td>Fees (incl. 18% GST)</td>{offers.map((_, i) => <td id={`lc-fee-${i}`}>–</td>)}</tr>
+        <tr class="hl"><td>Total cost of loan</td>{offers.map((_, i) => <td id={`lc-cost-${i}`}>–</td>)}</tr>
+        <tr class="hl"><td>True APR</td>{offers.map((_, i) => <td id={`lc-apr-${i}`}>–</td>)}</tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="status ok" id="lc-verdict" style="margin-top:12px"></p>
+  <script>
+    import { emi, aprWithFees } from '../lib/finance';
+    import { rupees } from '../lib/format';
+    const inputs = Array.from(document.querySelectorAll<HTMLInputElement>('#lc input'));
+    const get = (i: number, k: string) => inputs.find((x) => x.dataset.i === String(i) && x.dataset.k === k)!;
+    function update() {
+      const res = [0, 1, 2].map((i) => {
+        const p = +get(i, 'p').value, r = +get(i, 'r').value, n = Math.round(+get(i, 'y').value * 12);
+        const fees = (p * (+get(i, 'fee').value)) / 100 * 1.18 + +get(i, 'fixed').value;
+        const e = emi(p, r, n), interest = e * n - p, cost = interest + fees, apr = aprWithFees(p, r, n, fees);
+        document.getElementById(`lc-emi-${i}`)!.textContent = rupees(e);
+        document.getElementById(`lc-int-${i}`)!.textContent = rupees(interest);
+        document.getElementById(`lc-fee-${i}`)!.textContent = rupees(fees);
+        document.getElementById(`lc-cost-${i}`)!.textContent = rupees(cost);
+        document.getElementById(`lc-apr-${i}`)!.textContent = `${apr.toFixed(2)}%`;
+        return { name: get(i, 'name').value, cost, apr, valid: p > 0 && n > 0 };
+      }).filter((x) => x.valid);
+      const best = res.reduce((a, b) => (b.apr < a.apr ? b : a));
+      const worst = res.reduce((a, b) => (b.apr > a.apr ? b : a));
+      document.getElementById('lc-verdict')!.textContent = `✅ ${best.name} is cheapest (true APR ${best.apr.toFixed(2)}%), saving ${rupees(worst.cost - best.cost)} compared with ${worst.name}.`;
+    }
+    inputs.forEach((x) => x.addEventListener('input', update));
+    update();
+  </script>
+  <Fragment slot="content">
+    <h2>Look beyond the headline rate</h2>
+    <p>Lenders advertise the interest rate, but your real cost includes processing fees (plus 18% GST), documentation charges and sometimes mandatory insurance. The true APR folds all of these into one number, so a "9.99%" loan with a 2.5% fee can turn out costlier than a 10.5% loan with a 1% fee, as in the example above.</p>
+    <p>Related: <a href="/personal-loan-emi-calculator">personal loan EMI</a> · <a href="/loan-eligibility-calculator">loan eligibility</a> · <a href="/balance-transfer-calculator">balance transfer</a></p>
+  </Fragment>
+</ToolLayout>

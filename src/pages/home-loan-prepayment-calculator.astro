@@ -9,7 +9,7 @@ const faqs = [
 ];
 const steps = ['Enter your loan amount, interest rate and tenure.', 'Add a one-time prepayment (and when), and/or regular monthly or yearly extra payments.', 'Choose whether to reduce tenure or EMI.', 'See interest saved and how many months earlier you will be debt-free.'];
 ---
-<ToolLayout presets={[{"label": "₹5L once after 1 year", "href": "/home-loan-prepayment-calculator?p=5000000&r=8.5&y=20&l=500000&lm=12&me=0&ye=0&m=tenure"}, {"label": "1 extra EMI every year", "href": "/home-loan-prepayment-calculator?p=5000000&r=8.5&y=20&l=0&lm=1&me=0&ye=43391&m=tenure"}, {"label": "₹5,000 extra every month", "href": "/home-loan-prepayment-calculator?p=5000000&r=8.5&y=20&l=0&lm=1&me=5000&ye=0&m=tenure"}, {"label": "Bonus → lower EMI", "href": "/home-loan-prepayment-calculator?p=5000000&r=8.5&y=20&l=300000&lm=12&me=0&ye=0&m=emi"}]} slug="home-loan-prepayment-calculator" h1="Home Loan Prepayment Calculator" lead="See how much interest you save and how much sooner you finish your loan by prepaying a lump sum or paying a little extra every month or year." steps={steps} faqs={faqs} badges={['💸 Interest saved', '⏩ Months saved', '📤 Shareable link', '✅ No login']}>
+<ToolLayout presets={[{"label": "₹5L once after 1 year", "href": "/home-loan-prepayment-calculator?p=5000000&r=8.5&y=20&l=500000&lm=12&me=0&ye=0&m=tenure"}, {"label": "1 extra EMI every year", "href": "/home-loan-prepayment-calculator?p=5000000&r=8.5&y=20&l=0&lm=1&me=0&ye=43391&m=tenure"}, {"label": "₹5,000 extra every month", "href": "/home-loan-prepayment-calculator?p=5000000&r=8.5&y=20&l=0&lm=1&me=5000&ye=0&m=tenure"}, {"label": "Bonus → lower EMI", "href": "/home-loan-prepayment-calculator?p=5000000&r=8.5&y=20&l=300000&lm=12&me=0&ye=0&m=emi"}]} slug="home-loan-prepayment-calculator" h1="Home Loan Prepayment Calculator" lead="See exactly what a prepayment buys you: lakhs of interest saved and years cut off your loan, or a lower EMI. Both options, side by side." steps={steps} faqs={faqs} badges={['💸 Interest saved', '⏩ Months saved', '📤 Shareable link', '✅ No login']}>
   <div class="calc">
     <div class="stack">
       <SliderField id="p" key="p" label="Loan amount" unit="₹" min={100000} max={30000000} step={50000} value={5000000} />
@@ -36,6 +36,18 @@ const steps = ['Enter your loan amount, interest rate and tenure.', 'Add a one-t
       <button type="button" class="btn btn-sm" data-share="Loan prepayment plan">📤 Share</button>
     </div>
   </div>
+  <h2 style="margin-top:28px">Reduce tenure or reduce EMI?</h2>
+  <div class="grid-2">
+    <div class="result stack-sm"><b>⏩ Keep EMI, finish earlier</b><div class="result-rows">
+      <div><span>Interest saved</span><b id="cmp-t-saved" style="color:var(--ok)">–</b></div>
+      <div><span>Loan ends earlier by</span><b id="cmp-t-time">–</b></div>
+      <div><span>Monthly EMI</span><b id="cmp-t-emi">–</b></div></div></div>
+    <div class="result stack-sm"><b>⬇ Keep tenure, lower EMI</b><div class="result-rows">
+      <div><span>Interest saved</span><b id="cmp-e-saved" style="color:var(--ok)">–</b></div>
+      <div><span>New EMI</span><b id="cmp-e-emi">–</b></div>
+      <div><span>You pay less each month</span><b id="cmp-e-diff">–</b></div></div></div>
+  </div>
+  <p class="status ok" id="cmp-verdict" style="margin-top:12px"></p>
   <h2 style="margin-top:28px">Outstanding balance by year</h2>
   <div class="table-wrap"><table class="data"><thead><tr><th>Year</th><th>Principal repaid (incl. prepayments)</th><th>Interest paid</th><th>Balance</th></tr></thead><tbody id="o-table"></tbody></table></div>
   <script>
@@ -50,6 +62,11 @@ const steps = ['Enter your loan amount, interest rate and tenure.', 'Add a one-t
       setText('o-months', ym(r.months)); setText('o-msaved', r.monthsSaved > 0 ? ym(r.monthsSaved) : '–');
       setText('o-emi', rupees(r.baseEmi)); setText('o-emi2', rupees(r.finalEmi));
       setText('o-base', rupees(r.baseInterest)); setText('o-int', rupees(r.interest));
+      const base = { principal: val('p'), ratePct: val('r'), months: Math.round(val('y') * 12), lump: val('lump'), lumpMonth: Math.max(1, val('lm')), monthlyExtra: val('me'), yearlyExtra: val('ye') };
+      const t = prepayment({ ...base, mode: 'tenure' }), e = prepayment({ ...base, mode: 'emi' });
+      setText('cmp-t-saved', rupees(Math.max(0, t.saved))); setText('cmp-t-time', t.monthsSaved > 0 ? ym(t.monthsSaved) : '–'); setText('cmp-t-emi', rupees(t.baseEmi));
+      setText('cmp-e-saved', rupees(Math.max(0, e.saved))); setText('cmp-e-emi', rupees(e.finalEmi)); setText('cmp-e-diff', rupees(Math.max(0, t.baseEmi - e.finalEmi)));
+      setText('cmp-verdict', t.saved > 0 ? `Reducing tenure saves ${rupees(Math.max(0, t.saved - e.saved))} more in interest. Pick "lower EMI" only if you need the monthly cash.` : 'Add a prepayment above to compare.');
       document.getElementById('o-table')!.innerHTML = r.years.map((x) => `<tr><td>Year ${x.year}</td><td>${rupees(x.a)}</td><td>${rupees(x.b)}</td><td>${rupees(x.balance)}</td></tr>`).join('');
     }
     initCalculator(update, Object.fromEntries(['lump', 'lm', 'me', 'ye', 'mode'].map((id) => [get(id).dataset.key!, get(id)])));
