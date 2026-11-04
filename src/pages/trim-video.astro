@@ -1,0 +1,18 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import VideoTool from '../components/VideoTool.astro';
+const faqs = [
+  { q: 'How do I cut the beginning or end of a video?', a: 'Play the video to the point where it should start and press <b>Set to current time</b> under Start; do the same for End. Then press <b>Trim video</b>.' },
+  { q: 'Does trimming reduce quality?', a: 'When possible, the original video data is copied without re-encoding, so quality is unchanged and trimming is very fast.' },
+  { q: 'Can I trim long videos?', a: 'Yes. There is no length limit. Very large files depend on your device memory.' },
+  { q: 'Is a watermark added?', a: 'No. There is never a watermark.' },
+];
+const steps = ['Choose a video.', 'Set the start and end with the sliders, the time boxes or <b>Set to current time</b>.', 'Press <b>Trim video</b> and download.'];
+---
+<ToolLayout slug="trim-video" h1="Trim Video" lead="Cut the start and end off a video in your browser. Fast, free and private, with no watermark." steps={steps} faqs={faqs}>
+  <VideoTool mode="trim" />
+  <Fragment slot="content">
+    <h2>Trim videos for Reels, Status and presentations</h2>
+    <p>Remove the awkward first seconds, cut a clip out of a long recording, or keep a video under WhatsApp Status's 60-second limit. Time boxes accept minutes:seconds (for example <code>1:23.5</code>).</p>
+  </Fragment>
+</ToolLayout>

@@ -1,0 +1,44 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'Is this screen recorder really free with no watermark?', a: 'Yes. There is no watermark, no time limit and no sign-up. The video is recorded by your browser and saved straight to your device.' },
+  { q: 'Can I record my voice and system sound?', a: 'Yes. Tick <b>Microphone</b> to narrate. Tick <b>Tab/system audio</b> and, in the share dialog, enable "Share audio" (Chrome/Edge support this for tabs, and on Windows for the whole screen).' },
+  { q: 'Does it work on mobile phones?', a: 'Mobile browsers do not allow websites to record the screen. Use your phone\'s built-in screen recorder, then <a href="/compress-video">compress</a> or <a href="/trim-video">trim</a> the video here.' },
+  { q: 'Why is my recording WebM, not MP4?', a: 'Some browsers (like Firefox) can only record WebM. Convert it with our <a href="/mov-to-mp4">MP4 converter</a>; recent Chrome and Edge record MP4 directly.' },
+  { q: 'Is anything uploaded?', a: 'No. The recording stays in your browser until you download it.' },
+];
+const steps = ['Choose whether to include your microphone and system audio.', 'Press <b>Start recording</b> and pick a screen, window or tab to share.', 'Press <b>Stop</b> when you are done (or "Stop sharing" in the browser bar).', 'Preview the video and press <b>Download</b>.'];
+---
+<ToolLayout slug="screen-recorder" h1="Free Online Screen Recorder" lead="Record your screen, a window or a browser tab with microphone and system audio. No install, no watermark, no time limit." steps={steps} faqs={faqs}>
+  <div class="stack">
+    <div class="grid-4">
+      <label class="check"><input type="checkbox" id="sr-mic" checked /> Microphone</label>
+      <label class="check"><input type="checkbox" id="sr-system" checked /> Tab/system audio</label>
+      <div class="field"><label for="sr-fps">Frame rate</label><select id="sr-fps"><option value="30" selected>30 fps</option><option value="60">60 fps</option><option value="15">15 fps (small files)</option></select></div>
+      <div class="field"><label for="sr-quality">Quality</label><select id="sr-quality"><option value="8000000">High</option><option value="4000000" selected>Standard</option><option value="1500000">Small file</option></select></div>
+    </div>
+    <div class="row">
+      <button type="button" class="btn btn-primary btn-lg" id="sr-start">⏺ Start recording</button>
+      <button type="button" class="btn btn-lg" id="sr-pause" disabled>⏸ Pause</button>
+      <button type="button" class="btn btn-lg" id="sr-stop" disabled>⏹ Stop</button>
+      <span class="big-number" id="sr-timer" aria-live="off" style="font-variant-numeric:tabular-nums">00:00</span>
+    </div>
+    <div class="status" id="sr-status"></div>
+    <div class="result stack-sm hidden" id="sr-result">
+      <video id="sr-preview" controls playsinline style="width:100%;max-height:420px;background:#000;border-radius:12px"></video>
+      <div class="row"><span class="hint" id="sr-meta"></span><span class="spacer"></span><button type="button" class="btn btn-primary btn-lg" id="sr-download">⬇ Download</button></div>
+      <p class="hint hidden" id="sr-webm-tip">Need MP4? Convert it with the <a href="/mov-to-mp4">MP4 converter</a> or shrink it with <a href="/compress-video">Compress Video</a>.</p>
+    </div>
+  </div>
+  <script>import '../tools/screen-recorder';</script>
+  <Fragment slot="content">
+    <h2>Record tutorials, presentations and bug reports</h2>
+    <p>Show a colleague how to do something, record an online class for revision, or capture a bug for a developer. Choose a browser tab to record a website with its sound, a window to record one app, or the entire screen.</p>
+    <h3>Tips for a clean recording</h3>
+    <ul>
+      <li>Close notifications and private tabs before sharing your entire screen.</li>
+      <li>Use "Standard" quality for most recordings: about 30 MB per minute at 1080p.</li>
+      <li>After recording, <a href="/trim-video">trim</a> the start and end, then <a href="/compress-video">compress</a> it for sharing.</li>
+    </ul>
+  </Fragment>
+</ToolLayout>

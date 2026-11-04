@@ -1,0 +1,17 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import VideoTool from '../components/VideoTool.astro';
+const faqs = [
+  { q: 'How do I convert MOV to MP4?', a: 'Choose the MOV file and press <b>Convert</b>. iPhone and most camera MOV files already contain MP4-compatible video, so they are repackaged in seconds with no quality loss.' },
+  { q: 'Can I convert MKV or WebM to MP4?', a: 'Yes. MKV and WebM files are converted to MP4 with H.264 video and AAC audio, which plays on every phone, TV and computer.' },
+  { q: 'Will the quality change?', a: 'If the video is already H.264 or HEVC, it is copied as is. Otherwise it is re-encoded at high quality.' },
+];
+const steps = ['Choose a MOV, MKV or WebM video.', 'Keep MP4 selected.', 'Press <b>Convert</b> and download.'];
+---
+<ToolLayout slug="mov-to-mp4" h1="MOV to MP4 Converter" lead="Convert MOV, MKV and WebM videos to MP4 that plays everywhere. Free, private, no watermark." steps={steps} faqs={faqs}>
+  <VideoTool mode="convert" />
+  <Fragment slot="content">
+    <h2>Why convert to MP4?</h2>
+    <p>MP4 with H.264 video is the most widely supported video format: it works on Windows, Android, smart TVs, WhatsApp, Instagram and every website. MOV (from iPhones and Macs) and MKV (from screen recorders and downloads) are not always accepted.</p>
+  </Fragment>
+</ToolLayout>

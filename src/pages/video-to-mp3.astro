@@ -1,0 +1,18 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import VideoTool from '../components/VideoTool.astro';
+const faqs = [
+  { q: 'How do I convert MP4 to MP3?', a: 'Choose your MP4 (or MOV, MKV, WebM) video, keep MP3 selected and press <b>Extract audio</b>. The MP3 downloads when it is ready.' },
+  { q: 'Which bitrate should I choose?', a: '192 kbps is great for music and speech. Use 128 kbps for smaller files (podcasts, lectures) and 320 kbps for the best quality.' },
+  { q: 'Can I get lossless audio?', a: 'Choose WAV for uncompressed audio, or M4A to keep AAC audio (often copied directly from the video without any loss).' },
+  { q: 'Is it legal?', a: 'Converting your own videos is fine. Respect copyright and only convert content you have the right to use.' },
+];
+const steps = ['Choose a video file.', 'Pick MP3, M4A or WAV and a bitrate.', 'Press <b>Extract audio</b> and download.'];
+---
+<ToolLayout slug="video-to-mp3" h1="Video to MP3" lead="Extract the audio from MP4, MOV, MKV or WebM videos and save it as MP3, M4A or WAV. Free, fast and private." steps={steps} faqs={faqs}>
+  <VideoTool mode="audio" />
+  <Fragment slot="content">
+    <h2>Turn any video into an audio file</h2>
+    <p>Save the soundtrack of a recorded lecture, a voice note sent as a video, or your own music performance. MP3 encoding runs in your browser using the open-source LAME encoder compiled to WebAssembly.</p>
+  </Fragment>
+</ToolLayout>

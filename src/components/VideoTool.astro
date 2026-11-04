@@ -1,0 +1,80 @@
+---
+/** Shared UI for /compress-video, /trim-video, /video-to-mp3, /mov-to-mp4, /remove-audio-from-video */
+import Dropzone from './Dropzone.astro';
+interface Props { mode: 'compress' | 'trim' | 'audio' | 'convert' | 'mute' }
+const { mode } = Astro.props;
+const accept = 'video/*,.mov,.mkv,.webm,.mp4,.m4v,.ts' + (mode === 'audio' ? ',audio/*,.m4a,.aac,.ogg,.flac,.wav' : '');
+const title = { compress: 'Choose a video to compress', trim: 'Choose a video to trim', audio: 'Choose a video', convert: 'Choose a video to convert', mute: 'Choose a video' }[mode];
+---
+<div class="stack" data-video data-mode={mode}>
+  <p class="status warn hidden" id="vt-unsupported">Your browser does not support on-device video processing (WebCodecs). Please use the latest Chrome, Edge, Safari or Firefox.</p>
+  <Dropzone id="vt-drop" accept={accept} title={title} hint="MP4, MOV, MKV, WebM · nothing is uploaded" icon="🎬" />
+  <div id="vt-panel" class="stack-sm hidden">
+    <div class="vt-grid">
+      <div class="stack-sm">
+        <video id="vt-video" controls playsinline preload="metadata"></video>
+        <p class="hint" id="vt-info"></p>
+      </div>
+      <div class="stack-sm">
+        {mode === 'compress' && (
+          <>
+            <div class="field"><span style="font-weight:600">Compress by</span>
+              <div class="seg" role="radiogroup" aria-label="Compress by">
+                <label><input type="radio" name="vt-by" value="quality" checked /><span>Quality</span></label>
+                <label><input type="radio" name="vt-by" value="size" /><span>Target size</span></label>
+              </div>
+            </div>
+            <div class="field" id="vt-quality-field"><label for="vt-quality">Quality</label>
+              <select id="vt-quality"><option value="0.1">High (larger file)</option><option value="0.065" selected>Balanced (recommended)</option><option value="0.04">Small</option><option value="0.025">Smallest</option></select></div>
+            <div class="field hidden" id="vt-size-field"><label for="vt-mb">Target size (MB)</label>
+              <input id="vt-mb" type="number" min="1" step="1" value="25" inputmode="numeric" />
+              <small>Presets: <button type="button" class="btn btn-sm" data-mb="16">WhatsApp 16</button> <button type="button" class="btn btn-sm" data-mb="25">Email/Discord 25</button> <button type="button" class="btn btn-sm" data-mb="10">10</button></small></div>
+            <div class="field"><label for="vt-res">Resolution</label>
+              <select id="vt-res"><option value="0">Original</option><option value="1080">1080p</option><option value="720" selected>720p</option><option value="480">480p</option><option value="360">360p</option></select></div>
+            <label class="check"><input type="checkbox" id="vt-noaudio" /> Remove audio</label>
+          </>
+        )}
+        {mode === 'trim' && (
+          <>
+            <div class="grid-2">
+              <div class="field"><label for="vt-start">Start</label><input id="vt-start" type="text" value="0:00.0" inputmode="decimal" /><button type="button" class="btn btn-sm" id="vt-set-start">Set to current time</button></div>
+              <div class="field"><label for="vt-end">End</label><input id="vt-end" type="text" inputmode="decimal" /><button type="button" class="btn btn-sm" id="vt-set-end">Set to current time</button></div>
+            </div>
+            <div class="field"><label>Range</label>
+              <input type="range" id="vt-r-start" min="0" max="1000" value="0" aria-label="Start" />
+              <input type="range" id="vt-r-end" min="0" max="1000" value="1000" aria-label="End" /></div>
+            <p class="hint" id="vt-len"></p>
+          </>
+        )}
+        {mode === 'audio' && (
+          <div class="grid-2">
+            <div class="field"><label for="vt-afmt">Format</label><select id="vt-afmt"><option value="mp3">MP3</option><option value="m4a">M4A (AAC)</option><option value="wav">WAV (lossless)</option></select></div>
+            <div class="field"><label for="vt-abr">Bitrate</label><select id="vt-abr"><option value="128000">128 kbps</option><option value="192000" selected>192 kbps</option><option value="320000">320 kbps</option></select></div>
+          </div>
+        )}
+        {mode === 'convert' && (
+          <div class="field"><label for="vt-cfmt">Convert to</label><select id="vt-cfmt"><option value="mp4">MP4 (H.264, plays everywhere)</option><option value="webm">WebM</option></select>
+            <small>If the video is already H.264/AAC, it is repackaged instantly with no quality loss.</small></div>
+        )}
+        {mode === 'mute' && <p class="hint">The video track is copied without re-encoding, so this is fast and lossless.</p>}
+        <div class="btn-row"><button type="button" class="btn btn-primary btn-lg" id="vt-go">{{ compress: 'Compress video', trim: 'Trim video', audio: 'Extract audio', convert: 'Convert', mute: 'Remove audio' }[mode]}</button><button type="button" class="btn hidden" id="vt-cancel">Cancel</button></div>
+        <div class="progress hidden" id="vt-progress"><i></i></div>
+        <div class="status" id="vt-status"></div>
+        <div class="result hidden" id="vt-result">
+          <div class="stat-row">
+            <div class="stat"><b id="vt-before">–</b><span>Original</span></div>
+            <div class="stat accent"><b id="vt-after">–</b><span>Result</span></div>
+            <div class="stat good"><b id="vt-saved">–</b><span>Change</span></div>
+          </div>
+          <div class="btn-row" style="margin-top:12px"><button type="button" class="btn btn-primary btn-lg" id="vt-download">⬇ Download</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<style>
+  .vt-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; }
+  @media (max-width: 760px) { .vt-grid { grid-template-columns: 1fr; } }
+  #vt-video { width: 100%; max-height: 360px; background: #000; border-radius: 12px; }
+</style>
+<script>import '../tools/video-tool';</script>

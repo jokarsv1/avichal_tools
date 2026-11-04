@@ -1,0 +1,22 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import VideoTool from '../components/VideoTool.astro';
+const faqs = [
+  { q: 'How do I compress a video for WhatsApp?', a: 'Choose <b>Target size</b>, press the WhatsApp 16 MB preset and compress. Or pick <b>Balanced</b> quality at 720p, which usually shrinks phone videos by 70–90% with little visible difference.' },
+  { q: 'Is there a watermark or length limit?', a: 'No watermark, no length limit and no sign-up. The only limit is your device\'s memory, since nothing is uploaded.' },
+  { q: 'Why is it so fast?', a: 'It uses your device\'s hardware video encoder through WebCodecs, the same technology video-call apps use, instead of uploading to a slow server queue.' },
+  { q: 'My iPhone video will not load. Why?', a: 'iPhones record HEVC (H.265). Safari and Chrome/Edge on most Windows and Mac computers can decode it; some Linux or older browsers cannot. Try Chrome, Edge or Safari.' },
+  { q: 'Which resolution should I pick?', a: '720p looks good on phones and is the sweet spot for sharing. Use 1080p for YouTube or large screens, and 480p for the smallest files.' },
+];
+const steps = ['Choose a video (MP4, MOV, MKV or WebM).', 'Pick <b>Quality</b> (Balanced is recommended) or a <b>Target size</b> in MB, such as 16 MB for WhatsApp or 25 MB for email.', 'Choose a resolution; 720p is ideal for phones.', 'Press <b>Compress video</b> and download the MP4.'];
+---
+<ToolLayout slug="compress-video" h1="Compress Video" lead="Reduce video size for WhatsApp, email, Discord or upload portals: choose a quality or an exact target size in MB. No watermark, no upload." steps={steps} faqs={faqs}>
+  <VideoTool mode="compress" />
+  <Fragment slot="content">
+    <h2>Compress videos without uploading them</h2>
+    <p>Online video compressors usually upload your file, make you wait in a queue, then add a watermark or ask you to pay for longer videos. This tool compresses on your own device using hardware-accelerated H.264 encoding, so it is private and often faster than uploading would be.</p>
+    <h3>How target size works</h3>
+    <p>When you choose a target size, we calculate the bitrate needed to fit your video into that many megabytes (leaving room for audio and the file container), so the result lands just under the limit.</p>
+    <p>Also useful: <a href="/trim-video">trim the video</a> first to make it shorter, or <a href="/video-to-mp3">extract the audio as MP3</a>.</p>
+  </Fragment>
+</ToolLayout>

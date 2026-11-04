@@ -1,0 +1,17 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import VideoTool from '../components/VideoTool.astro';
+const faqs = [
+  { q: 'How do I remove sound from a video?', a: 'Choose your video and press <b>Remove audio</b>. The video is copied without its sound track; it takes only seconds.' },
+  { q: 'Does it lower the video quality?', a: 'No. The video data is copied exactly, without re-encoding.' },
+  { q: 'Can I replace the audio with music?', a: 'Not yet. Audio replacement is on our <a href="/roadmap">roadmap</a>.' },
+];
+const steps = ['Choose a video.', 'Press <b>Remove audio</b>.', 'Download the silent video.'];
+---
+<ToolLayout slug="remove-audio-from-video" h1="Remove Audio From Video" lead="Mute a video by removing its sound track, without re-encoding. Fast, free, private and with no watermark." steps={steps} faqs={faqs}>
+  <VideoTool mode="mute" />
+  <Fragment slot="content">
+    <h2>Mute background noise and private conversations</h2>
+    <p>Remove wind noise, background chatter or copyrighted music before sharing a clip. Because only the audio track is dropped, the video keeps its original quality and the conversion is almost instant.</p>
+  </Fragment>
+</ToolLayout>
