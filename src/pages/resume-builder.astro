@@ -1,0 +1,57 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'Is this resume builder really free?', a: 'Yes, completely. No sign-up, no watermark, and no "pay to download" at the end. Your PDF downloads instantly.' },
+  { q: 'Is the resume ATS-friendly?', a: 'Yes. The PDF contains real, selectable text in a simple one-column layout with standard section names (Summary, Experience, Education, Skills), which applicant tracking systems read reliably. There are no tables, text boxes or images that confuse parsers.' },
+  { q: 'Where is my resume saved?', a: 'Only in your own browser, so you can come back and edit it on the same device. Nothing is uploaded or stored on our servers. Use <b>Save data (.json)</b> to keep a copy or move it to another device.' },
+  { q: 'Should my resume be one page?', a: 'For freshers and people with under about 8 years of experience, one page is ideal. The Compact template fits more on a page. Keep only achievements relevant to the job.' },
+  { q: 'How do I write strong bullet points?', a: 'Start with an action verb, say what you did and add a number: "Reduced AWS costs by 28% by right-sizing databases and adding caching." Recruiters skim for impact.' },
+];
+const steps = ['Edit the example (or press Start blank) with your details.', 'Pick a template: Modern, Classic or Compact, and an accent colour.', 'Watch the live preview of the actual PDF.', 'Press <b>Download PDF</b>. Save your data as .json to edit later on another device.'];
+---
+<ToolLayout slug="resume-builder" h1="Free Resume Builder (ATS-Friendly PDF)" lead="Create a professional, ATS-friendly resume and download the PDF free, with no sign-up, no watermark and no paywall at the end. Your data stays on your device." steps={steps} faqs={faqs} badges={['📄 ATS-friendly PDF', '🚫 No watermark', '💸 No pay-to-download', '👁️ Live preview']}>
+  <div class="stack">
+    <div class="row">
+      <div class="seg" role="group" aria-label="Template">
+        <button type="button" data-tpl="modern">Modern</button>
+        <button type="button" data-tpl="classic">Classic</button>
+        <button type="button" data-tpl="compact">Compact</button>
+      </div>
+      <label class="row" style="gap:6px">Accent <input id="rs-accent" type="color" value="#4f46e5" /></label>
+      <span class="spacer"></span>
+      <button type="button" class="btn btn-sm" id="rs-sample">Example</button>
+      <button type="button" class="btn btn-sm" id="rs-clear">Start blank</button>
+      <label class="btn btn-sm" style="position:relative">📂 Load data<input id="rs-load" type="file" accept=".json,application/json" style="position:absolute;inset:0;opacity:0;cursor:pointer" /></label>
+      <button type="button" class="btn btn-sm" id="rs-json">💾 Save data (.json)</button>
+    </div>
+    <div class="rs-grid">
+      <form id="rs-form" class="stack-sm" onsubmit="return false" aria-label="Resume details"></form>
+      <div class="stack-sm rs-right">
+        <div class="btn-row"><button type="button" class="btn btn-primary btn-lg" id="rs-download">⬇ Download PDF</button><span class="hint" id="rs-pages"></span></div>
+        <div class="status" id="rs-status"></div>
+        <div id="rs-preview" class="rs-preview" aria-label="Resume preview"></div>
+      </div>
+    </div>
+  </div>
+  <style is:global>
+    .rs-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+    @media (max-width: 900px) { .rs-grid { grid-template-columns: minmax(0, 1fr); } }
+    .rs-right { position: sticky; top: 76px; }
+    .rs-preview { display: grid; gap: 12px; background: var(--surface-2); padding: 12px; border-radius: 12px; max-height: 80vh; overflow: auto; }
+    .rs-preview canvas { width: 100%; height: auto; box-shadow: 0 2px 10px rgba(0,0,0,.15); background: #fff; }
+    .rs-item { border-bottom: 1px dashed var(--border); padding-bottom: 10px; }
+  </style>
+  <script>import '../tools/resume';</script>
+  <Fragment slot="content">
+    <h2>Why most "free" resume builders aren't free</h2>
+    <p>Many resume sites let you fill everything in, then ask you to pay or start a subscription at the download step. This builder runs in your browser and creates the PDF on your device, so there's nothing to charge for. It stays free.</p>
+    <h3>Resume tips that get interviews</h3>
+    <ul>
+      <li>Tailor the summary and top bullets to each job description; mirror its keywords honestly.</li>
+      <li>Quantify impact: users, revenue, time saved, cost cut, accuracy improved.</li>
+      <li>Put your strongest section first: Experience for professionals, Projects/Education for freshers.</li>
+      <li>Save as PDF with a clear file name, like <code>Priya-Sharma-Resume.pdf</code>.</li>
+    </ul>
+    <p>Related: <a href="/passport-photo-maker">photo for applications</a> · <a href="/salary-calculator">in-hand salary calculator</a> · <a href="/salary-needed-abroad">salary to ask for abroad</a></p>
+  </Fragment>
+</ToolLayout>

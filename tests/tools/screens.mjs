@@ -2,7 +2,7 @@ import http from 'node:http'; import fs from 'node:fs'; import path from 'node:p
 import { createRequire } from 'node:module';
 const pw = createRequire(import.meta.url)('/opt/node-tools/node_modules/playwright');
 const DIST = path.resolve('dist');
-const T = { '.js': 'text/javascript', '.html': 'text/html', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml' };
+const T = { '.js': 'text/javascript', '.mjs': 'text/javascript', '.wasm': 'application/wasm', '.html': 'text/html', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml' };
 const s = http.createServer((q, r) => { const p = decodeURIComponent(new URL(q.url, 'http://x').pathname); let f = path.join(DIST, p === '/' ? 'index.html' : p); if (!path.extname(f)) f += '.html'; if (!fs.existsSync(f)) { r.writeHead(404); r.end(); return; } r.writeHead(200, { 'content-type': T[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(r); });
 await new Promise((r) => s.listen(4396, r));
 const b = await pw.chromium.launch();
