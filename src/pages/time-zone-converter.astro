@@ -1,0 +1,108 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const ZONES: [string, string][] = [
+  ['Asia/Kolkata', '🇮🇳 India (IST)'], ['America/New_York', '🇺🇸 New York (ET)'], ['America/Chicago', '🇺🇸 Chicago (CT)'], ['America/Los_Angeles', '🇺🇸 San Francisco / LA (PT)'],
+  ['Europe/London', '🇬🇧 London'], ['Europe/Berlin', '🇩🇪 Berlin / Paris / Amsterdam'], ['Europe/Dublin', '🇮🇪 Dublin'], ['Asia/Dubai', '🇦🇪 Dubai'], ['Asia/Riyadh', '🇸🇦 Riyadh'], ['Asia/Qatar', '🇶🇦 Doha'],
+  ['Asia/Singapore', '🇸🇬 Singapore'], ['Asia/Tokyo', '🇯🇵 Tokyo'], ['Australia/Sydney', '🇦🇺 Sydney'], ['Australia/Melbourne', '🇦🇺 Melbourne'], ['Pacific/Auckland', '🇳🇿 Auckland'],
+  ['America/Toronto', '🇨🇦 Toronto'], ['America/Vancouver', '🇨🇦 Vancouver'], ['Asia/Kathmandu', '🇳🇵 Kathmandu'], ['Asia/Dhaka', '🇧🇩 Dhaka'], ['UTC', '🌐 UTC / GMT'],
+];
+const faqs = [
+  { q: 'What is the time difference between India and the USA?', a: 'India is 9 h 30 m ahead of New York and 12 h 30 m ahead of California during US daylight saving time (March to early November), and 10 h 30 m and 13 h 30 m ahead in winter. The converter applies daylight saving automatically for the date you pick.' },
+  { q: 'What is a good meeting time for India and the US?', a: 'For India and the US East Coast, 7:00–9:00 PM IST is 9:30–11:30 AM in New York (summer). For the US West Coast, 8:30–10:00 PM IST or early morning IST works best. The meeting planner highlights overlapping working hours.' },
+  { q: 'Does it handle daylight saving time?', a: 'Yes. It uses your browser\'s time zone database, so daylight saving changes in the US, UK, Europe, Australia and New Zealand are applied for the selected date.' },
+];
+const steps = ['Pick a date, time and your time zone.', 'Add the cities you work with.', 'Use the meeting planner to find hours that suit everyone.'];
+---
+<ToolLayout slug="time-zone-converter" h1="Time Zone Converter & Meeting Planner" lead="Convert IST to US, UK, Europe, Gulf and Australia time with daylight saving handled, and find a meeting slot that falls in everyone's working hours."
+  presets={[{ label: '🇮🇳↔🇺🇸 IST ↔ New York', href: '/time-zone-converter?z=Asia/Kolkata,America/New_York' }, { label: '🇮🇳↔🇺🇸 IST ↔ California', href: '/time-zone-converter?z=Asia/Kolkata,America/Los_Angeles' }, { label: '🇮🇳↔🇬🇧 IST ↔ London', href: '/time-zone-converter?z=Asia/Kolkata,Europe/London' }, { label: '🇮🇳↔🇦🇪 IST ↔ Dubai', href: '/time-zone-converter?z=Asia/Kolkata,Asia/Dubai' }, { label: '🌍 Global team', href: '/time-zone-converter?z=Asia/Kolkata,America/New_York,Europe/London,Asia/Singapore' }]}
+  steps={steps} faqs={faqs} badges={['🕒 Daylight saving handled', '🤝 Meeting planner', '📤 Shareable link']}>
+  <div class="stack" data-zones={JSON.stringify(ZONES)}>
+    <div class="grid-3">
+      <div class="field"><label for="tz-date">Date</label><input id="tz-date" type="date" /></div>
+      <div class="field"><label for="tz-time">Time</label><input id="tz-time" type="time" step="900" /></div>
+      <div class="field"><label for="tz-base">In time zone</label><select id="tz-base">{ZONES.map(([z, n]) => <option value={z}>{n}</option>)}</select></div>
+    </div>
+    <div class="row"><select id="tz-add" aria-label="Add a city"><option value="">➕ Add a city…</option>{ZONES.map(([z, n]) => <option value={z}>{n}</option>)}</select><button type="button" class="btn btn-sm" id="tz-now">🕒 Now</button><button type="button" class="btn btn-sm" data-share="Meeting time across time zones">📤 Share</button></div>
+    <div id="tz-list" class="stack-sm" aria-live="polite"></div>
+    <h2 style="margin:8px 0 0;font-size:1.1rem">🤝 Meeting planner</h2>
+    <p class="hint" style="margin:0">Each row is one hour in the first city. <span class="tz-key tz-good">Green</span> = 9 AM–6 PM for everyone, <span class="tz-key tz-ok">amber</span> = 7 AM–10 PM for everyone. Click an hour to use it.</p>
+    <div class="table-wrap"><table class="data" id="tz-grid"></table></div>
+  </div>
+  <style is:global>
+    .tz-row { display:flex; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; align-items:center; }
+    .tz-row > div { flex:1; min-width:0; }
+    .tz-row b { font-size:1.15rem; font-variant-numeric: tabular-nums; }
+    .tz-row .hint { margin:0; }
+    .tz-key { padding:0 6px; border-radius:6px; }
+    .tz-good { background: color-mix(in srgb, var(--series-3, #1baf7a) 22%, transparent); }
+    .tz-ok { background: color-mix(in srgb, var(--series-2, #eb6834) 18%, transparent); }
+    #tz-grid td, #tz-grid th { text-align:center; }
+    #tz-grid tr { cursor:pointer; }
+    #tz-grid tr:hover td { outline: 1px solid var(--border); }
+  </style>
+  <script>
+    import { toolStarted, taskCompleted } from '../lib/analytics';
+    import { shareOrCopy } from '../lib/ui';
+    const ZONES: [string, string][] = JSON.parse(document.querySelector<HTMLElement>('[data-zones]')!.dataset.zones!);
+    const name = (z: string) => ZONES.find((x) => x[0] === z)?.[1] || z;
+    const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
+    const p = new URLSearchParams(location.search);
+    let zones = (p.get('z') || 'Asia/Kolkata,America/New_York,Europe/London').split(',').filter((z) => ZONES.some((x) => x[0] === z));
+    const local = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    $('tz-base').value = p.get('b') || (ZONES.some((x) => x[0] === local) ? local : zones[0]);
+    // offset (minutes) of zone at a UTC instant
+    const offset = (z: string, t: number) => { const d = new Date(t); const s = d.toLocaleString('en-US', { timeZone: z, hour12: false }); const [md, hm] = s.split(', '); const [m, dd, y] = md.split('/').map(Number); const [h, mi, se] = hm.split(':').map(Number); return (Date.UTC(y, m - 1, dd, h % 24, mi, se) - Math.floor(t / 1000) * 1000) / 60000; };
+    const toUtc = (date: string, time: string, z: string) => { const [y, m, d] = date.split('-').map(Number); const [h, mi] = time.split(':').map(Number); const guess = Date.UTC(y, m - 1, d, h, mi); let t = guess - offset(z, guess) * 60000; t = guess - offset(z, t) * 60000; return t; };
+    const fmt = (t: number, z: string, opts: Intl.DateTimeFormatOptions) => new Date(t).toLocaleString('en-IN', { timeZone: z, ...opts });
+    const hourIn = (t: number, z: string) => +new Date(t).toLocaleString('en-US', { timeZone: z, hour: 'numeric', hour12: false }) % 24;
+    function setNow() { const n = Date.now(), z = $('tz-base').value; $('tz-date').value = fmt(n, z, { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-'); $('tz-time').value = fmt(n, z, { hour: '2-digit', minute: '2-digit', hour12: false }); }
+    if (p.get('d')) $('tz-date').value = p.get('d')!; if (p.get('t')) $('tz-time').value = p.get('t')!;
+    if (!$('tz-date').value || !$('tz-time').value) setNow();
+    function save() { const q = new URLSearchParams({ z: zones.join(','), b: $('tz-base').value, d: $('tz-date').value, t: $('tz-time').value }); history.replaceState(null, '', `?${q}`); }
+    function render() {
+      const t = toUtc($('tz-date').value, $('tz-time').value, $('tz-base').value);
+      const baseOff = offset($('tz-base').value, t);
+      document.getElementById('tz-list')!.innerHTML = zones.map((z) => {
+        const diff = offset(z, t) - baseOff, sign = diff >= 0 ? '+' : '−', a = Math.abs(diff);
+        return `<div class="tz-row"><div><div>${name(z)}</div><p class="hint">${fmt(t, z, { weekday: 'short', day: 'numeric', month: 'short' })} · ${diff === 0 ? 'same time' : `${sign}${Math.floor(a / 60)}h${a % 60 ? ` ${a % 60}m` : ''}`}</p></div><b>${fmt(t, z, { hour: 'numeric', minute: '2-digit', hour12: true })}</b>${zones.length > 1 ? `<button type="button" class="btn btn-sm" data-rm="${z}" aria-label="Remove ${name(z)}">✕</button>` : ''}</div>`;
+      }).join('');
+      // planner: 24 hours of the selected date in the first zone
+      const z0 = zones[0];
+      const start = toUtc($('tz-date').value, '00:00', z0);
+      let rows = `<thead><tr>${zones.map((z) => `<th>${name(z)}</th>`).join('')}</tr></thead><tbody>`;
+      for (let h = 0; h < 24; h++) {
+        const ti = start + h * 3600000;
+        const hrs = zones.map((z) => hourIn(ti, z));
+        const good = hrs.every((x) => x >= 9 && x < 18), ok = hrs.every((x) => x >= 7 && x < 22);
+        rows += `<tr data-t="${ti}" class="${good ? 'tz-good' : ok ? 'tz-ok' : ''}">${zones.map((z) => `<td class="${good ? 'tz-good' : ok ? 'tz-ok' : ''}">${fmt(ti, z, { hour: 'numeric', minute: '2-digit', hour12: true })}</td>`).join('')}</tr>`;
+      }
+      document.getElementById('tz-grid')!.innerHTML = rows + '</tbody>';
+      save();
+    }
+    document.getElementById('tz-list')!.addEventListener('click', (e) => { const z = (e.target as HTMLElement).closest<HTMLElement>('[data-rm]')?.dataset.rm; if (z) { zones = zones.filter((x) => x !== z); render(); } });
+    document.getElementById('tz-grid')!.addEventListener('click', (e) => {
+      const tr = (e.target as HTMLElement).closest<HTMLElement>('tr[data-t]'); if (!tr) return;
+      const t = +tr.dataset.t!, z = $('tz-base').value;
+      $('tz-date').value = fmt(t, z, { year: 'numeric', month: '2-digit', day: '2-digit' }).split('/').reverse().join('-');
+      $('tz-time').value = fmt(t, z, { hour: '2-digit', minute: '2-digit', hour12: false });
+      toolStarted('input'); taskCompleted('meeting_slot'); render();
+      document.getElementById('tz-list')!.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+    $('tz-add').addEventListener('change', () => { const z = $('tz-add').value; if (z && !zones.includes(z)) zones.push(z); $('tz-add').value = ''; toolStarted('input'); render(); });
+    for (const id of ['tz-date', 'tz-time', 'tz-base']) $(id).addEventListener('input', () => { toolStarted('input'); render(); });
+    $('tz-base').addEventListener('change', render);
+    document.getElementById('tz-now')!.addEventListener('click', () => { setNow(); render(); });
+    document.querySelector<HTMLElement>('[data-share]')!.addEventListener('click', async (e) => { const b = e.currentTarget as HTMLElement; const old = b.textContent; b.textContent = await shareOrCopy(b.dataset.share!); setTimeout(() => (b.textContent = old), 1800); });
+    if (p.get('z')) setTimeout(() => { toolStarted('preset'); taskCompleted('calculation'); }, 4000);
+    render();
+  </script>
+  <Fragment slot="content">
+    <h2>Time difference between India and popular work destinations</h2>
+    <table><thead><tr><th>City</th><th>India is ahead by (summer)</th><th>(winter)</th></tr></thead><tbody>
+      <tr><td>New York</td><td>9 h 30 m</td><td>10 h 30 m</td></tr><tr><td>San Francisco</td><td>12 h 30 m</td><td>13 h 30 m</td></tr>
+      <tr><td>London</td><td>4 h 30 m</td><td>5 h 30 m</td></tr><tr><td>Berlin / Amsterdam</td><td>3 h 30 m</td><td>4 h 30 m</td></tr>
+      <tr><td>Dubai</td><td colspan="2">1 h 30 m (no daylight saving)</td></tr><tr><td>Singapore</td><td colspan="2">India is 2 h 30 m behind</td></tr>
+      <tr><td>Sydney</td><td>India is 4 h 30 m behind (Oct–Apr: 5 h 30 m)</td><td></td></tr>
+    </tbody></table>
+  </Fragment>
+</ToolLayout>

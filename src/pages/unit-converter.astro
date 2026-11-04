@@ -1,0 +1,86 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+// factor = value of 1 unit in the base unit of the category
+const UNITS: Record<string, { label: string; base: string; units: [string, string, number][] }> = {
+  length: { label: 'Length', base: 'm', units: [['mm', 'Millimetre', 0.001], ['cm', 'Centimetre', 0.01], ['m', 'Metre', 1], ['km', 'Kilometre', 1000], ['in', 'Inch', 0.0254], ['ft', 'Foot', 0.3048], ['yd', 'Yard', 0.9144], ['mi', 'Mile', 1609.344], ['nmi', 'Nautical mile', 1852]] },
+  weight: { label: 'Weight', base: 'kg', units: [['mg', 'Milligram', 1e-6], ['g', 'Gram', 0.001], ['kg', 'Kilogram', 1], ['quintal', 'Quintal', 100], ['t', 'Tonne', 1000], ['oz', 'Ounce', 0.028349523125], ['lb', 'Pound', 0.45359237], ['st', 'Stone', 6.35029318], ['tola', 'Tola (gold)', 0.0116638038]] },
+  temperature: { label: 'Temperature', base: 'C', units: [['C', 'Celsius', 1], ['F', 'Fahrenheit', 1], ['K', 'Kelvin', 1]] },
+  area: { label: 'Area & Indian land units', base: 'sqft', units: [['sqft', 'Square foot', 1], ['sqm', 'Square metre', 10.7639104], ['sqyd', 'Square yard / Gaj', 9], ['acre', 'Acre', 43560], ['hectare', 'Hectare', 107639.104], ['cent', 'Cent (Kerala, Tamil Nadu)', 435.6], ['guntha', 'Guntha (Maharashtra, Karnataka)', 1089], ['ground', 'Ground (Chennai)', 2400], ['marla', 'Marla (Punjab, Haryana)', 272.25], ['kanal', 'Kanal (Punjab, Haryana)', 5445], ['bigha-rj', 'Bigha, Rajasthan pucca', 27225], ['bigha-wb', 'Bigha, West Bengal / Assam', 14400], ['bigha-gj', 'Bigha, Gujarat', 17424], ['sqkm', 'Square kilometre', 10763910.4]] },
+  volume: { label: 'Volume', base: 'l', units: [['ml', 'Millilitre', 0.001], ['l', 'Litre', 1], ['m3', 'Cubic metre', 1000], ['tsp', 'Teaspoon', 0.00492892], ['tbsp', 'Tablespoon', 0.0147868], ['cup', 'Cup (US)', 0.236588], ['floz', 'Fluid ounce (US)', 0.0295735], ['gal', 'Gallon (US)', 3.78541], ['ukgal', 'Gallon (UK)', 4.54609]] },
+  speed: { label: 'Speed', base: 'mps', units: [['kmh', 'km/h', 1 / 3.6], ['mph', 'mph', 0.44704], ['mps', 'm/s', 1], ['knot', 'Knot', 0.514444]] },
+  data: { label: 'Data', base: 'B', units: [['B', 'Byte', 1], ['KB', 'Kilobyte (1000)', 1e3], ['KiB', 'Kibibyte (1024)', 1024], ['MB', 'Megabyte (1000²)', 1e6], ['MiB', 'Mebibyte (1024²)', 1048576], ['GB', 'Gigabyte', 1e9], ['GiB', 'Gibibyte', 1073741824], ['TB', 'Terabyte', 1e12], ['Mbps', 'Megabit', 125000]] },
+};
+const faqs = [
+  { q: 'How many square feet are in 1 gaj?', a: '1 gaj = 1 square yard = 9 square feet = 0.836 square metres. A 100-gaj plot is 900 sq ft.' },
+  { q: 'How big is a bigha?', a: 'It depends on the state, sometimes even the district: about 27,225 sq ft (pucca bigha) in Rajasthan, 14,400 sq ft in West Bengal and Assam, and 17,424 sq ft in Gujarat. Always confirm with local land records.' },
+  { q: 'What is 5 feet 7 inches in cm?', a: '170.18 cm. Use the height converter above for any height.' },
+  { q: 'How do I convert Celsius to Fahrenheit?', a: '°F = °C × 9/5 + 32. For example, 37 °C = 98.6 °F.' },
+];
+const steps = ['Pick a category (length, weight, area…).', 'Enter a value and choose the units.', 'See the result and every other unit at once.'];
+---
+<ToolLayout slug="unit-converter" h1="Unit Converter" lead="Convert length, weight, temperature, area, volume, speed and data instantly, including Indian land units like gaj, bigha, marla, cent and guntha."
+  presets={[{ label: '📏 Height ft → cm', set: { '#hc-ft': '5', '#hc-in': '7' } }, { label: '⚖️ kg ↔ lb', set: { '#uc-cat': 'weight', '#uc-from': 'kg', '#uc-to': 'lb' } }, { label: '🌡️ °C ↔ °F', set: { '#uc-cat': 'temperature', '#uc-from': 'C', '#uc-to': 'F' } }, { label: '🏠 sq ft ↔ sq m', set: { '#uc-cat': 'area', '#uc-from': 'sqft', '#uc-to': 'sqm' } }, { label: '🏡 Gaj → sq ft', set: { '#uc-cat': 'area', '#uc-from': 'sqyd', '#uc-to': 'sqft' } }, { label: '🌾 Acre → bigha', set: { '#uc-cat': 'area', '#uc-from': 'acre', '#uc-to': 'bigha-rj' } }]}
+  steps={steps} faqs={faqs} badges={['🇮🇳 Indian land units', '⚡ Instant', '📵 Works offline']}>
+  <div class="stack" data-units={JSON.stringify(UNITS)}>
+    <div class="card stack-sm" style="box-shadow:none">
+      <b>📏 Height: feet & inches ↔ cm</b>
+      <div class="row"><input id="hc-ft" type="number" min="0" value="5" style="width:90px" aria-label="Feet" /> ft <input id="hc-in" type="number" min="0" step="0.5" value="7" style="width:90px" aria-label="Inches" /> in = <input id="hc-cm" type="number" min="0" step="0.1" style="width:120px" aria-label="Centimetres" /> cm</div>
+    </div>
+    <div class="grid-4">
+      <div class="field"><label for="uc-cat">Category</label><select id="uc-cat" data-key="c">{Object.entries(UNITS).map(([k, v]) => <option value={k}>{v.label}</option>)}</select></div>
+      <div class="field"><label for="uc-val">Value</label><input id="uc-val" data-key="v" type="number" step="any" value="1" /></div>
+      <div class="field"><label for="uc-from">From</label><select id="uc-from" data-key="f"></select></div>
+      <div class="field"><label for="uc-to">To</label><select id="uc-to" data-key="t"></select></div>
+    </div>
+    <div class="result" aria-live="polite"><div class="big-number" id="uc-out">–</div><p class="hint" id="uc-formula" style="margin:4px 0 0"></p></div>
+    <div class="table-wrap"><table class="data"><thead><tr><th>Unit</th><th>Value</th></tr></thead><tbody id="uc-all"></tbody></table></div>
+  </div>
+  <script>
+    import { initCalculator } from '../lib/calc-ui';
+    const U = JSON.parse(document.querySelector<HTMLElement>('[data-units]')!.dataset.units!);
+    const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
+    // the most-searched pair in each category is the default
+    const DEFAULTS: Record<string, [string, string]> = { length: ['cm', 'in'], weight: ['kg', 'lb'], temperature: ['C', 'F'], area: ['sqft', 'sqm'], volume: ['l', 'gal'], speed: ['kmh', 'mph'], data: ['MB', 'GB'] };
+    const fmt = (n: number) => (Math.abs(n) >= 1e9 || (Math.abs(n) < 1e-4 && n !== 0) ? n.toExponential(4) : (+n.toPrecision(10)).toLocaleString('en-IN', { maximumFractionDigits: 6 }));
+    const toBase = (cat: string, u: string, v: number) => cat === 'temperature' ? (u === 'F' ? (v - 32) * 5 / 9 : u === 'K' ? v - 273.15 : v) : v * U[cat].units.find((x: any) => x[0] === u)[2];
+    const fromBase = (cat: string, u: string, v: number) => cat === 'temperature' ? (u === 'F' ? v * 9 / 5 + 32 : u === 'K' ? v + 273.15 : v) : v / U[cat].units.find((x: any) => x[0] === u)[2];
+    function fill(keep = true) {
+      const cat = $('uc-cat').value, f = $('uc-from').value, t = $('uc-to').value;
+      const opts = U[cat].units.map((u: any) => `<option value="${u[0]}">${u[1]}</option>`).join('');
+      $('uc-from').innerHTML = opts; $('uc-to').innerHTML = opts;
+      const has = (u: string) => U[cat].units.some((x: any) => x[0] === u);
+      const [df, dt] = DEFAULTS[cat] || [U[cat].units[0][0], U[cat].units[1][0]];
+      $('uc-from').value = keep && has(f) ? f : df;
+      $('uc-to').value = keep && has(t) ? t : dt;
+    }
+    function update() {
+      const cat = $('uc-cat').value, v = parseFloat($('uc-val').value) || 0;
+      if (!U[cat].units.some((x: any) => x[0] === $('uc-from').value)) fill(false);
+      const base = toBase(cat, $('uc-from').value, v);
+      const out = fromBase(cat, $('uc-to').value, base);
+      const name = (u: string) => U[cat].units.find((x: any) => x[0] === u)[1];
+      $('uc-out').textContent = `${fmt(out)} ${name($('uc-to').value)}`;
+      $('uc-formula').textContent = `${fmt(v)} ${name($('uc-from').value)} = ${fmt(out)} ${name($('uc-to').value)}`;
+      document.getElementById('uc-all')!.innerHTML = U[cat].units.map((u: any) => `<tr><td>${u[1]}</td><td>${fmt(fromBase(cat, u[0], base))}</td></tr>`).join('');
+    }
+    $('uc-cat').addEventListener('change', () => { fill(false); update(); });
+    const params = new URLSearchParams(location.search);
+    if (params.get('c')) $('uc-cat').value = params.get('c')!;
+    fill(false);
+    initCalculator(update, { c: $('uc-cat'), v: $('uc-val'), f: $('uc-from'), t: $('uc-to') });
+    // height converter
+    const h2cm = () => { $('hc-cm').value = (((+$('hc-ft').value || 0) * 12 + (+$('hc-in').value || 0)) * 2.54).toFixed(1); };
+    const cm2h = () => { const inches = (+$('hc-cm').value || 0) / 2.54; $('hc-ft').value = String(Math.floor(inches / 12)); $('hc-in').value = (inches % 12).toFixed(1); };
+    ['hc-ft', 'hc-in'].forEach((id) => $(id).addEventListener('input', h2cm)); $('hc-cm').addEventListener('input', cm2h); h2cm();
+  </script>
+  <Fragment slot="content">
+    <h2>Indian land measurement units</h2>
+    <table><thead><tr><th>Unit</th><th>Square feet</th><th>Where used</th></tr></thead><tbody>
+      <tr><td>Gaj (square yard)</td><td>9</td><td>North India plots</td></tr><tr><td>Marla</td><td>272.25</td><td>Punjab, Haryana</td></tr>
+      <tr><td>Cent</td><td>435.6</td><td>Kerala, Tamil Nadu</td></tr><tr><td>Guntha</td><td>1,089</td><td>Maharashtra, Karnataka, Telangana</td></tr>
+      <tr><td>Ground</td><td>2,400</td><td>Chennai</td></tr><tr><td>Kanal</td><td>5,445</td><td>Punjab, Haryana, J&amp;K</td></tr>
+      <tr><td>Bigha</td><td>14,400–27,225</td><td>Varies by state</td></tr><tr><td>Acre</td><td>43,560</td><td>All India</td></tr>
+    </tbody></table>
+    <p class="hint">Traditional units such as bigha, biswa and kattha vary between states and even districts. Confirm with the local land records office.</p>
+  </Fragment>
+</ToolLayout>

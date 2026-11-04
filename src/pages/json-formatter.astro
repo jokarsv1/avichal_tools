@@ -1,0 +1,117 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'Is my JSON uploaded anywhere?', a: 'No. Formatting and validation run in your browser with the built-in JSON parser. That makes it safe for API responses, tokens and config files.' },
+  { q: 'Why is my JSON invalid?', a: 'The usual causes are a trailing comma, single quotes instead of double quotes, unquoted keys or comments. The error message shows the line and column. Try "Fix common mistakes" for these.' },
+  { q: 'Can it convert JSON to CSV?', a: 'Yes, if the JSON is an array of objects (like most API results). Each object becomes a row and keys become columns.' },
+];
+const steps = ['Paste JSON (or drop a .json file).', 'Format, minify, sort keys or convert to CSV.', 'Copy or download the result.'];
+const sample = '{"name":"Avichal Tools","free":true,"tools":["pdf","image","video"],"stats":{"uploads":0,"accounts":0}}';
+---
+<ToolLayout slug="json-formatter" h1="JSON Formatter & Validator" lead="Format, validate and minify JSON in your browser, with line and column for errors, key sorting and JSON to CSV. Safe for API keys and private data: nothing is uploaded."
+  presets={[{ label: '✨ Beautify', set: { '#js-indent': '2' }, hint: 'Then press Format' }, { label: '🗜️ Minify', set: { '#js-indent': '0' } }, { label: '🔤 Sort keys', set: { '#js-sort': true } }, { label: '🧪 Load sample', set: { '#js-in': sample } }]}
+  steps={steps} faqs={faqs} badges={['🔒 Never uploaded', '🧰 Fixes common mistakes', '📊 JSON → CSV']}>
+  <div class="stack">
+    <textarea id="js-in" rows="10" spellcheck="false" style="font-family:ui-monospace,monospace" placeholder='Paste JSON here, e.g. {"a":1}'></textarea>
+    <div class="row">
+      <div class="field" style="min-width:140px"><label for="js-indent">Indent</label><select id="js-indent"><option value="2">2 spaces</option><option value="4">4 spaces</option><option value="tab">Tab</option><option value="0">Minify</option></select></div>
+      <label class="check"><input type="checkbox" id="js-sort" /> Sort keys A–Z</label>
+      <button type="button" class="btn btn-primary" id="js-fmt">✨ Format</button>
+      <button type="button" class="btn" id="js-fix">🧰 Fix common mistakes</button>
+      <button type="button" class="btn" id="js-csv">📊 To CSV</button>
+      <label class="btn" style="cursor:pointer">📂 Open file<input type="file" id="js-file" accept=".json,application/json,text/plain" hidden /></label>
+    </div>
+    <p id="js-status" class="status" role="status"></p>
+    <textarea id="js-out" rows="14" spellcheck="false" readonly style="font-family:ui-monospace,monospace"></textarea>
+    <div class="row"><button type="button" class="btn" id="js-copy">📋 Copy</button><button type="button" class="btn" id="js-dl">⬇️ Download</button></div>
+  </div>
+  <script>
+    import { setStatus, downloadBlob, track } from '../lib/ui';
+    import { toolStarted, taskCompleted } from '../lib/analytics';
+    const $ = (id: string) => document.getElementById(id) as HTMLInputElement & HTMLTextAreaElement;
+    const st = document.getElementById('js-status')!;
+    let outKind = 'json';
+    const sortDeep = (v: any): any => Array.isArray(v) ? v.map(sortDeep) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, sortDeep(v[k])])) : v;
+    /** Position of the first syntax error (a tiny strict JSON scanner; browsers don't always report it). */
+    function errorPos(s: string): number {
+      let i = 0;
+      const ws = () => { while (i < s.length && ' \t\n\r'.includes(s[i])) i++; };
+      const fail = () => { throw i; };
+      const lit = (w: string) => { if (s.startsWith(w, i)) i += w.length; else fail(); };
+      const str = () => { i++; while (i < s.length && s[i] !== '"') { if (s[i] === '\\') i++; else if (s.charCodeAt(i) < 32) fail(); i++; } if (s[i] !== '"') fail(); i++; };
+      const num = () => { const m = /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/.exec(s.slice(i)); if (!m) fail(); i += m![0].length; };
+      const value = (): void => {
+        ws();
+        const c = s[i];
+        if (c === '{') { i++; ws(); if (s[i] === '}') { i++; return; } for (;;) { ws(); if (s[i] !== '"') fail(); str(); ws(); if (s[i] !== ':') fail(); i++; value(); ws(); if (s[i] === ',') { i++; continue; } if (s[i] === '}') { i++; return; } fail(); } }
+        if (c === '[') { i++; ws(); if (s[i] === ']') { i++; return; } for (;;) { value(); ws(); if (s[i] === ',') { i++; continue; } if (s[i] === ']') { i++; return; } fail(); } }
+        if (c === '"') return str();
+        if (c === 't') return lit('true'); if (c === 'f') return lit('false'); if (c === 'n') return lit('null');
+        return num();
+      };
+      try { value(); ws(); if (i < s.length) fail(); return -1; } catch (p) { return typeof p === 'number' ? p : -1; }
+    }
+    function where(text: string, e: Error) {
+      const lc = /line (\d+) column (\d+)/.exec(e.message);
+      if (lc) return `line ${lc[1]}, column ${lc[2]}`;
+      const m = /position (\d+)/.exec(e.message);
+      const pos = m ? +m[1] : errorPos(text);
+      if (pos < 0) return '';
+      const before = text.slice(0, pos).split('\n');
+      return `line ${before.length}, column ${before[before.length - 1].length + 1}`;
+    }
+    function parse(): any {
+      const text = $('js-in').value.trim();
+      if (!text) { setStatus(st, 'Paste some JSON first.', 'err'); return undefined; }
+      try { return JSON.parse(text); } catch (e: any) { setStatus(st, `❌ Invalid JSON${where(text, e) ? ` at ${where(text, e)}` : ''}: ${e.message}. Try "Fix common mistakes".`, 'err'); return undefined; }
+    }
+    function format() {
+      toolStarted('input');
+      let v = parse(); if (v === undefined) return;
+      if ($('js-sort').checked) v = sortDeep(v);
+      const ind = $('js-indent').value;
+      $('js-out').value = JSON.stringify(v, null, ind === 'tab' ? '\t' : +ind);
+      outKind = 'json';
+      const n = JSON.stringify(v).length;
+      setStatus(st, `✅ Valid JSON · ${Array.isArray(v) ? `array of ${v.length}` : typeof v} · ${n.toLocaleString('en-IN')} characters minified`, 'ok');
+      taskCompleted('format');
+    }
+    function fix() {
+      let t = $('js-in').value;
+      t = t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:"'])\/\/.*$/gm, '$1'); // comments
+      t = t.replace(/'([^'\\]*(?:\\.[^'\\]*)*)'/g, (_, s) => `"${s.replace(/"/g, '\\"')}"`); // single quotes
+      t = t.replace(/([{,]\s*)([A-Za-z_$][\w$]*)\s*:/g, '$1"$2":'); // unquoted keys
+      t = t.replace(/,\s*([}\]])/g, '$1'); // trailing commas
+      t = t.replace(/\bNone\b/g, 'null').replace(/\bTrue\b/g, 'true').replace(/\bFalse\b/g, 'false'); // Python
+      $('js-in').value = t;
+      track('json_fix');
+      format();
+    }
+    function toCsv() {
+      toolStarted('input');
+      const v = parse(); if (v === undefined) return;
+      const rows = Array.isArray(v) ? v : [v];
+      if (!rows.every((r) => r && typeof r === 'object' && !Array.isArray(r))) { setStatus(st, 'CSV needs an array of objects, like [{"a":1},{"a":2}].', 'err'); return; }
+      const keys = [...new Set(rows.flatMap((r) => Object.keys(r)))];
+      const cell = (x: any) => { const s = x === undefined || x === null ? '' : typeof x === 'object' ? JSON.stringify(x) : String(x); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+      $('js-out').value = [keys.map(cell).join(','), ...rows.map((r) => keys.map((k) => cell(r[k])).join(','))].join('\n');
+      outKind = 'csv';
+      setStatus(st, `✅ ${rows.length} rows × ${keys.length} columns`, 'ok');
+      taskCompleted('csv');
+    }
+    document.getElementById('js-fmt')!.addEventListener('click', format);
+    document.getElementById('js-fix')!.addEventListener('click', fix);
+    document.getElementById('js-csv')!.addEventListener('click', toCsv);
+    $('js-indent').addEventListener('change', () => $('js-in').value.trim() && format());
+    $('js-sort').addEventListener('change', () => $('js-in').value.trim() && format());
+    $('js-in').addEventListener('paste', () => setTimeout(format, 0));
+    $('js-in').addEventListener('input', () => { if ($('js-in').value.length > 1 && $('js-in').value.length < 200000) { try { JSON.parse($('js-in').value); format(); } catch {} } });
+    $('js-file').addEventListener('change', async () => { const f = $('js-file').files?.[0]; if (f) { toolStarted('file'); $('js-in').value = await f.text(); format(); } });
+    document.getElementById('js-copy')!.addEventListener('click', async () => { try { await navigator.clipboard.writeText($('js-out').value); setStatus(st, '📋 Copied', 'ok'); taskCompleted('copy'); } catch {} });
+    document.getElementById('js-dl')!.addEventListener('click', () => { if ($('js-out').value) downloadBlob(new Blob([$('js-out').value], { type: outKind === 'csv' ? 'text/csv' : 'application/json' }), `formatted.${outKind}`); });
+  </script>
+  <Fragment slot="content">
+    <h2>What "Fix common mistakes" repairs</h2>
+    <ul><li>Trailing commas: <code>[1, 2,]</code> → <code>[1, 2]</code></li><li>Single quotes and unquoted keys: <code>{'{'}a: 'x'{'}'}</code> → <code>{'{'}"a": "x"{'}'}</code></li><li>Comments (<code>//</code> and <code>/* */</code>) and Python values (<code>None</code>, <code>True</code>, <code>False</code>)</li></ul>
+  </Fragment>
+</ToolLayout>

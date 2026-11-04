@@ -1,0 +1,58 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'What is a healthy BMI for Indians?', a: 'For Asian Indians, the WHO and Indian guidelines use lower cut-offs: 18.5–22.9 is normal, 23–24.9 is overweight and 25 or more is obese, because health risks like diabetes start at lower BMI. The standard international cut-offs are 18.5–24.9 normal, 25–29.9 overweight and 30+ obese.' },
+  { q: 'How is BMI calculated?', a: 'BMI = weight in kg ÷ (height in metres)². For example, 70 kg and 1.70 m gives 70 ÷ 2.89 = 24.2.' },
+  { q: 'Is BMI accurate?', a: 'It is a quick screening number. It does not separate muscle from fat, so athletes may score high. Waist size (below 90 cm for Indian men and 80 cm for women) is a useful second check.' },
+];
+const steps = ['Enter your height and weight (metric or feet/inches and pounds).', 'See your BMI on both the Asian-Indian and the international scale.', 'Check the healthy weight range for your height.'];
+---
+<ToolLayout slug="bmi-calculator" h1="BMI Calculator (with Indian cut-offs)" lead="Check your Body Mass Index with both the international and the Asian-Indian cut-offs, and see the healthy weight range for your height."
+  presets={[{ label: '170 cm, 70 kg', href: '/bmi-calculator?h=170&w=70' }, { label: '5′4″, 60 kg', href: '/bmi-calculator?h=162.6&w=60' }, { label: '6′0″, 85 kg', href: '/bmi-calculator?h=182.9&w=85' }]}
+  steps={steps} faqs={faqs} badges={['🇮🇳 Asian-Indian cut-offs', '⚡ Instant', '🔒 Nothing stored']}>
+  <div class="calc">
+    <div class="stack-sm">
+      <div class="grid-2">
+        <div class="field"><label for="h">Height (cm)</label><input id="h" data-key="h" type="number" min="50" max="250" step="0.1" value="170" /></div>
+        <div class="field"><label for="w">Weight (kg)</label><input id="w" data-key="w" type="number" min="10" max="300" step="0.1" value="70" /></div>
+      </div>
+      <p class="hint">In feet/pounds? <input id="ft" type="number" min="0" value="5" style="width:64px" aria-label="Feet" /> ft <input id="in" type="number" min="0" step="0.5" value="7" style="width:64px" aria-label="Inches" /> in, <input id="lb" type="number" min="0" step="0.5" style="width:80px" aria-label="Pounds" placeholder="lb" /> lb <button type="button" class="btn btn-sm" id="imp">Use these</button></p>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Your BMI</span><div class="big-number" id="o-bmi">–</div></div>
+      <div class="result-rows">
+        <div><span>Asian-Indian scale</span><b id="o-in">–</b></div>
+        <div><span>International (WHO) scale</span><b id="o-who">–</b></div>
+        <div><span>Healthy weight for your height (Indian)</span><b id="o-range">–</b></div>
+      </div>
+      <button type="button" class="btn btn-sm" data-share="My BMI">📤 Share</button>
+    </div>
+  </div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
+    function update() {
+      const h = val('h') / 100, w = val('w');
+      if (!h || !w) return;
+      const b = w / (h * h);
+      setText('o-bmi', b.toFixed(1));
+      setText('o-in', b < 18.5 ? 'Underweight' : b < 23 ? 'Normal ✅' : b < 25 ? 'Overweight ⚠️' : 'Obese ⚠️');
+      setText('o-who', b < 18.5 ? 'Underweight' : b < 25 ? 'Normal' : b < 30 ? 'Overweight' : 'Obese');
+      setText('o-range', `${(18.5 * h * h).toFixed(1)} – ${(22.9 * h * h).toFixed(1)} kg`);
+    }
+    $('imp').addEventListener('click', () => {
+      $('h').value = (((+$('ft').value || 0) * 12 + (+$('in').value || 0)) * 2.54).toFixed(1);
+      if (+$('lb').value) $('w').value = (+$('lb').value * 0.45359237).toFixed(1);
+      $('h').dispatchEvent(new Event('input')); $('w').dispatchEvent(new Event('input'));
+    });
+    initCalculator(update, { h: $('h'), w: $('w') });
+  </script>
+  <Fragment slot="content">
+    <h2>BMI categories</h2>
+    <table><thead><tr><th>Category</th><th>Asian-Indian</th><th>International</th></tr></thead><tbody>
+      <tr><td>Underweight</td><td>&lt; 18.5</td><td>&lt; 18.5</td></tr><tr><td>Normal</td><td>18.5 – 22.9</td><td>18.5 – 24.9</td></tr>
+      <tr><td>Overweight</td><td>23 – 24.9</td><td>25 – 29.9</td></tr><tr><td>Obese</td><td>≥ 25</td><td>≥ 30</td></tr>
+    </tbody></table>
+    <p class="hint">For information only, not medical advice. Talk to a doctor about your health.</p>
+  </Fragment>
+</ToolLayout>

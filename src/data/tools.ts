@@ -274,6 +274,10 @@ export const TOOLS: Tool[] = [
     short: 'Live rates for 35 currencies ↔ INR.', keywords: 'usd to inr dollar to rupee exchange rate forex aed to inr' },
 
   // ---------- Student ----------
+  { slug: 'time-zone-converter', name: 'Time Zone Converter', category: 'abroad', icon: '🕒', status: 'live',
+    title: 'Time Zone Converter – IST to EST, PST, GMT & Meeting Planner',
+    description: 'Convert IST to US, UK, Europe, Gulf and Australia time with daylight saving handled, and find meeting hours that suit every city.',
+    short: 'IST ↔ world time, meeting planner.', keywords: 'ist to est ist to pst ist to gmt time difference india usa meeting planner world clock' },
   { slug: 'attendance-calculator', name: 'Attendance Calculator', category: 'student', icon: '📅', status: 'live', popular: true,
     title: 'Attendance Calculator – How Many Classes to Reach 75%',
     description: 'Find out how many classes you must attend to reach 75% (or any target), or how many you can safely skip. Free and instant.',
@@ -312,6 +316,26 @@ export const TOOLS: Tool[] = [
     title: 'Number to Words Converter – Lakh, Crore and Rupees',
     description: 'Convert numbers to words in the Indian (lakh, crore) or international (million) system, including rupees and paise for cheques.',
     short: 'Amount in words, lakh/crore or million.', keywords: 'amount in words rupees in words cheque' },
+  { slug: 'unit-converter', name: 'Unit Converter', category: 'everyday', icon: '📏', status: 'live',
+    title: 'Unit Converter – Length, Weight, Area, Gaj, Bigha, Acre',
+    description: 'Convert length, weight, temperature, area, volume, speed and data, including Indian land units: gaj, bigha, marla, cent, guntha, kanal and acre.',
+    short: 'Every unit, incl. gaj, bigha, marla.', keywords: 'feet to cm kg to lbs sq ft to sq m gaj to sq ft bigha acre hectare land converter' },
+  { slug: 'bmi-calculator', name: 'BMI Calculator', category: 'everyday', icon: '⚖️', status: 'live',
+    title: 'BMI Calculator – With Asian-Indian Cut-offs and Healthy Weight',
+    description: 'Calculate your Body Mass Index in cm/kg or feet/pounds, with Asian-Indian and WHO categories and the healthy weight range for your height.',
+    short: 'BMI with Indian cut-offs.', keywords: 'body mass index healthy weight obesity calculator' },
+  { slug: 'days-calculator', name: 'Days Calculator', category: 'everyday', icon: '📅', status: 'live',
+    title: 'Days Calculator – Days Between Dates, Working Days, Add Days',
+    description: 'Count days, weeks, months and working days between two dates, or find the date N days before or after. For notice periods, due dates and countdowns.',
+    short: 'Days between dates, add days.', keywords: 'date difference date calculator working days between dates notice period countdown' },
+  { slug: 'password-generator', name: 'Password Generator', category: 'everyday', icon: '🔑', status: 'live',
+    title: 'Strong Password Generator – Random, Secure, Offline',
+    description: 'Generate strong random passwords and PINs on your device with a secure random generator, and check any password\'s strength. Nothing is sent or stored.',
+    short: 'Strong passwords, made on device.', keywords: 'random password generator strong password checker pin generator' },
+  { slug: 'json-formatter', name: 'JSON Formatter', category: 'everyday', icon: '{ }', status: 'live',
+    title: 'JSON Formatter & Validator – Beautify, Minify, JSON to CSV',
+    description: 'Format, validate and minify JSON with line and column errors, auto-fix for trailing commas and quotes, key sorting and JSON to CSV. Nothing is uploaded.',
+    short: 'Beautify, validate, JSON to CSV.', keywords: 'json beautifier json validator json viewer minify json to csv' },
 
   // ---------- Planned (shown on /roadmap only) ----------
   { slug: 'background-remover', name: 'Background Remover', category: 'image', icon: '🪄', status: 'live', popular: true,
@@ -359,7 +383,6 @@ export const TOOLS: Tool[] = [
     description: 'See how much interest and time you save by prepaying your home loan: lump sum, extra monthly or yearly payments, reduce tenure or EMI.',
     short: 'Interest saved by prepaying a loan.', keywords: 'part payment prepayment foreclosure home loan' },
   { slug: 'bank-statement-analyzer', name: 'Bank Statement Analyzer', category: 'finance', icon: '📊', status: 'planned', title: '', description: '', short: 'Categorise spends from a PDF statement, on device.' },
-  { slug: 'json-formatter', name: 'JSON Formatter', category: 'everyday', icon: '{ }', status: 'planned', title: '', description: '', short: 'Format, validate and minify JSON.' },
 ];
 
 export const LIVE_TOOLS = TOOLS.filter((t) => t.status === 'live');
@@ -399,6 +422,10 @@ const CROSS_LINKS: Record<string, string[]> = {
   'gst-calculator': ['invoice-generator', 'upi-qr-code-generator', 'income-tax-calculator'],
   'hra-calculator': ['rent-receipt-generator', 'income-tax-calculator', 'salary-calculator'],
   'rent-receipt-generator': ['hra-calculator', 'income-tax-calculator', 'salary-calculator'],
+  'time-zone-converter': ['ppp-salary-calculator', 'currency-converter', 'salary-needed-abroad'],
+  'unit-converter': ['percentage-calculator', 'emi-calculator', 'bmi-calculator'],
+  'days-calculator': ['age-calculator', 'percentage-calculator', 'fd-calculator'],
+  'json-formatter': ['word-counter', 'password-generator', 'qr-code-generator'],
   'attendance-calculator': ['cgpa-to-percentage', 'text-to-handwriting', 'percentage-calculator'],
 };
 

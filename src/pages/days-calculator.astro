@@ -1,0 +1,74 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'How do I count the days between two dates?', a: 'Pick the start and end dates. You get the number of days, weeks, months and working days (Monday to Friday) between them. Tick "include end date" to count both days.' },
+  { q: 'How do I find the date 90 days from today?', a: 'Use "Add or subtract days": keep today as the date, enter 90 and press Add.' },
+  { q: 'Does it count holidays?', a: 'Working days exclude Saturdays and Sundays only. Subtract public holidays yourself, as they differ by state and company.' },
+];
+const steps = ['Pick two dates to see the gap, or a date and a number of days to add or subtract.', 'Read days, weeks, months and working days.'];
+const y = new Date().getFullYear();
+---
+<ToolLayout slug="days-calculator" h1="Days Calculator (Date Difference)" lead="Count the days, weeks, months and working days between two dates, or find the date that is N days before or after a date."
+  presets={[{ label: '🎆 Days until New Year', href: `/days-calculator?a=today&b=${y + 1}-01-01` }, { label: '📅 90 days from today', set: { '#dd-n': '90' } }, { label: '📝 Notice period 60 days', set: { '#dd-n': '60' } }, { label: '🧾 Days since 1 April (FY)', href: `/days-calculator?a=${new Date().getMonth() >= 3 ? y : y - 1}-04-01&b=today` }]}
+  steps={steps} faqs={faqs} badges={['⚡ Instant', '💼 Working days', '📤 Shareable link']}>
+  <div class="calc">
+    <div class="stack-sm">
+      <div class="grid-2">
+        <div class="field"><label for="da">Start date</label><input id="da" data-key="a" type="date" /></div>
+        <div class="field"><label for="db">End date</label><input id="db" data-key="b" type="date" /></div>
+      </div>
+      <label class="check"><input type="checkbox" id="dinc" data-key="i" /> Include end date</label>
+      <hr class="divider" />
+      <b>Add or subtract days</b>
+      <div class="row"><input id="dd-n" type="number" value="30" style="width:110px" aria-label="Number of days" /> days <button type="button" class="btn btn-sm" id="dd-add">➕ Add to start</button><button type="button" class="btn btn-sm" id="dd-sub">➖ Subtract</button></div>
+      <p><b id="dd-out"></b></p>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Difference</span><div class="big-number" id="o-days">–</div></div>
+      <div class="result-rows">
+        <div><span>Weeks</span><b id="o-weeks">–</b></div><div><span>Months & days</span><b id="o-md">–</b></div>
+        <div><span>Working days (Mon–Fri)</span><b id="o-work">–</b></div><div><span>Hours</span><b id="o-hours">–</b></div>
+      </div>
+      <button type="button" class="btn btn-sm" data-share="Days between dates">📤 Share</button>
+    </div>
+  </div>
+  <script>
+    import { initCalculator } from '../lib/calc-ui';
+    const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
+    const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const p = new URLSearchParams(location.search);
+    for (const [k, id] of [['a', 'da'], ['b', 'db']] as const) { if (p.get(k) === 'today') { p.set(k, iso(new Date())); history.replaceState(null, '', `?${p}`); } }
+    if (!p.get('a')) $('da').value = iso(new Date());
+    if (!p.get('b')) { const d = new Date(); d.setDate(d.getDate() + 30); $('db').value = iso(d); }
+    const utc = (s: string) => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d); };
+    function update() {
+      if (!$('da').value || !$('db').value) return;
+      let a = utc($('da').value), b = utc($('db').value);
+      const neg = b < a; if (neg) [a, b] = [b, a];
+      let days = Math.round((b - a) / 864e5) + ($('dinc').checked ? 1 : 0);
+      let work = 0;
+      for (let t = a; t < b + ($('dinc').checked ? 864e5 : 0); t += 864e5) { const wd = new Date(t).getUTCDay(); if (wd !== 0 && wd !== 6) work++; }
+      const A = new Date(a), B = new Date(b);
+      let months = (B.getUTCFullYear() - A.getUTCFullYear()) * 12 + B.getUTCMonth() - A.getUTCMonth();
+      let rem = B.getUTCDate() - A.getUTCDate();
+      if (rem < 0) { months--; rem += new Date(Date.UTC(B.getUTCFullYear(), B.getUTCMonth(), 0)).getUTCDate(); }
+      document.getElementById('o-days')!.textContent = `${neg ? '−' : ''}${days.toLocaleString('en-IN')} days`;
+      document.getElementById('o-weeks')!.textContent = `${Math.floor(days / 7)} weeks ${days % 7} days`;
+      document.getElementById('o-md')!.textContent = `${months} months ${rem} days`;
+      document.getElementById('o-work')!.textContent = work.toLocaleString('en-IN');
+      document.getElementById('o-hours')!.textContent = (days * 24).toLocaleString('en-IN');
+    }
+    const shift = (sign: number) => {
+      const d = new Date(utc($('da').value || iso(new Date())) + sign * (+$('dd-n').value || 0) * 864e5);
+      document.getElementById('dd-out')!.textContent = `${d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}`;
+    };
+    $('dd-add').addEventListener('click', () => shift(1)); $('dd-sub').addEventListener('click', () => shift(-1));
+    $('dd-n').addEventListener('input', () => shift(1));
+    initCalculator(update, { a: $('da'), b: $('db'), i: $('dinc') });
+    shift(1);
+  </script>
+  <Fragment slot="content">
+    <h2>Common uses</h2>
+    <ul><li>Notice periods, probation and leave balances.</li><li>Loan, FD and bill due dates; warranty and return windows.</li><li>Countdowns to exams, weddings and trips. For exact age, use the <a href="/age-calculator">age calculator</a>.</li></ul>
+  </Fragment>
+</ToolLayout>

@@ -112,7 +112,7 @@ code { font-family: var(--mono); font-size: .9em; background: var(--surface-2); 
 label { font-weight: 600; font-size: .93rem; }
 .field { display: grid; gap: 6px; }
 .field small, .hint { color: var(--muted); font-size: .85rem; font-weight: 400; }
-input[type="text"], input[type="number"], input[type="email"], input[type="url"], input[type="date"], input[type="tel"], input[type="password"], select, textarea {
+input[type="text"], input[type="number"], input[type="email"], input[type="url"], input[type="date"], input[type="time"], input[type="datetime-local"], input[type="search"], input[type="tel"], input[type="password"], select, textarea {
   width: 100%; font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border);
   border-radius: 10px; padding: 10px 12px; min-height: 44px;
 }
