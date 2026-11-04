@@ -31,6 +31,6 @@
     "upng-js": "^2.1.0"
   },
   "devDependencies": {
-    "wrangler": "^4.40.0"
+    "wrangler": "^4.151.2"
   }
 }

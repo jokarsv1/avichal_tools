@@ -1,0 +1,15 @@
+{
+  // Cloudflare Workers (static assets only: no server code, free & unlimited static requests).
+  // Deploy: `npm run deploy`, or connect the GitHub repo in the Cloudflare dashboard (Workers Builds).
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "avichal-tools",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    // Serve dist/404.html for unknown URLs (with a real 404 status, good for SEO).
+    "not_found_handling": "404-page",
+    // /compress-pdf/ -> /compress-pdf (matches our canonical URLs).
+    "html_handling": "drop-trailing-slash"
+  },
+  "observability": { "enabled": false }
+}
