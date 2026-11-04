@@ -242,6 +242,14 @@ export const TOOLS: Tool[] = [
     title: 'Gratuity Calculator 2026 – 15/26 Formula, New Labour Code',
     description: 'Calculate gratuity with the 15/26 formula, 6-month rounding, fixed-term eligibility under the 2025 labour codes and the ₹20 lakh tax-free limit.',
     short: 'Gratuity amount and tax-free limit.', keywords: 'gratuity formula labour code fixed term' },
+  { slug: 'nps-calculator', name: 'NPS Calculator', category: 'finance', icon: '🧓', status: 'live',
+    title: 'NPS Calculator 2026 – Corpus, Lump Sum & Pension (New 80% Rule)',
+    description: 'Calculate your NPS corpus, tax-free lump sum and monthly pension with the new PFRDA exit rules: up to 80% lump sum for private-sector subscribers.',
+    short: 'Corpus, lump sum and pension (new rules).', keywords: 'national pension system nps pension calculator nps withdrawal 80% annuity tier 1' },
+  { slug: 'retirement-planner', name: 'Retirement Planner', category: 'finance', icon: '🏖️', status: 'live', popular: true,
+    title: 'Retirement Planner – How Much Do I Need to Retire? (FIRE Calculator)',
+    description: 'Work out the corpus you need to retire, the monthly SIP to get there and how long your current savings will last, adjusted for inflation.',
+    short: 'Corpus needed, SIP to get there.', keywords: 'retirement calculator fire calculator retirement corpus how much to retire pension planning early retirement' },
   { slug: 'epf-calculator', name: 'EPF Calculator', category: 'finance', icon: '🏢', status: 'live',
     title: 'EPF Calculator – PF Corpus at Retirement (8.25%)',
     description: 'Estimate your EPF (provident fund) corpus at retirement with employer share, EPS split, VPF, salary hikes and the latest EPF interest rate.',
@@ -426,6 +434,8 @@ const CROSS_LINKS: Record<string, string[]> = {
   'unit-converter': ['percentage-calculator', 'emi-calculator', 'bmi-calculator'],
   'days-calculator': ['age-calculator', 'percentage-calculator', 'fd-calculator'],
   'json-formatter': ['word-counter', 'password-generator', 'qr-code-generator'],
+  'nps-calculator': ['retirement-planner', 'epf-calculator', 'income-tax-calculator'],
+  'retirement-planner': ['nps-calculator', 'sip-calculator', 'swp-calculator'],
   'attendance-calculator': ['cgpa-to-percentage', 'text-to-handwriting', 'percentage-calculator'],
 };
 

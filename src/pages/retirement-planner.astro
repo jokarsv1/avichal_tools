@@ -1,0 +1,86 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+const faqs = [
+  { q: 'How much money do I need to retire in India?', a: 'It depends on your expenses, how far away retirement is and inflation. A family spending ₹50,000 a month today, retiring in 30 years and planning until 85, needs roughly ₹7–8 crore at retirement at 6% inflation, because ₹50,000 then buys what about ₹8,700 buys today. Enter your own numbers above.' },
+  { q: 'What is the 25x or 4% rule, and does it work in India?', a: 'The 4% rule says a corpus of 25 times your yearly expenses lasts about 30 years. With Indian inflation of 5–7%, many planners use 30–35 times instead. This planner works it out year by year with your inflation and return assumptions.' },
+  { q: 'Which return should I assume?', a: 'Before retirement, a mix of equity and debt might earn 10–12% a year; after retirement most people shift to safer options earning 6–8%. Lower assumptions give a safer plan.' },
+  { q: 'Does this include EPF, NPS and PPF?', a: 'Add their current balances in "Savings already set aside", and your monthly contributions to them in "What you invest per month now". Use the EPF and NPS calculators for details of each.' },
+];
+const steps = ['Enter your age, retirement age and how long the money should last.', 'Enter your monthly expenses in today\'s rupees and your savings so far.', 'See the corpus you need, the monthly SIP that gets you there, and how long your current savings would last.'];
+---
+<ToolLayout slug="retirement-planner" h1="Retirement Planner (FIRE Calculator)" lead="Find out how much you need to retire, the monthly SIP that gets you there, and how long your current savings will actually last, adjusted for inflation."
+  presets={[{ label: '👨‍💼 Age 30, ₹50k/month', href: '/retirement-planner?a=30&ra=60&la=85&ex=50000&inf=6&pre=12&post=7&sv=200000&cm=10000&st=5' }, { label: '🔥 FIRE at 45', href: '/retirement-planner?a=30&ra=45&la=90&ex=60000&inf=6&pre=12&post=7&sv=1000000&cm=50000&st=10' }, { label: '👪 Age 40, family ₹1L/month', href: '/retirement-planner?a=40&ra=60&la=85&ex=100000&inf=6&pre=11&post=7&sv=3000000&cm=40000&st=5' }, { label: '🧓 Age 50, late start', href: '/retirement-planner?a=50&ra=60&la=85&ex=60000&inf=6&pre=10&post=7&sv=5000000&cm=50000&st=0' }]}
+  steps={steps} faqs={faqs} badges={['📉 Inflation-adjusted', '🎯 SIP you need', '⏳ How long it lasts']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="age" key="a" label="Age now" unit="yrs" min={18} max={70} step={1} value={30} />
+      <SliderField id="rage" key="ra" label="Retire at" unit="yrs" min={30} max={75} step={1} value={60} />
+      <SliderField id="lage" key="la" label="Plan until" unit="yrs" min={60} max={100} step={1} value={85} />
+      <SliderField id="exp" key="ex" label="Monthly expenses today" unit="₹" min={5000} max={1000000} step={1000} value={50000} hint="What your household spends now, excluding EMIs that end before retirement." />
+      <SliderField id="inf" key="inf" label="Inflation" unit="%" min={2} max={12} step={0.5} value={6} />
+      <SliderField id="pre" key="pre" label="Return before retirement" unit="%" min={4} max={16} step={0.5} value={12} />
+      <SliderField id="post" key="post" label="Return after retirement" unit="%" min={3} max={12} step={0.5} value={7} />
+      <SliderField id="sav" key="sv" label="Savings already set aside for retirement" unit="₹" min={0} max={50000000} step={10000} value={0} hint="EPF, PPF, NPS, mutual funds, FDs meant for retirement." />
+      <SliderField id="cur" key="cm" label="What you invest per month now" unit="₹" min={0} max={1000000} step={1000} value={10000} />
+      <SliderField id="step" key="st" label="Yearly increase in investment" unit="%" min={0} max={20} step={1} value={0} />
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Corpus you need at retirement</span><div class="big-number" id="o-need">–</div><span class="hint" id="o-words"></span></div>
+      <div class="result-rows">
+        <div><span>🎯 Monthly SIP needed from now</span><b id="o-sip">–</b></div>
+        <div><span>or a lump sum today of</span><b id="o-lump">–</b></div>
+        <div><span>Monthly expenses at retirement</span><b id="o-exp">–</b></div>
+        <div><span>Your current plan builds</span><b id="o-proj">–</b></div>
+        <div><span>⏳ Your current plan lasts until</span><b id="o-lasts">–</b></div>
+      </div>
+      <p class="callout" id="o-msg" style="margin:0"></p>
+      <button type="button" class="btn btn-sm" data-share="My retirement plan">📤 Share this plan</button>
+    </div>
+  </div>
+  <h2 style="margin-top:28px">Your money over your lifetime (with the recommended SIP)</h2>
+  <div id="o-chart" class="chart"></div>
+  <div class="table-wrap" style="margin-top:14px"><table class="data"><thead><tr><th>Age</th><th>Phase</th><th>Balance</th></tr></thead><tbody id="o-table"></tbody></table></div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { retirement } from '../lib/finance';
+    import { rupees, rupeesShort } from '../lib/format';
+    import { stackedColumns } from '../lib/charts';
+    const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    function update() {
+      const age = val('age'), ra = Math.max(val('rage'), age), la = Math.max(val('lage'), ra + 1);
+      const r = retirement({ age, retireAge: ra, lifeAge: la, monthlyExpense: val('exp'), inflationPct: val('inf'), preReturnPct: val('pre'), postReturnPct: val('post'), existing: val('sav'), currentMonthly: val('cur'), stepUpPct: val('step') });
+      setText('o-need', rupees(r.needed));
+      setText('o-words', `≈ ${rupeesShort(r.needed)} at age ${ra}, lasting ${r.yearsInRetirement} years`);
+      setText('o-sip', r.gap <= 0 ? 'Nothing more needed 🎉' : `${rupees(r.sipNeeded)} / month${val('step') ? ` (+${val('step')}% a year)` : ''}`);
+      setText('o-lump', rupees(r.lumpSumToday));
+      setText('o-exp', `${rupees(r.monthlyAtRetirement)} / month`);
+      setText('o-proj', rupees(r.projected));
+      const lasts = r.projectedLasts;
+      setText('o-lasts', lasts >= 100 ? 'Beyond 100 ✅' : `Age ${Math.floor(lasts)}`);
+      const msg = document.getElementById('o-msg')!;
+      if (r.shortfall <= 0) msg.textContent = `✅ You're on track: your current plan builds ${rupeesShort(r.projected)}, more than the ${rupeesShort(r.needed)} you need.`;
+      else {
+        const extra = Math.max(0, r.sipNeeded - val('cur'));
+        msg.textContent = `⚠️ Your current plan falls short by ${rupeesShort(r.shortfall)} and runs out around age ${Math.floor(lasts)}. Investing about ${rupees(extra)} more per month closes the gap.`;
+      }
+      const P = r.path;
+      stackedColumns(document.getElementById('o-chart')!, P.map((p) => String(p.age)), [
+        { name: 'Building up', color: css('--series-1'), values: P.map((p) => (p.phase === 'build' ? p.balance : 0)) },
+        { name: 'Spending in retirement', color: css('--series-2'), values: P.map((p) => (p.phase === 'spend' ? p.balance : 0)) },
+      ], rupeesShort, { title: 'Retirement savings balance by age' });
+      document.getElementById('o-table')!.innerHTML = P.map((p) => `<tr><td>${p.age}</td><td>${p.phase === 'build' ? 'Building up' : 'Spending'}</td><td>${rupees(p.balance)}</td></tr>`).join('');
+    }
+    initCalculator(update);
+  </script>
+  <Fragment slot="content">
+    <h2>How the planner works</h2>
+    <ol>
+      <li>Your monthly expenses are grown by inflation until retirement (₹50,000 today at 6% becomes about ₹2.87 lakh in 30 years).</li>
+      <li>The corpus is the amount that, earning the after-retirement return, pays those expenses every year until your plan-until age, with expenses still rising with inflation.</li>
+      <li>Your existing savings grow at the before-retirement return; the planner works out the monthly SIP (with your yearly increase) that fills the gap.</li>
+    </ol>
+    <p class="hint">Estimates for planning, not financial advice. Review your plan every year.</p>
+    <p>Related: <a href="/nps-calculator">NPS calculator</a> · <a href="/sip-calculator">SIP calculator</a> · <a href="/swp-calculator">SWP calculator</a> · <a href="/epf-calculator">EPF calculator</a></p>
+  </Fragment>
+</ToolLayout>

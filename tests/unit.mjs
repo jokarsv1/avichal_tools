@@ -1,5 +1,5 @@
 // Unit tests for pure finance/format functions. Run: node tests/unit.mjs (Node 22.18+ strips TS types natively).
-import { emi, sip, fd, ppf, gst, incomeTax, breakEvenDeductions, hraExemption, attendance, salaryBreakup, prepayment, lumpsum, cagr, swp, rd, gratuity, epf, ssy, outstanding, aprWithFees, balanceTransfer, eligibility } from '../src/lib/finance.ts';
+import { emi, sip, fd, ppf, gst, incomeTax, breakEvenDeductions, hraExemption, attendance, salaryBreakup, prepayment, lumpsum, cagr, swp, rd, gratuity, epf, ssy, outstanding, aprWithFees, balanceTransfer, eligibility, nps, npsExitRule, retirement, corpusNeeded } from '../src/lib/finance.ts';
 import { numberToWords, indianGrouping, rupeesShort } from '../src/lib/format.ts';
 import { COUNTRIES, foreignTax, livingCosts, equivalentIndianCtc, INDIA_CITIES } from '../src/lib/abroad.ts';
 
@@ -92,6 +92,31 @@ const lc = livingCosts(C('uk').cities[0].costs, { spouse: false, kids: 0, paidSc
 eq('London single moderate costs', Math.round(lc.total), 2000 + 450 + 190 + 300 + 86 + 300);
 const eqv = equivalentIndianCtc(100000, 60000);
 eq('Equivalent Indian CTC positive', eqv > 1500000 ? 1 : 0, 1);
+
+// NPS (exit rules from the December 2025 PFRDA amendment)
+const n1 = nps({ age: 30, exitAge: 60, monthly: 5000, employerMonthly: 0, stepUpPct: 0, existing: 0, returnPct: 10, annuityPct: 40, annuityRatePct: 6, sector: 'private' });
+eq('NPS corpus = SIP formula', Math.round(n1.corpus), Math.round(sip(5000, 10, 30).value));
+eq('NPS corpus ~1.14 Cr', Math.round(n1.corpus / 1e5), 114);
+eq('NPS 40% annuity pension', Math.round(n1.monthlyPension), Math.round(n1.corpus * 0.4 * 0.06 / 12));
+eq('NPS lump sum 60% all tax-free', Math.round(n1.possiblyTaxable), 0);
+const n2 = nps({ ...{ age: 30, exitAge: 60, monthly: 5000, employerMonthly: 0, stepUpPct: 0, existing: 0, returnPct: 10, annuityRatePct: 6, sector: 'private' }, annuityPct: 0 });
+eq('NPS private min annuity 20%', Math.round(n2.effectiveAnnuityPct), 20);
+eq('NPS 80% lump: 20% possibly taxable', Math.round(n2.possiblyTaxable / n2.corpus * 100), 20);
+eq('NPS govt min annuity 40%', npsExitRule(5000000, 60, 'govt').minAnnuityPct, 40);
+eq('NPS <=8L full withdrawal', npsExitRule(700000, 60, 'private').maxLumpSum, 700000);
+eq('NPS 8-12L lump cap 6L', npsExitRule(1000000, 60, 'private').maxLumpSum, 600000);
+eq('NPS before 60 needs 80% annuity', npsExitRule(2000000, 55, 'private').minAnnuityPct, 80);
+eq('NPS before 60 <=5L full', npsExitRule(400000, 55, 'private').maxLumpSum, 400000);
+// Retirement planner
+eq('Corpus needed flat (0% infl, 0% return) = sum', corpusNeeded(100, 10, 0, 0), 1000);
+const rp = retirement({ age: 30, retireAge: 60, lifeAge: 85, monthlyExpense: 50000, inflationPct: 6, preReturnPct: 12, postReturnPct: 7, existing: 0, currentMonthly: 0, stepUpPct: 0 });
+eq('Retirement expense at 60', Math.round(rp.monthlyAtRetirement), Math.round(50000 * Math.pow(1.06, 30)));
+eq('Retirement corpus ~7.71 Cr', Math.round(rp.needed / 1e6), 77);
+eq('SIP needed reaches corpus', Math.round(sip(rp.sipNeeded, 12, 30).value / 1e5), Math.round(rp.needed / 1e5));
+eq('Plan path ends near zero at 85', rp.path[rp.path.length - 1].balance < rp.needed * 0.01 ? 1 : 0, 1);
+const rp2 = retirement({ age: 30, retireAge: 60, lifeAge: 85, monthlyExpense: 50000, inflationPct: 6, preReturnPct: 12, postReturnPct: 7, existing: 0, currentMonthly: 10000, stepUpPct: 0 });
+eq('Current savings shortfall positive', rp2.shortfall > 0 ? 1 : 0, 1);
+eq('Lasts until is before 85', rp2.projectedLasts < 85 && rp2.projectedLasts > 60 ? 1 : 0, 1);
 
 // Words
 eq('Words 1,25,00,050 INR', numberToWords('12500050', 'indian', 'inr'), 'Rupees One Crore Twenty-Five Lakh Fifty Only');

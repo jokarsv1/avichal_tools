@@ -1,0 +1,92 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+const faqs = [
+  { q: 'How much can I withdraw from NPS at 60?', a: 'Under the PFRDA rules amended in December 2025: if your corpus is ₹8 lakh or less you can withdraw all of it. Between ₹8 and ₹12 lakh you can take up to ₹6 lakh as a lump sum and the rest through an annuity or systematic withdrawal. Above ₹12 lakh, non-government subscribers must use at least 20% to buy an annuity and can take up to 80% as a lump sum (government employees: 40% annuity, 60% lump sum).' },
+  { q: 'Is the NPS lump sum tax-free?', a: '60% of the corpus withdrawn at retirement is tax-free. The rules now let private-sector subscribers take up to 80%, but the income-tax treatment of the extra 20% had not been clarified when the withdrawal rules changed. Check the latest rules before you withdraw more than 60%. The pension (annuity) is taxed as income every year.' },
+  { q: 'What pension will I get from NPS?', a: 'Your monthly pension is the annuity amount × the annuity rate ÷ 12. With ₹50 lakh in an annuity at 6%, the pension is ₹25,000 a month. Annuity rates depend on the insurer and the plan you choose (with or without return of purchase price).' },
+  { q: 'What return does NPS give?', a: 'Equity-heavy NPS schemes have historically returned around 9–12% a year over long periods; government-bond schemes less. Returns are market-linked and not guaranteed, so plan with a conservative rate such as 9–10%.' },
+  { q: 'What are the NPS tax benefits?', a: 'Under the new tax regime, your employer\'s NPS contribution (up to 14% of basic + DA) is deductible. Under the old regime you also get an extra ₹50,000 deduction for your own contribution over and above the ₹1.5 lakh 80C limit.' },
+  { q: 'Can I exit NPS before 60?', a: 'Yes, but at least 80% of the corpus must then buy an annuity, unless the corpus is ₹5 lakh or less, in which case you can withdraw it all.' },
+];
+const steps = ['Enter your age, monthly NPS contribution and your employer\'s share.', 'Choose the expected return, the annuity share and the annuity rate.', 'See your corpus at retirement, the lump sum you can take and your monthly pension, under the current exit rules.'];
+---
+<ToolLayout slug="nps-calculator" h1="NPS Calculator (2026 exit rules)" lead="See your NPS corpus at retirement, how much you can take as a tax-free lump sum and your monthly pension, using the new PFRDA withdrawal rules (up to 80% lump sum for private-sector subscribers)."
+  presets={[{ label: '₹5,000/month from 30', href: '/nps-calculator?a=30&x=60&m=5000&e=0&s=0&b=0&r=10&p=40&ar=6&sec=private' }, { label: '💼 Salaried + employer 10%', href: '/nps-calculator?a=28&x=60&m=5000&e=6000&s=7&b=0&r=10&p=20&ar=6&sec=private' }, { label: '💰 Max lump sum (80%)', href: '/nps-calculator?a=35&x=60&m=10000&e=0&s=5&b=200000&r=10&p=20&ar=6&sec=private' }, { label: '🏛️ Government employee', href: '/nps-calculator?a=30&x=60&m=8000&e=11200&s=5&b=0&r=9&p=40&ar=6.5&sec=govt' }, { label: '🧓 Starting at 45', href: '/nps-calculator?a=45&x=60&m=15000&e=0&s=5&b=500000&r=9&p=40&ar=6&sec=private' }]}
+  steps={steps} faqs={faqs} badges={['🆕 Dec 2025 PFRDA rules', '💸 Lump sum + pension', '📤 Shareable link']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="age" key="a" label="Your age" unit="years" min={18} max={70} step={1} value={30} />
+      <SliderField id="exit" key="x" label="Exit age" unit="years" min={40} max={75} step={1} value={60} />
+      <SliderField id="mon" key="m" label="Your monthly contribution" unit="₹" min={500} max={200000} step={500} value={5000} />
+      <SliderField id="emp" key="e" label="Employer's monthly contribution" unit="₹" min={0} max={200000} step={500} value={0} hint="Up to 14% of basic + DA is tax-deductible in the new regime." />
+      <SliderField id="step" key="s" label="Yearly increase in contribution" unit="%" min={0} max={20} step={1} value={0} />
+      <SliderField id="bal" key="b" label="Current NPS balance" unit="₹" min={0} max={10000000} step={10000} value={0} />
+      <SliderField id="ret" key="r" label="Expected return (p.a.)" unit="%" min={5} max={14} step={0.5} value={10} />
+      <SliderField id="ann" key="p" label="Share used for annuity (pension)" unit="%" min={0} max={100} step={5} value={40} hint="Raised automatically if the rules need more." />
+      <SliderField id="arate" key="ar" label="Annuity rate (p.a.)" unit="%" min={4} max={9} step={0.25} value={6} />
+      <div class="field"><label for="sec">Sector</label><select id="sec" data-key="sec"><option value="private">Private sector / All citizen</option><option value="govt">Central or state government</option></select></div>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Corpus at exit</span><div class="big-number" id="o-corpus">–</div><span class="hint" id="o-words"></span></div>
+      <div class="result-rows">
+        <div><span>💸 Lump sum you can take</span><b id="o-lump">–</b></div>
+        <div><span>of which tax-free</span><b id="o-taxfree">–</b></div>
+        <div><span>🧓 Monthly pension</span><b id="o-pension">–</b></div>
+        <div><span>Pension in today's money</span><b id="o-real">–</b></div>
+        <div><span>Total contributed (you + employer)</span><b id="o-inv">–</b></div>
+        <div><span>Growth</span><b id="o-gain">–</b></div>
+      </div>
+      <p class="callout" id="o-rule" style="margin:0"></p>
+      <div id="o-split"></div>
+      <button type="button" class="btn btn-sm" data-share="My NPS retirement plan">📤 Share this plan</button>
+    </div>
+  </div>
+  <h2 style="margin-top:28px">Your NPS corpus by year</h2>
+  <div id="o-chart" class="chart"></div>
+  <div class="table-wrap" style="margin-top:14px"><table class="data"><thead><tr><th>Age</th><th>Monthly (you + employer)</th><th>Contributed</th><th>Growth</th><th>Corpus</th></tr></thead><tbody id="o-table"></tbody></table></div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { nps } from '../lib/finance';
+    import { rupees, rupeesShort } from '../lib/format';
+    import { splitBar, stackedColumns } from '../lib/charts';
+    const css = (v: string) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+    const sec = document.getElementById('sec') as HTMLSelectElement;
+    function update() {
+      const age = val('age'), exit = Math.max(val('exit'), age);
+      const r = nps({ age, exitAge: exit, monthly: val('mon'), employerMonthly: val('emp'), stepUpPct: val('step'), existing: val('bal'), returnPct: val('ret'), annuityPct: val('ann'), annuityRatePct: val('arate'), sector: sec.value as 'private' | 'govt' });
+      setText('o-corpus', rupees(r.corpus));
+      setText('o-words', `≈ ${rupeesShort(r.corpus)} at age ${exit}`);
+      setText('o-lump', rupees(r.lumpSum));
+      setText('o-taxfree', r.possiblyTaxable > 1 ? `${rupees(r.taxFreeLumpSum)} (+ ${rupeesShort(r.possiblyTaxable)} may be taxable)` : rupees(r.taxFreeLumpSum));
+      setText('o-pension', `${rupees(r.monthlyPension)} / month`);
+      setText('o-real', `${rupees(r.monthlyPension / Math.pow(1.06, r.years))} / month (at 6% inflation)`);
+      setText('o-inv', rupees(r.invested));
+      setText('o-gain', rupees(r.gains));
+      const chosen = val('ann');
+      document.getElementById('o-rule')!.textContent = `📜 ${r.rule.rule}${r.effectiveAnnuityPct > chosen + 0.5 ? ` Your annuity share was raised to ${Math.round(r.effectiveAnnuityPct)}%.` : ''}`;
+      splitBar(document.getElementById('o-split')!, [
+        { name: 'Lump sum', color: css('--series-1'), value: r.lumpSum },
+        { name: 'Annuity (pension)', color: css('--series-2'), value: r.annuityCorpus },
+      ], rupeesShort);
+      stackedColumns(document.getElementById('o-chart')!, r.rows.map((x) => `${age + x.year}`), [
+        { name: 'Contributed', color: css('--series-1'), values: r.rows.map((x) => x.a) },
+        { name: 'Growth', color: css('--series-3'), values: r.rows.map((x) => x.b) },
+      ], rupeesShort, { title: 'NPS contributions and growth by age' });
+      document.getElementById('o-table')!.innerHTML = r.rows.map((x) => `<tr><td>${age + x.year}</td><td>${rupees(x.extra ?? 0)}</td><td>${rupees(x.a)}</td><td>${rupees(x.b)}</td><td>${rupees(x.balance)}</td></tr>`).join('');
+    }
+    initCalculator(update, { sec });
+  </script>
+  <Fragment slot="content">
+    <h2>NPS withdrawal rules at a glance (after the December 2025 change)</h2>
+    <table><thead><tr><th>Corpus at exit (age 60+)</th><th>Lump sum</th><th>Annuity</th></tr></thead><tbody>
+      <tr><td>Up to ₹8 lakh</td><td>Up to 100%</td><td>Optional</td></tr>
+      <tr><td>₹8 lakh – ₹12 lakh</td><td>Up to ₹6 lakh</td><td>Rest via annuity or systematic withdrawal</td></tr>
+      <tr><td>Above ₹12 lakh (private / all citizen)</td><td>Up to 80%</td><td>At least 20%</td></tr>
+      <tr><td>Above ₹12 lakh (government)</td><td>Up to 60%</td><td>At least 40%</td></tr>
+      <tr><td>Exit before 60</td><td>Up to 20% (100% if ₹5 lakh or less)</td><td>At least 80%</td></tr>
+    </tbody></table>
+    <p class="hint">You can now stay invested until age 85. Rules can change: confirm with your CRA (Protean, KFintech or CAMS) or the PFRDA website before exiting. Figures are estimates, not financial advice.</p>
+    <p>Related: <a href="/retirement-planner">Retirement planner</a> · <a href="/epf-calculator">EPF calculator</a> · <a href="/ppf-calculator">PPF calculator</a> · <a href="/income-tax-calculator">Income tax calculator</a></p>
+  </Fragment>
+</ToolLayout>

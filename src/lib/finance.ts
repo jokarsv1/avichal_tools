@@ -414,3 +414,97 @@ export function eligibility(o: { netMonthly: number; existingEmis: number; foirP
   const loan = r === 0 ? maxEmi * o.months : (maxEmi * (1 - Math.pow(1 + r, -o.months))) / r;
   return { maxEmi, loan };
 }
+
+// ---------------- NPS (National Pension System) ----------------
+/**
+ * Exit rules after the PFRDA exit & withdrawal amendment notified in December 2025:
+ * - Normal exit (age 60+): corpus up to ₹8 lakh can be withdrawn fully; ₹8–12 lakh allows up to ₹6 lakh
+ *   as lump sum (the rest via annuity or systematic withdrawal); above ₹12 lakh, at least 20% must buy an
+ *   annuity for non-government subscribers (40% for government), the rest can be taken as lump sum.
+ * - Exit before 60: at least 80% must buy an annuity, unless the corpus is ₹5 lakh or less.
+ */
+export function npsExitRule(corpus: number, exitAge: number, sector: 'private' | 'govt') {
+  if (exitAge < 60) {
+    if (corpus <= 500000) return { maxLumpSum: corpus, minAnnuityPct: 0, rule: 'Exit before 60 with ₹5 lakh or less: you can withdraw it all.' };
+    return { maxLumpSum: corpus * 0.2, minAnnuityPct: 80, rule: 'Exit before 60: at least 80% must buy an annuity; up to 20% as lump sum.' };
+  }
+  if (corpus <= 800000) return { maxLumpSum: corpus, minAnnuityPct: 0, rule: 'Corpus of ₹8 lakh or less: you can withdraw it all as a lump sum.' };
+  if (corpus <= 1200000) return { maxLumpSum: 600000, minAnnuityPct: 0, rule: 'Corpus of ₹8–12 lakh: up to ₹6 lakh as lump sum; the rest via annuity or systematic withdrawal.' };
+  const min = sector === 'govt' ? 40 : 20;
+  return { maxLumpSum: corpus * (1 - min / 100), minAnnuityPct: min, rule: `Corpus above ₹12 lakh: at least ${min}% must buy an annuity; up to ${100 - min}% as lump sum.` };
+}
+
+export interface NpsInput {
+  age: number; exitAge: number; monthly: number; employerMonthly: number; stepUpPct: number;
+  existing: number; returnPct: number; annuityPct: number; annuityRatePct: number; sector: 'private' | 'govt';
+}
+/** NPS accumulation (monthly contributions at the start of each month, monthly compounding) and the payout split. */
+export function nps(o: NpsInput) {
+  const years = Math.max(0, o.exitAge - o.age);
+  const contrib = sip(o.monthly + o.employerMonthly, o.returnPct, years, o.stepUpPct, o.existing);
+  const corpus = years > 0 ? contrib.value : o.existing;
+  const rule = npsExitRule(corpus, o.exitAge, o.sector);
+  // The annuity share is what you chose, but never below the rule's minimum, and the lump sum never above its cap.
+  let annuityCorpus = Math.max(corpus * (o.annuityPct / 100), corpus * (rule.minAnnuityPct / 100), corpus - rule.maxLumpSum);
+  annuityCorpus = Math.min(corpus, annuityCorpus);
+  const lumpSum = corpus - annuityCorpus;
+  const monthlyPension = (annuityCorpus * o.annuityRatePct) / 1200;
+  const taxFreeLumpSum = Math.min(lumpSum, corpus * 0.6);
+  return {
+    years, corpus, invested: contrib.invested, gains: corpus - contrib.invested, rows: contrib.rows,
+    annuityCorpus, lumpSum, monthlyPension, taxFreeLumpSum, possiblyTaxable: lumpSum - taxFreeLumpSum,
+    effectiveAnnuityPct: corpus ? (annuityCorpus / corpus) * 100 : 0, rule,
+  };
+}
+
+// ---------------- Retirement planner ----------------
+export interface RetirementInput {
+  age: number; retireAge: number; lifeAge: number; monthlyExpense: number; inflationPct: number;
+  preReturnPct: number; postReturnPct: number; existing: number; currentMonthly: number; stepUpPct: number;
+}
+/** Corpus needed at retirement to pay inflation-rising expenses until lifeAge (withdrawn at the start of each year). */
+export function corpusNeeded(annualExpenseAtRetirement: number, years: number, inflationPct: number, postReturnPct: number) {
+  const g = 1 + inflationPct / 100, r = 1 + postReturnPct / 100;
+  let pv = 0;
+  for (let k = 0; k < years; k++) pv += (annualExpenseAtRetirement * Math.pow(g, k)) / Math.pow(r, k);
+  return pv;
+}
+/** Age at which a corpus runs out when paying expenses that grow with inflation (returns lifeAge cap + 1 if never within 100). */
+export function lastsUntil(corpus: number, retireAge: number, annualExpense: number, inflationPct: number, postReturnPct: number) {
+  let bal = corpus, exp = annualExpense;
+  for (let a = retireAge; a < 100; a++) {
+    if (bal < exp) return a + bal / exp; // fractional year
+    bal = (bal - exp) * (1 + postReturnPct / 100);
+    exp *= 1 + inflationPct / 100;
+  }
+  return 100;
+}
+export function retirement(o: RetirementInput) {
+  const yearsToGo = Math.max(0, o.retireAge - o.age);
+  const yearsInRetirement = Math.max(1, o.lifeAge - o.retireAge);
+  const monthlyAtRetirement = o.monthlyExpense * Math.pow(1 + o.inflationPct / 100, yearsToGo);
+  const needed = corpusNeeded(monthlyAtRetirement * 12, yearsInRetirement, o.inflationPct, o.postReturnPct);
+  const existingFv = o.existing * Math.pow(1 + o.preReturnPct / 100, yearsToGo);
+  const gap = Math.max(0, needed - existingFv);
+  const perRupee = yearsToGo > 0 ? sip(1, o.preReturnPct, yearsToGo, o.stepUpPct).value : 0;
+  const sipNeeded = perRupee > 0 ? gap / perRupee : gap;
+  const lumpSumToday = gap / Math.pow(1 + o.preReturnPct / 100, yearsToGo);
+  const projected = existingFv + (yearsToGo > 0 ? sip(o.currentMonthly, o.preReturnPct, yearsToGo, o.stepUpPct).value : 0);
+  const projectedLasts = lastsUntil(projected, o.retireAge, monthlyAtRetirement * 12, o.inflationPct, o.postReturnPct);
+  // Year-by-year path of the recommended plan: build up with the required SIP, then draw down.
+  const path: { age: number; balance: number; phase: 'build' | 'spend' }[] = [];
+  let bal = o.existing, m = sipNeeded;
+  for (let y = 0; y < yearsToGo; y++) {
+    for (let k = 0; k < 12; k++) bal = (bal + m) * (1 + o.preReturnPct / 1200);
+    m *= 1 + o.stepUpPct / 100;
+    path.push({ age: o.age + y + 1, balance: bal, phase: 'build' });
+  }
+  bal = yearsToGo > 0 ? Math.max(bal, needed) : needed;
+  let exp = monthlyAtRetirement * 12;
+  for (let a = o.retireAge; a < o.lifeAge; a++) {
+    bal = Math.max(0, (bal - exp) * (1 + o.postReturnPct / 100));
+    exp *= 1 + o.inflationPct / 100;
+    path.push({ age: a + 1, balance: bal, phase: 'spend' });
+  }
+  return { yearsToGo, yearsInRetirement, monthlyAtRetirement, needed, existingFv, gap, sipNeeded, lumpSumToday, projected, projectedLasts, shortfall: Math.max(0, needed - projected), path };
+}
