@@ -1,0 +1,55 @@
+---
+import { FALLBACK_INR, FALLBACK_DATE } from '../lib/abroad';
+interface Props { from?: string; to?: string }
+const { from = 'USD', to = 'INR' } = Astro.props;
+const NAMES: Record<string, string> = {
+  INR: 'Indian Rupee', USD: 'US Dollar', EUR: 'Euro', GBP: 'British Pound', AED: 'UAE Dirham', SAR: 'Saudi Riyal', QAR: 'Qatari Riyal',
+  OMR: 'Omani Rial', BHD: 'Bahraini Dinar', CAD: 'Canadian Dollar', AUD: 'Australian Dollar', SGD: 'Singapore Dollar', NZD: 'New Zealand Dollar',
+  JPY: 'Japanese Yen', CHF: 'Swiss Franc', CNY: 'Chinese Yuan', HKD: 'Hong Kong Dollar', MYR: 'Malaysian Ringgit', THB: 'Thai Baht',
+  SEK: 'Swedish Krona', NOK: 'Norwegian Krone', DKK: 'Danish Krone', ZAR: 'South African Rand', KRW: 'South Korean Won', IDR: 'Indonesian Rupiah',
+  PHP: 'Philippine Peso', BRL: 'Brazilian Real', MXN: 'Mexican Peso', PLN: 'Polish Zloty', TRY: 'Turkish Lira', ILS: 'Israeli Shekel', CZK: 'Czech Koruna', HUF: 'Hungarian Forint', RON: 'Romanian Leu', ISK: 'Icelandic Krona',
+};
+const codes = Object.keys(NAMES).filter((c) => FALLBACK_INR[c]);
+const amounts = [1, 5, 10, 25, 50, 100, 500, 1000, 5000, 10000, 100000];
+const rate = FALLBACK_INR[from] / FALLBACK_INR[to];
+---
+<div class="stack" data-fx data-fallback={JSON.stringify(FALLBACK_INR)} data-fallback-date={FALLBACK_DATE}>
+  <div class="row" style="align-items:flex-end">
+    <div class="field" style="flex:1;min-width:140px"><label for="fx-amt">Amount</label><input id="fx-amt" data-key="a" type="number" min="0" step="any" value="1" style="font-size:1.3rem;font-weight:700" /></div>
+    <div class="field" style="flex:1;min-width:150px"><label for="fx-from">From</label><select id="fx-from" data-key="f">{codes.map((c) => <option value={c} selected={c === from}>{c} · {NAMES[c]}</option>)}</select></div>
+    <button type="button" class="btn" id="fx-swap" aria-label="Swap currencies" title="Swap">⇄</button>
+    <div class="field" style="flex:1;min-width:150px"><label for="fx-to">To</label><select id="fx-to" data-key="t">{codes.map((c) => <option value={c} selected={c === to}>{c} · {NAMES[c]}</option>)}</select></div>
+  </div>
+  <div class="result" aria-live="polite">
+    <div class="big-number" id="fx-out">{(rate).toLocaleString('en-IN', { maximumFractionDigits: 4 })} {to}</div>
+    <p class="hint" id="fx-rate" style="margin:4px 0 0">1 {from} = {rate.toFixed(4)} {to} · rates as of {FALLBACK_DATE}</p>
+  </div>
+  <div class="grid-2">
+    <div class="table-wrap"><table class="data"><thead><tr><th id="fx-th1">{from}</th><th id="fx-th2">{to}</th></tr></thead><tbody id="fx-table1">{amounts.map((a) => <tr><td>{a.toLocaleString('en-IN')} {from}</td><td>{(a * rate).toLocaleString('en-IN', { maximumFractionDigits: 2 })} {to}</td></tr>)}</tbody></table></div>
+    <div class="table-wrap"><table class="data"><thead><tr><th id="fx-th3">{to}</th><th id="fx-th4">{from}</th></tr></thead><tbody id="fx-table2">{amounts.map((a) => <tr><td>{a.toLocaleString('en-IN')} {to}</td><td>{(a / rate).toLocaleString('en-IN', { maximumFractionDigits: 4 })} {from}</td></tr>)}</tbody></table></div>
+  </div>
+  <p class="hint">Mid-market reference rates from the European Central Bank (via Frankfurter), refreshed every 12 hours; Gulf currencies use their official US-dollar pegs. Banks and remittance apps add a margin, so compare their rate with this one.</p>
+</div>
+<script>
+  import { initCalculator } from '../lib/calc-ui';
+  import { getRates } from '../lib/abroad';
+  const root = document.querySelector<HTMLElement>('[data-fx]')!;
+  let inr: Record<string, number> = JSON.parse(root.dataset.fallback!);
+  let label = `rates as of ${root.dataset.fallbackDate}`;
+  const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
+  const amounts = [1, 5, 10, 25, 50, 100, 500, 1000, 5000, 10000, 100000];
+  const fmt = (n: number, d = 2) => n.toLocaleString('en-IN', { maximumFractionDigits: n < 1 ? 6 : d });
+  function update() {
+    const f = $('fx-from').value, t = $('fx-to').value, a = parseFloat($('fx-amt').value) || 0;
+    const rate = inr[f] / inr[t];
+    $('fx-out').textContent = `${fmt(a * rate, 4)} ${t}`;
+    $('fx-rate').textContent = `1 ${f} = ${fmt(rate, 4)} ${t} · 1 ${t} = ${fmt(1 / rate, 4)} ${f} · ${label}`;
+    document.getElementById('fx-th1')!.textContent = f; document.getElementById('fx-th2')!.textContent = t;
+    document.getElementById('fx-th3')!.textContent = t; document.getElementById('fx-th4')!.textContent = f;
+    document.getElementById('fx-table1')!.innerHTML = amounts.map((x) => `<tr><td>${x.toLocaleString('en-IN')} ${f}</td><td>${fmt(x * rate)} ${t}</td></tr>`).join('');
+    document.getElementById('fx-table2')!.innerHTML = amounts.map((x) => `<tr><td>${x.toLocaleString('en-IN')} ${t}</td><td>${fmt(x / rate, 4)} ${f}</td></tr>`).join('');
+  }
+  document.getElementById('fx-swap')!.addEventListener('click', () => { const f = $('fx-from').value; $('fx-from').value = $('fx-to').value; $('fx-to').value = f; $('fx-to').dispatchEvent(new Event('change')); });
+  initCalculator(update, { a: $('fx-amt'), f: $('fx-from'), t: $('fx-to') });
+  getRates().then((r) => { inr = { ...inr, ...r.inrPer }; label = r.live ? `live ECB rates (${r.date})` : `offline rates from ${r.date}`; update(); });
+</script>

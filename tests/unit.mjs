@@ -1,6 +1,7 @@
 // Unit tests for pure finance/format functions. Run: node tests/unit.mjs (Node 22.18+ strips TS types natively).
 import { emi, sip, fd, ppf, gst, incomeTax, breakEvenDeductions, hraExemption, attendance, salaryBreakup, prepayment, lumpsum, cagr, swp, rd, gratuity } from '../src/lib/finance.ts';
 import { numberToWords, indianGrouping, rupeesShort } from '../src/lib/format.ts';
+import { COUNTRIES, foreignTax, livingCosts, equivalentIndianCtc, INDIA_CITIES } from '../src/lib/abroad.ts';
 
 let fails = 0;
 const eq = (name, got, want, tol = 1) => {
@@ -62,6 +63,22 @@ eq('SWP 10L, 10k/m @8% 10y keeps corpus', swp(1000000, 10000, 8, 10).depletedAt,
 eq('SWP depletes when withdrawal too high', swp(1000000, 20000, 8, 10).depletedAt > 0 ? 1 : 0, 1);
 eq('RD 5k x 12m @7% (bank formula)', Math.round(rd(5000, 7, 12).maturity), 62335, 40);
 eq('Gratuity 50k x 10y 7m (=11y)', Math.round(gratuity(50000, 10, 7).amount), Math.round(50000 * 15 * 11 / 26));
+
+// Abroad tax models (2026 estimates)
+const C = (id) => COUNTRIES.find((c) => c.id === id);
+const ft = (id, g, o = {}) => foreignTax(C(id), C(id).cities[0], g, { married: false, kids: 0, ruling: false, ...o });
+eq('UK £60k net', Math.round(ft('uk', 60000).net), 45357, 2);
+eq('SG S$120k tax', Math.round(ft('singapore', 120000).total), 7950, 1);
+eq('AU A$120k tax+medicare', Math.round(ft('australia', 120000).total), 28920, 1);
+eq('US $150k single federal (2026 brackets)', Math.round(ft('usa', 150000).parts['Federal income tax']), 24734, 2);
+const de60 = ft('germany', 60000).net;
+eq('DE €60k net in 36.5k-38k', de60 > 36500 && de60 < 38000 ? 1 : 0, 1);
+eq('UAE zero tax', ft('uae', 300000).total, 0);
+eq('Tax override %', ft('usa', 100000, { overridePct: 30 }).total, 30000);
+const lc = livingCosts(C('uk').cities[0].costs, { spouse: false, kids: 0, paidSchool: false, lifestyle: 'moderate' });
+eq('London single moderate costs', Math.round(lc.total), 2000 + 450 + 190 + 300 + 86 + 300);
+const eqv = equivalentIndianCtc(100000, 60000);
+eq('Equivalent Indian CTC positive', eqv > 1500000 ? 1 : 0, 1);
 
 // Words
 eq('Words 1,25,00,050 INR', numberToWords('12500050', 'indian', 'inr'), 'Rupees One Crore Twenty-Five Lakh Fifty Only');

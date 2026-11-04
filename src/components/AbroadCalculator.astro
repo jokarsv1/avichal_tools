@@ -1,0 +1,68 @@
+---
+import { COUNTRIES, INDIA_CITIES, LIFESTYLE } from '../lib/abroad';
+interface Props { country?: string; salary?: number }
+const { country = 'usa', salary } = Astro.props;
+const defaults: Record<string, number> = { usa: 140000, uk: 70000, germany: 75000, netherlands: 70000, ireland: 75000, canada: 120000, australia: 140000, singapore: 120000, uae: 360000, 'saudi-arabia': 300000, qatar: 300000, 'new-zealand': 120000 };
+const data = COUNTRIES.map((c) => ({ id: c.id, name: c.name, flag: c.flag, currency: c.currency, paidSchool: c.paidSchoolDefault, cities: c.cities.map((x) => ({ id: x.id, name: x.name })) }));
+---
+<div class="ab stack" data-abroad data-countries={JSON.stringify(data)} data-default={country} data-defaults={JSON.stringify(defaults)} data-salary={salary ?? ''}>
+  <div class="calc">
+    <div class="stack-sm">
+      <div class="grid-2">
+        <div class="field"><label for="ab-country">Country</label><select id="ab-country" data-key="c">{COUNTRIES.map((c) => <option value={c.id} selected={c.id === country}>{c.flag} {c.name}</option>)}</select></div>
+        <div class="field"><label for="ab-city">City</label><select id="ab-city" data-key="ct"></select></div>
+      </div>
+      <div class="field"><label for="ab-salary">Annual gross salary (<span class="ab-cur">USD</span>)</label><input id="ab-salary" data-key="s" type="number" min="0" step="1000" inputmode="numeric" style="font-size:1.25rem;font-weight:700" /><small class="hint" id="ab-salary-inr"></small></div>
+      <div class="field"><span style="font-weight:600">Lifestyle</span>
+        <div class="seg" role="radiogroup" aria-label="Lifestyle">
+          {Object.entries(LIFESTYLE).map(([k, v]) => <label><input type="radio" name="ab-life" value={k} checked={k === 'moderate'} /><span>{v.label}</span></label>)}
+        </div>
+        <small class="hint" id="ab-life-hint"></small>
+      </div>
+      <div class="grid-3">
+        <div class="field"><label for="ab-spouse">Spouse</label><select id="ab-spouse" data-key="sp"><option value="0">Single</option><option value="1">Spouse (not working)</option></select></div>
+        <div class="field"><label for="ab-kids">Children</label><select id="ab-kids" data-key="k"><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+        <div class="field"><label for="ab-trips">India trips / year</label><select id="ab-trips" data-key="t"><option>0</option><option selected>1</option><option>2</option><option>3</option></select></div>
+      </div>
+      <label class="check"><input type="checkbox" id="ab-school" data-key="ps" /> Children need paid childcare / school</label>
+      <details class="card" style="box-shadow:none;padding:10px 14px">
+        <summary style="cursor:pointer;font-weight:700">Advanced</summary>
+        <div class="grid-2" style="margin-top:10px">
+          <div class="field"><label for="ab-rent">Your rent per month (optional)</label><input id="ab-rent" data-key="r" type="number" min="0" step="50" placeholder="typical" /></div>
+          <div class="field"><label for="ab-taxpct">Override total tax %</label><input id="ab-taxpct" data-key="tx" type="number" min="0" max="80" step="0.5" placeholder="auto" /></div>
+          <div class="field"><label for="ab-fx">Exchange rate (₹ per unit)</label><input id="ab-fx" data-key="fx" type="number" min="0" step="0.01" placeholder="live" /></div>
+          <div class="field"><label for="ab-india">Compare with Indian city</label><select id="ab-india" data-key="in">{INDIA_CITIES.map((c) => <option value={c.id}>{c.name}</option>)}</select></div>
+          <label class="check hidden" id="ab-ruling-wrap"><input type="checkbox" id="ab-ruling" data-key="ru" checked /> 30% ruling (Netherlands)</label>
+        </div>
+      </details>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">You could save every month</span><div class="big-number" id="ab-save-inr">–</div><span class="hint" id="ab-save-local"></span></div>
+      <div class="status" id="ab-verdict"></div>
+      <div class="result-rows">
+        <div><span>Take-home pay / month</span><b id="ab-net">–</b></div>
+        <div><span>Tax & social security</span><b id="ab-tax">–</b></div>
+        <div><span>Living costs / month</span><b id="ab-cost">–</b></div>
+        <div><span>Savings rate</span><b id="ab-rate">–</b></div>
+        <div><span>Savings per year (₹)</span><b id="ab-save-year">–</b></div>
+      </div>
+      <div class="card stack-sm" style="box-shadow:none;padding:12px 14px">
+        <b>Compared with India</b>
+        <div class="result-rows">
+          <div><span>Indian CTC with the same savings</span><b id="ab-eq-ctc">–</b></div>
+          <div><span>PPP-equivalent salary in India</span><b id="ab-ppp">–</b></div>
+          <div><span>Your spending abroad, in Indian buying power</span><b id="ab-ppp-cost">–</b></div>
+        </div>
+        <small class="hint" id="ab-eq-note"></small>
+      </div>
+      <p class="hint" id="ab-fx-note"></p>
+      <button type="button" class="btn btn-sm" data-share="My salary abroad vs India">📤 Share this comparison</button>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div><h3>Tax breakdown (per year)</h3><div class="table-wrap"><table class="data"><thead><tr><th>Item</th><th class="ab-cur-th">Local</th><th>₹</th></tr></thead><tbody id="ab-tax-table"></tbody></table></div></div>
+    <div><h3>Monthly living costs</h3><div class="table-wrap"><table class="data"><thead><tr><th>Item</th><th class="ab-cur-th">Local</th><th>₹</th></tr></thead><tbody id="ab-cost-table"></tbody></table></div></div>
+  </div>
+  <ul class="hint" id="ab-notes"></ul>
+</div>
+<script>import '../tools/abroad-calc';</script>

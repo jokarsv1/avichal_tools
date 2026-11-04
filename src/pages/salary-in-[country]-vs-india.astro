@@ -1,0 +1,67 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import AbroadCalculator from '../components/AbroadCalculator.astro';
+import { COUNTRIES, PPP_INDIA, FALLBACK_INR, FALLBACK_DATE, livingCosts, foreignTax, equivalentIndianCtc, INDIA_CITIES, type Country } from '../lib/abroad';
+import { rupeesShort } from '../lib/format';
+
+export function getStaticPaths() {
+  return COUNTRIES.map((country) => ({ params: { country: country.id }, props: { country } }));
+}
+const { country } = Astro.props as { country: Country };
+const DEFAULTS: Record<string, number> = { usa: 140000, uk: 70000, germany: 75000, netherlands: 70000, ireland: 75000, canada: 120000, australia: 140000, singapore: 120000, uae: 360000, 'saudi-arabia': 300000, qatar: 300000, 'new-zealand': 120000 };
+const salary = DEFAULTS[country.id];
+const fx = FALLBACK_INR[country.currency];
+const fmt = (n: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: country.currency, maximumFractionDigits: 0 }).format(n);
+// Worked example computed at build time with the same engine as the calculator.
+const city = country.cities[0];
+const single = { spouse: false, kids: 0, paidSchool: false, lifestyle: 'moderate' as const };
+const family = { spouse: true, kids: 1, paidSchool: country.paidSchoolDefault, lifestyle: 'moderate' as const };
+const taxS = foreignTax(country, city, salary, { married: false, kids: 0, ruling: true });
+const taxF = foreignTax(country, city, salary, { married: true, kids: 1, ruling: true });
+const costS = livingCosts(city.costs, single, country.dependentFee ?? 0).total + country.flightInr / 12 / fx;
+const costF = livingCosts(city.costs, family, country.dependentFee ?? 0).total + (3 * country.flightInr) / 12 / fx;
+const saveS = taxS.net / 12 - costS, saveF = taxF.net / 12 - costF;
+const blr = INDIA_CITIES[0];
+const eqS = saveS > 0 ? equivalentIndianCtc(saveS * fx, livingCosts(blr.costs, single).total) : null;
+const pppInr = PPP_INDIA / country.ppp;
+const title = `${country.name} Salary vs India: Savings & PPP Calculator (${country.currency} to INR)`;
+const description = `Is a ${fmt(salary)} salary in ${country.name} good for an Indian? See take-home after tax, living costs in ${country.cities.map((c) => c.name).join(', ')}, savings in ₹ and the equivalent Indian CTC.`.slice(0, 158);
+const faqs = [
+  { q: `Is ${fmt(salary)} a good salary in ${city.name} for an Indian?`, a: `For a single person living moderately, take-home is about ${fmt(taxS.net / 12)} a month and living costs about ${fmt(costS)}, leaving roughly ${fmt(saveS)} (${rupeesShort(saveS * fx)}) a month in savings.${eqS ? ` That's like earning about ${rupeesShort(eqS)} a year in Bengaluru.` : ''} With a non-working spouse and one child, savings change to about ${fmt(saveF)} a month.` },
+  { q: `How much tax will I pay in ${country.name}?`, a: `On ${fmt(salary)}, estimated tax and social security is ${fmt(taxS.total)} a year (${(taxS.effective * 100).toFixed(1)}% effective) for a single person. ${country.notes[0]}` },
+  { q: `What is the PPP of the ${country.currency} vs the rupee?`, a: `World Bank 2024 data implies 1 ${country.currency} buys about what ₹${pppInr.toFixed(1)} buys in India, while the market rate is about ₹${fx.toFixed(2)}. Your spending in ${country.name} therefore feels more expensive than a simple conversion suggests.` },
+  { q: 'Is my data stored?', a: 'No. Everything is calculated in your browser; nothing is saved or sent to us.' },
+];
+const steps = [`Enter your ${country.name} offer (annual gross in ${country.currency}) and pick the city.`, 'Choose lifestyle, family size and trips home.', 'Compare monthly savings in ₹ and the equivalent Indian CTC.'];
+---
+<ToolLayout slug="ppp-salary-calculator" path={`/salary-in-${country.id}-vs-india`} title={title} description={description}
+  h1={`${country.flag} ${country.name} Salary vs India Calculator`} crumb={country.name}
+  lead={`See what a salary in ${country.name} really means for you: take-home pay after tax, living costs in ${country.cities.map((c) => c.name).join(', ')}, monthly savings in rupees at live rates, and the matching Indian CTC.`} steps={steps} faqs={faqs} badges={['💱 Live INR rates', '👨‍👩‍👧 Family & lifestyle', '🧾 2026 tax estimates']}>
+  <AbroadCalculator country={country.id} />
+  <Fragment slot="content">
+    <h2>Worked example: {fmt(salary)} in {city.name}</h2>
+    <table>
+      <thead><tr><th></th><th>Single</th><th>Spouse + 1 child</th></tr></thead>
+      <tbody>
+        <tr><td>Tax & social security (year)</td><td>{fmt(taxS.total)}</td><td>{fmt(taxF.total)}</td></tr>
+        <tr><td>Take-home (month)</td><td>{fmt(taxS.net / 12)}</td><td>{fmt(taxF.net / 12)}</td></tr>
+        <tr><td>Living costs incl. trips home (month)</td><td>{fmt(costS)}</td><td>{fmt(costF)}</td></tr>
+        <tr><td><b>Savings (month)</b></td><td><b>{fmt(saveS)}</b> ({rupeesShort(saveS * fx)})</td><td><b>{fmt(saveF)}</b> ({rupeesShort(saveF * fx)})</td></tr>
+      </tbody>
+    </table>
+    <p class="hint">Moderate lifestyle, rates as of {FALLBACK_DATE} (1 {country.currency} = ₹{fx.toFixed(2)}). Use the calculator above for live rates and your own numbers.</p>
+    <h2>Typical monthly costs for one person ({country.currency}, moderate lifestyle)</h2>
+    <table>
+      <thead><tr><th>City</th><th>Rent (1 bed)</th><th>Food</th><th>Transport</th><th>Utilities</th><th>Total*</th></tr></thead>
+      <tbody>
+        {country.cities.map((ct) => (
+          <tr><td>{ct.name}</td><td>{fmt(ct.costs.rent)}</td><td>{fmt(ct.costs.food)}</td><td>{fmt(ct.costs.transport)}</td><td>{fmt(ct.costs.utilities)}</td><td>{fmt(livingCosts(ct.costs, single).total)}</td></tr>
+        ))}
+      </tbody>
+    </table>
+    <p class="hint">*Includes health and personal spending. Typical 2025–26 estimates; your costs will differ.</p>
+    <h2>Things Indians moving to {country.name} should know</h2>
+    <ul>{country.notes.map((n) => <li>{n}</li>)}</ul>
+    <p>Compare other countries: {COUNTRIES.filter((c) => c.id !== country.id).map((c, i) => <>{i ? ' · ' : ''}<a href={`/salary-in-${c.id}-vs-india`}>{c.name}</a></>)}</p>
+  </Fragment>
+</ToolLayout>

@@ -1,0 +1,27 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import AbroadCalculator from '../components/AbroadCalculator.astro';
+import { COUNTRIES, PPP_INDIA, FALLBACK_INR } from '../lib/abroad';
+const faqs = [
+  { q: 'What is a PPP salary calculator?', a: 'PPP (purchasing power parity) adjusts for how much things cost in each country. $100,000 converted at the market rate is about ₹95 lakh, but because prices in India are much lower, that salary buys roughly the same lifestyle as about ₹20 lakh in India. This calculator shows both the PPP view and, more usefully, how much you can actually <b>save</b>.' },
+  { q: 'Is it better to work abroad or in India?', a: 'Compare savings, not salaries. Abroad you earn more but pay more in tax, rent and childcare. This tool computes the Indian CTC that would leave you the same monthly savings. If your Indian offer is higher than that, staying may be better financially.' },
+  { q: 'Where do the exchange rates come from?', a: 'Live European Central Bank reference rates via the free Frankfurter API (refreshed every 12 hours). Gulf currencies use their fixed US-dollar pegs. If you are offline, recent rates are used, and you can type your own rate.' },
+  { q: 'How accurate are the tax and cost figures?', a: 'They are careful 2026 estimates for a single earner, good for comparing offers. Actual tax depends on deductions, visa status and benefits; actual costs depend on your choices. You can override rent, tax % and the exchange rate.' },
+  { q: 'Do you store my salary?', a: 'No. The calculation runs in your browser. Nothing is sent to us. The only network request is for exchange rates, and it contains no personal data.' },
+];
+const steps = ['Pick the country and city of your offer, and enter the annual gross salary in local currency.', 'Choose your lifestyle, spouse, number of children and trips home per year.', 'See monthly savings in rupees, the tax and cost breakdown, and the equivalent Indian CTC.', 'Share the link with family or compare another country.'];
+---
+<ToolLayout slug="ppp-salary-calculator" h1="Salary Abroad vs India: PPP & Savings Calculator" lead="Got an offer in the US, UK, Canada, Germany, Dubai or elsewhere? See take-home pay after tax, living costs for your family and lifestyle, monthly savings in rupees at live rates, and the Indian CTC that matches it." steps={steps} faqs={faqs} badges={['🌍 12 countries, 25 cities', '💱 Live INR rates', '👨‍👩‍👧 Family & lifestyle']}>
+  <AbroadCalculator />
+  <Fragment slot="content">
+    <h2>Three ways to compare a foreign salary</h2>
+    <ol>
+      <li><b>Market rate</b> (what most people do): $1 = ₹{FALLBACK_INR.USD.toFixed(0)}. This overstates the offer because it ignores higher costs abroad.</li>
+      <li><b>PPP rate</b>: $1 buys roughly what ₹{PPP_INDIA.toFixed(0)} buys in India (World Bank 2024). Good for comparing lifestyles.</li>
+      <li><b>Savings</b> (what this tool focuses on): what's left after tax and living costs, converted at the market rate, because that's the money you can send home, invest or bring back.</li>
+    </ol>
+    <h3>Countries covered</h3>
+    <p>{COUNTRIES.map((c, i) => <>{i ? ' · ' : ''}<a href={`/salary-in-${c.id}-vs-india`}>{c.flag} {c.name}</a></>)}</p>
+    <p>Related: <a href="/currency-converter">live currency converter</a> · <a href="/salary-calculator">Indian CTC to in-hand</a> · <a href="/income-tax-calculator">income tax calculator</a></p>
+  </Fragment>
+</ToolLayout>

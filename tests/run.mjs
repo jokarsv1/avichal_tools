@@ -39,7 +39,7 @@ async function newPage() {
   const page = await ctx.newPage();
   page.errors = [];
   page.on('pageerror', (e) => page.errors.push(e.message));
-  page.on('console', (m) => { if (m.type() === 'error') page.errors.push('console: ' + m.text()); });
+  page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource|ERR_TUNNEL|ERR_INTERNET|ERR_PROXY/.test(m.text())) page.errors.push('console: ' + m.text()); });
   return page;
 }
 

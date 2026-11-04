@@ -5,7 +5,7 @@
  * To add a tool: add an entry here, then create src/pages/<slug>.astro (see docs/ADDING-A-TOOL.md).
  */
 
-export type CategoryId = 'pdf' | 'image' | 'video' | 'finance' | 'exam' | 'student' | 'everyday';
+export type CategoryId = 'pdf' | 'image' | 'video' | 'finance' | 'abroad' | 'exam' | 'student' | 'everyday';
 
 export interface Category {
   id: CategoryId;
@@ -32,6 +32,9 @@ export const CATEGORIES: Category[] = [
   { id: 'finance', label: 'Finance', path: '/finance-calculators', icon: '💰', color: '#059669',
     title: 'Free Finance Calculators: EMI, SIP, Income Tax, GST',
     description: 'EMI, SIP, income tax (new vs old regime), GST, FD and PPF calculators with year-by-year tables and shareable results.' },
+  { id: 'abroad', label: 'Abroad', path: '/move-abroad-tools', icon: '✈️', color: '#0ea5e9',
+    title: 'Moving Abroad Tools: Salary vs India, PPP, Currency',
+    description: 'Compare a foreign job offer with India: take-home after tax, living costs, savings in rupees, PPP, and live currency rates for USD, GBP, EUR, AED and more.' },
   { id: 'exam', label: 'Exam & Govt', path: '/exam-tools', icon: '🏛️', color: '#d97706',
     title: 'Exam Photo & Signature Resizer and Government Form Tools',
     description: 'Resize photos and signatures to the exact KB and pixel size for SSC, IBPS, UPSC, NEET, JEE and PAN card forms. Free, private and instant.' },
@@ -236,6 +239,16 @@ export const TOOLS: Tool[] = [
     description: 'Calculate PPF maturity value, interest earned and a year-wise balance for 15 years or with extensions.',
     short: 'PPF maturity with yearly table.', keywords: 'public provident fund' },
 
+  // ---------- Abroad ----------
+  { slug: 'ppp-salary-calculator', name: 'Salary Abroad vs India', category: 'abroad', icon: '🌍', status: 'live', popular: true,
+    title: 'Salary Abroad vs India Calculator – PPP, Tax & Savings in ₹',
+    description: 'Compare a job offer in the US, UK, Canada, Germany, UAE and more with India: tax, living costs for your family, savings in rupees at live rates, PPP.',
+    short: 'Foreign offer → savings in ₹, PPP, Indian CTC.', keywords: 'ppp calculator salary comparison usa vs india uk dubai abroad offer cost of living h1b' },
+  { slug: 'currency-converter', name: 'Currency Converter', category: 'abroad', icon: '💱', status: 'live',
+    title: 'Currency Converter – Live USD, EUR, GBP, AED to INR Rates',
+    description: 'Convert between the rupee and 35 currencies at live mid-market rates (ECB). USD, EUR, GBP, AED, SAR, CAD, AUD, SGD and more. Free, works offline.',
+    short: 'Live rates for 35 currencies ↔ INR.', keywords: 'usd to inr dollar to rupee exchange rate forex aed to inr' },
+
   // ---------- Student ----------
   { slug: 'attendance-calculator', name: 'Attendance Calculator', category: 'student', icon: '📅', status: 'live', popular: true,
     title: 'Attendance Calculator – How Many Classes to Reach 75%',
@@ -346,6 +359,8 @@ const CROSS_LINKS: Record<string, string[]> = {
   'sign-pdf': ['edit-pdf', 'merge-pdf', 'compress-pdf'],
   'compress-video': ['trim-video', 'video-to-mp3', 'mov-to-mp4'],
   'income-tax-calculator': ['salary-calculator', 'hra-calculator', 'sip-calculator'],
+  'ppp-salary-calculator': ['currency-converter', 'salary-calculator', 'income-tax-calculator'],
+  'currency-converter': ['ppp-salary-calculator', 'salary-calculator', 'sip-calculator'],
   'salary-calculator': ['income-tax-calculator', 'hra-calculator', 'sip-calculator'],
   'emi-calculator': ['home-loan-prepayment-calculator', 'sip-calculator', 'income-tax-calculator'],
   'upi-qr-code-generator': ['qr-code-generator', 'invoice-generator', 'gst-calculator'],

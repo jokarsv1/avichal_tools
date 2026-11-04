@@ -1,0 +1,30 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import CurrencyConverter from '../components/CurrencyConverter.astro';
+import { PAIRS, type Pair } from '../data/fx-pairs';
+import { FALLBACK_INR, FALLBACK_DATE } from '../lib/abroad';
+
+export function getStaticPaths() {
+  return PAIRS.map((p) => ({ params: { pair: `${p.from.toLowerCase()}-to-${p.to.toLowerCase()}` }, props: { p } }));
+}
+const { p } = Astro.props as { p: Pair };
+const rate = FALLBACK_INR[p.from] / FALLBACK_INR[p.to];
+const path = `/${p.from.toLowerCase()}-to-${p.to.toLowerCase()}`;
+const faqs = [
+  { q: `What is 1 ${p.from} in ${p.to} today?`, a: `The converter above shows the live mid-market rate. On ${FALLBACK_DATE}, 1 ${p.from} was about ${rate.toFixed(rate < 1 ? 5 : 2)} ${p.to}.` },
+  { q: `Why does my bank give a lower ${p.from} to ${p.to} rate?`, a: 'Banks and money-transfer services add a margin to the mid-market rate. Compare the total amount received, including fees, across 2–3 providers.' },
+  { q: 'Where do the rates come from?', a: 'European Central Bank reference rates (via Frankfurter), refreshed every 12 hours; Gulf currencies use their official US-dollar pegs.' },
+];
+---
+<ToolLayout slug="currency-converter" path={path} title={`${p.from} to ${p.to} Converter: ${p.name} Live Rate`}
+  description={`Convert ${p.from} to ${p.to} at the live mid-market rate, with quick tables from 1 to 1,00,000 ${p.from}. Free, no sign-up, works offline.`}
+  h1={`${p.from} to ${p.to} Converter`} crumb={`${p.from} to ${p.to}`}
+  lead={`Live ${p.name} exchange rate with instant conversion and quick reference tables.`} faqs={faqs} badges={['💱 Live ECB rates', '📵 Works offline']}>
+  <CurrencyConverter from={p.from} to={p.to} />
+  <Fragment slot="content">
+    <h2>About {p.from} to {p.to}</h2>
+    <p>{p.context}</p>
+    {p.salaryLink && <p>Got a job offer? See what it means in rupees after tax and living costs with the <a href={`/salary-in-${p.salaryLink}-vs-india`}>salary vs India calculator</a>.</p>}
+    <p>Other pairs: {PAIRS.filter((x) => x !== p).map((x, i) => <>{i ? ' · ' : ''}<a href={`/${x.from.toLowerCase()}-to-${x.to.toLowerCase()}`}>{x.from} to {x.to}</a></>)}</p>
+  </Fragment>
+</ToolLayout>

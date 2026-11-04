@@ -1,0 +1,19 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import CurrencyConverter from '../components/CurrencyConverter.astro';
+import { PAIRS } from '../data/fx-pairs';
+const faqs = [
+  { q: 'Where do these exchange rates come from?', a: 'From the European Central Bank\'s daily reference rates (via the free Frankfurter API), refreshed every 12 hours. UAE, Saudi, Qatari, Omani and Bahraini currencies are pegged to the US dollar, so we use their official pegs.' },
+  { q: 'Why is my bank\'s rate different?', a: 'Banks, cards and remittance apps add a margin (often 1–3%) on top of the mid-market rate shown here. Use this rate to check how much you are really paying.' },
+  { q: 'Does it work offline?', a: 'Yes. Without internet it uses the most recent rates saved in your browser or built into the page, and tells you the date.' },
+];
+const steps = ['Enter the amount.', 'Choose the currencies (⇄ swaps them).', 'Read the result and the quick conversion tables.'];
+---
+<ToolLayout slug="currency-converter" h1="Currency Converter (Live Rates)" lead="Convert between the rupee and 35 currencies, including US dollar, euro, pound and UAE dirham, at live mid-market rates. Free, no sign-up." steps={steps} faqs={faqs} badges={['💱 Live ECB rates', '🇮🇳 INR focused', '📵 Works offline']}>
+  <CurrencyConverter />
+  <Fragment slot="content">
+    <h2>Popular conversions</h2>
+    <p>{PAIRS.map((p, i) => <>{i ? ' · ' : ''}<a href={`/${p.from.toLowerCase()}-to-${p.to.toLowerCase()}`}>{p.from} to {p.to}</a></>)}</p>
+    <p>Moving abroad? Compare a foreign salary with India using the <a href="/ppp-salary-calculator">salary abroad vs India calculator</a>.</p>
+  </Fragment>
+</ToolLayout>
