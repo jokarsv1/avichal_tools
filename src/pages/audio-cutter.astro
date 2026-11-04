@@ -1,0 +1,37 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import Dropzone from '../components/Dropzone.astro';
+const faqs = [
+  { q: 'How do I make a ringtone from a song?', a: 'Choose the song, drag on the waveform to select the part you want (up to 30–40 seconds), add a short fade-out, and download as MP3 (Android) or M4R (iPhone).' },
+  { q: 'How do I set an M4R ringtone on iPhone?', a: 'Open the .m4r file in Finder (Mac) or iTunes (Windows) with your iPhone connected and sync it, or use GarageBand on the iPhone to export it as a ringtone. iPhone ringtones must be 40 seconds or shorter.' },
+  { q: 'Can I cut audio from a video?', a: 'Yes. Choose an MP4 or MOV video and the audio track is loaded. To keep the whole soundtrack, use <a href="/video-to-mp3">Video to MP3</a>.' },
+  { q: 'Is my music uploaded?', a: 'No. The audio is decoded, cut and encoded entirely in your browser.' },
+];
+const steps = ['Choose an MP3, M4A, WAV or video file.', 'Drag on the waveform (or type start and end times) to select a part.', 'Add a fade in/out if you like, and pick MP3, M4A, M4R (iPhone) or WAV.', 'Press <b>Cut audio</b> and download.'];
+---
+<ToolLayout slug="audio-cutter" h1="MP3 Cutter & Ringtone Maker" lead="Cut MP3 and other audio files, add fades and make ringtones for Android and iPhone, right in your browser. No upload, no watermark." steps={steps} faqs={faqs}>
+  <div class="stack">
+    <Dropzone id="ac-drop" accept="audio/*,video/*,.mp3,.m4a,.wav,.ogg,.aac,.flac,.mp4,.mov" title="Choose an audio file" icon="🎶" />
+    <div class="status" id="ac-status"></div>
+    <div id="ac-panel" class="stack-sm hidden">
+      <canvas id="ac-wave" style="width:100%;height:140px;border-radius:12px;cursor:ew-resize;touch-action:none" aria-label="Audio waveform. Drag to select a part."></canvas>
+      <p class="hint" id="ac-len"></p>
+      <div class="grid-4">
+        <div class="field"><label for="ac-start">Start</label><input id="ac-start" type="text" /></div>
+        <div class="field"><label for="ac-end">End</label><input id="ac-end" type="text" /></div>
+        <div class="field"><label for="ac-fadein">Fade in</label><select id="ac-fadein"><option value="0">None</option><option value="1">1 s</option><option value="2">2 s</option><option value="3">3 s</option></select></div>
+        <div class="field"><label for="ac-fadeout">Fade out</label><select id="ac-fadeout"><option value="0">None</option><option value="1">1 s</option><option value="2" selected>2 s</option><option value="3">3 s</option></select></div>
+        <div class="field"><label for="ac-fmt">Format</label><select id="ac-fmt"><option value="mp3">MP3 (Android, all)</option><option value="m4r">M4R (iPhone ringtone)</option><option value="m4a">M4A (AAC)</option><option value="wav">WAV</option></select></div>
+        <div class="field"><label for="ac-br">Quality</label><select id="ac-br"><option value="128000">128 kbps</option><option value="192000" selected>192 kbps</option><option value="320000">320 kbps</option></select></div>
+      </div>
+      <audio id="ac-player" class="hidden"></audio>
+      <div class="btn-row"><button type="button" class="btn" id="ac-play">▶ Play selection</button><button type="button" class="btn btn-primary btn-lg" id="ac-go">✂ Cut audio</button><button type="button" class="btn btn-primary btn-lg hidden" id="ac-download">⬇ Download</button></div>
+    </div>
+  </div>
+  <script>import '../tools/audio-cutter';</script>
+  <Fragment slot="content">
+    <h2>Make the perfect ringtone</h2>
+    <p>Pick the hook or chorus, keep it under 30 seconds, and add a 1–2 second fade-out so it doesn't cut off abruptly. MP3 works on Android and almost everything else; M4R is the iPhone ringtone format.</p>
+    <p>Related: <a href="/video-to-mp3">video to MP3</a> · <a href="/trim-video">trim video</a></p>
+  </Fragment>
+</ToolLayout>

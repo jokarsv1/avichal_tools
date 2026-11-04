@@ -23,6 +23,7 @@
     "@mediabunny/mp3-encoder": "^1.65.1",
     "astro": "^7.4.5",
     "fflate": "^0.8.3",
+    "gifenc": "^1.0.3",
     "heic-to": "^1.6.7",
     "mediabunny": "^1.65.1",
     "pdf-lib": "^1.17.1",

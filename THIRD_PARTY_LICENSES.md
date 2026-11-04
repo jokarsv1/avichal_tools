@@ -14,6 +14,7 @@ This project's own code is MIT-licensed. It bundles or loads these open-source c
 | [qrcode](https://github.com/soldair/node-qrcode) | QR code generation | MIT | |
 | [UPNG.js](https://github.com/photopea/UPNG.js) + [pako](https://github.com/nodeca/pako) | Lossy PNG compression | MIT / (MIT AND Zlib) | |
 | [fflate](https://github.com/101arrowz/fflate) | ZIP downloads | MIT | |
+| [gifenc](https://github.com/mattdesl/gifenc) | Animated GIF encoding | MIT | |
 | Google Fonts (Caveat, Kalam, Homemade Apple, Indie Flower, Shadows Into Light, Gloria Hallelujah, Reenie Beanie, Dancing Script, Great Vibes, Satisfy) | Handwriting and signature styles | SIL Open Font License / Apache-2.0 | Loaded from fonts.googleapis.com on two pages |
 
 **Deliberately not used** because of licence conflicts with an ad-supported site: ffmpeg.wasm builds with x264 (GPL), @imgly/background-removal (AGPL), BRIA RMBG models (non-commercial).

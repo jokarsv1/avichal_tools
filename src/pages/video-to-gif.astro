@@ -1,0 +1,42 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import Dropzone from '../components/Dropzone.astro';
+const faqs = [
+  { q: 'How do I convert a video to GIF?', a: 'Choose a video, set the start and end (up to 30 seconds), pick the frame rate and width, and press <b>Create GIF</b>. The GIF is made in your browser with no watermark.' },
+  { q: 'How do I make the GIF smaller?', a: 'Use a shorter clip, a lower frame rate (8–10 fps looks fine for most clips) and a smaller width (320–480 px). GIF is an old format, so file sizes grow quickly.' },
+  { q: 'Can I use it for WhatsApp, Slack or Discord?', a: 'Yes. Keep GIFs under about 8 MB for most chat apps. For longer clips, a short MP4 (see <a href="/compress-video">Compress Video</a>) is much smaller and better quality.' },
+];
+const steps = ['Choose a video (MP4, MOV, WebM).', 'Set start and end; use <b>Set to current time</b> while playing.', 'Choose frame rate and width.', 'Press <b>Create GIF</b> and download.'];
+---
+<ToolLayout slug="video-to-gif" h1="Video to GIF Converter" lead="Turn a video clip into an animated GIF in your browser. Choose start, end, frame rate and size. No watermark, no upload." steps={steps} faqs={faqs}>
+  <div class="stack">
+    <Dropzone id="gf-drop" accept="video/*,.mov,.mkv,.webm,.mp4" title="Choose a video" icon="🎞️" />
+    <div id="gf-panel" class="stack-sm hidden">
+      <div class="grid-2">
+        <div class="stack-sm"><video id="gf-video" controls playsinline style="width:100%;max-height:320px;background:#000;border-radius:12px"></video><p class="hint" id="gf-info"></p></div>
+        <div class="stack-sm">
+          <div class="grid-2">
+            <div class="field"><label for="gf-start">Start</label><input id="gf-start" type="text" value="0:00.0" /><button type="button" class="btn btn-sm" id="gf-set-start">Set to current time</button></div>
+            <div class="field"><label for="gf-end">End</label><input id="gf-end" type="text" /><button type="button" class="btn btn-sm" id="gf-set-end">Set to current time</button></div>
+            <div class="field"><label for="gf-fps">Frame rate</label><select id="gf-fps"><option value="8">8 fps</option><option value="10" selected>10 fps</option><option value="15">15 fps</option><option value="20">20 fps</option></select></div>
+            <div class="field"><label for="gf-width">Width</label><select id="gf-width"><option value="240">240 px</option><option value="320">320 px</option><option value="480" selected>480 px</option><option value="640">640 px</option></select></div>
+          </div>
+          <label class="check"><input type="checkbox" id="gf-loop" checked /> Loop forever</label>
+          <button type="button" class="btn btn-primary btn-lg" id="gf-go">Create GIF</button>
+          <div class="progress hidden" id="gf-progress"><i></i></div>
+          <div class="status" id="gf-status"></div>
+        </div>
+      </div>
+      <div class="result stack-sm hidden" id="gf-result">
+        <div class="preview-box"><img id="gf-out" alt="GIF preview" /></div>
+        <div class="btn-row"><button type="button" class="btn btn-primary btn-lg" id="gf-download">⬇ Download GIF</button></div>
+      </div>
+    </div>
+  </div>
+  <script>import '../tools/video-to-gif';</script>
+  <Fragment slot="content">
+    <h2>GIF tips</h2>
+    <p>GIFs support only 256 colours per frame, so they suit screen recordings, reactions and simple animations better than detailed footage. A 5-second clip at 10 fps and 480 px is usually 1–4 MB.</p>
+    <p>Related: <a href="/trim-video">trim video</a> · <a href="/screen-recorder">screen recorder</a> · <a href="/compress-video">compress video</a></p>
+  </Fragment>
+</ToolLayout>
