@@ -1,4 +1,5 @@
 import { bindUrlState, shareOrCopy } from './ui';
+import { toolStarted, taskCompleted } from './analytics';
 
 /** Sync every SliderField's number box and range, wire URL state, and call `update` on change. */
 export function initCalculator(update: () => void, extra: Record<string, HTMLInputElement | HTMLSelectElement> = {}) {
@@ -11,6 +12,17 @@ export function initCalculator(update: () => void, extra: Record<string, HTMLInp
     inputs[num.dataset.key || num.id] = num;
   });
   bindUrlState(inputs, update);
+  // Activation: the first real interaction, then "result seen" a moment later.
+  let interacted = false;
+  const onFirst = () => {
+    if (interacted) return;
+    interacted = true;
+    toolStarted('input');
+    setTimeout(() => taskCompleted('calculation'), 2500);
+  };
+  for (const el of Object.values(inputs)) { el.addEventListener('input', onFirst, { once: true }); el.addEventListener('change', onFirst, { once: true }); }
+  // Opened from a one-click link or a shared result: the result is on screen without typing.
+  if (location.search.length > 1) setTimeout(() => { if (!interacted && document.visibilityState === 'visible') { interacted = true; toolStarted('preset'); taskCompleted('calculation'); } }, 4000);
   document.querySelectorAll<HTMLElement>('[data-share]').forEach((b) =>
     b.addEventListener('click', async () => {
       const msg = await shareOrCopy(b.dataset.share || document.title);

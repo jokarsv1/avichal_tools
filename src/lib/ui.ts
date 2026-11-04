@@ -1,4 +1,5 @@
 /** Small DOM + file helpers shared by every tool. No framework, so pages stay tiny and fast. */
+import { capture, toolStarted, taskCompleted } from './analytics';
 
 export const $ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => {
   const el = root.querySelector<T>(sel);
@@ -49,7 +50,7 @@ export function downloadBlob(blob: Blob, filename: string) {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
-  track('download', { ext: filename.split('.').pop() || '' });
+  taskCompleted((filename.split('.').pop() || 'file').toLowerCase());
 }
 
 /** Zip several files and download them (fflate is loaded only when needed). */
@@ -85,7 +86,8 @@ export function onFiles(zone: HTMLElement, cb: (files: File[]) => void, opts: { 
     }
     if (good.length) {
       cb(input.multiple ? good : [good[0]]);
-      track('file_added', { count: good.length });
+      toolStarted('file');
+      capture('file_added', { count: good.length, size_mb: Math.round(good.reduce((t, f) => t + f.size, 0) / 1048576) });
     }
   };
   input.addEventListener('change', () => { emit(input.files); input.value = ''; });
@@ -100,10 +102,12 @@ export function onFiles(zone: HTMLElement, cb: (files: File[]) => void, opts: { 
   }
 }
 
+let lastErr = '';
 export function setStatus(el: HTMLElement, msg: string, kind: 'info' | 'ok' | 'warn' | 'err' = 'info') {
   el.classList.remove('info', 'ok', 'warn', 'err');
   el.classList.add('status', kind);
   el.textContent = msg;
+  if (kind === 'err' && msg && msg !== lastErr) { lastErr = msg; capture('error_shown', { message: msg.slice(0, 120) }); }
 }
 
 export function setProgress(bar: HTMLElement, fraction: number) {
@@ -115,11 +119,11 @@ export function setProgress(bar: HTMLElement, fraction: number) {
 /** Give the browser a chance to paint between heavy steps. */
 export const nextFrame = () => new Promise<void>((r) => requestAnimationFrame(() => setTimeout(r, 0)));
 
-/** Privacy-safe usage events (no file names, no content). No-op unless GA4 is configured. */
+/** Privacy-safe usage events (no file names, no content): PostHog (if configured) and GA4 (if configured). */
 export function track(event: string, params: Record<string, string | number> = {}) {
-  const tool = location.pathname.replace(/^\//, '') || 'home';
+  capture(event, params);
   const w = window as any;
-  if (typeof w.gtag === 'function') w.gtag('event', event, { tool, ...params });
+  if (typeof w.gtag === 'function') w.gtag('event', event, { tool: location.pathname.replace(/^\//, '') || 'home', ...params });
 }
 
 export function errorMessage(e: unknown): string {
@@ -170,6 +174,8 @@ export function bindUrlState(inputs: Record<string, HTMLInputElement | HTMLSelec
 
 export async function shareOrCopy(text: string, url = location.href): Promise<string> {
   const nav = navigator as any;
+  capture('share_clicked', { method: nav.share ? 'native' : 'copy_link' });
+  taskCompleted('share');
   if (nav.share) {
     try { await nav.share({ title: document.title, text, url }); return 'Shared'; } catch { /* cancelled */ }
   }

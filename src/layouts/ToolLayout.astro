@@ -88,7 +88,7 @@ if (faqs.length) {
   });
 }
 ---
-<Base title={title} description={description} path={path} schema={schema} activeCategory={cat.id}>
+<Base title={title} description={description} path={path} schema={schema} activeCategory={cat.id} pageType="tool" tool={tool.slug}>
   <slot name="head" slot="head" />
   <div class="container">
     <nav class="breadcrumb" aria-label="Breadcrumb">
@@ -165,6 +165,7 @@ if (faqs.length) {
   </div>
   <script>
     import { track } from '../lib/ui';
+    import { toolStarted } from '../lib/analytics';
     function apply(btn: HTMLElement, scroll = true) {
       const set = JSON.parse(btn.dataset.preset || '{}') as Record<string, string | boolean>;
       for (const [sel, v] of Object.entries(set)) {
@@ -179,6 +180,7 @@ if (faqs.length) {
       }
       document.querySelectorAll('.quick .chip').forEach((c) => c.classList.toggle('active', c === btn));
       track('preset_used', { preset: btn.dataset.presetId || '' });
+      toolStarted('preset');
       const card = document.querySelector('.tool-card');
       if (scroll && card && card.getBoundingClientRect().top > innerHeight * 0.6) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }

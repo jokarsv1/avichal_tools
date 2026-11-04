@@ -21,7 +21,15 @@ const updated = 'November 2026';
   <p>Like every website, our hosting provider (Cloudflare) processes technical information such as IP address, browser type and the pages requested, in order to deliver the site and protect it from abuse.</p>
   {ANALYTICS.cloudflareToken && <p>We use Cloudflare Web Analytics, which counts page views without cookies and without tracking individuals across sites.</p>}
   {ANALYTICS.ga4Id && <p>We use Google Analytics 4 to understand which tools are useful. It may set cookies; in the EEA/UK it runs only after you consent.</p>}
-  <p>We may record anonymous usage events (for example "a PDF was compressed") to improve the tools. These events never contain file names or file contents.</p>
+  {ANALYTICS.posthogKey && <p>We use PostHog to understand which tools are useful and where people get stuck. It records anonymous usage events (for example "a PDF was compressed" or "a preset was used") with a random identifier stored in your browser. It never records file names, file contents, the text you type, calculator values or full page addresses, and it has no session recordings. In the EU/UK it runs without storing anything on your device. It is switched off if your browser sends Do Not Track or Global Privacy Control.</p>}
+  <p>Usage events never contain file names, file contents or anything you type.</p>
+  <div class="card" style="box-shadow:none;max-width:560px"><label class="check"><input type="checkbox" id="optout" /> Don't send anonymous usage statistics from this browser</label><p class="hint" id="optout-msg" style="margin:6px 0 0"></p></div>
+  <script>
+    import { setOptOut } from '../lib/analytics';
+    const box = document.getElementById('optout') as HTMLInputElement;
+    try { box.checked = localStorage.getItem('analytics-optout') === '1'; } catch {}
+    box.addEventListener('change', () => { setOptOut(box.checked); document.getElementById('optout-msg')!.textContent = box.checked ? 'Done. No usage statistics will be sent from this browser.' : 'Thanks! Anonymous statistics help us improve the tools.'; });
+  </script>
 
   <h2>3. Advertising</h2>
   <p>To keep the tools free, we {ADS.client ? 'show' : 'may show'} ads served by Google AdSense. Google and its partners may use cookies or similar technologies to show ads based on your visits to this and other websites. You can opt out of personalised advertising at <a href="https://adssettings.google.com" rel="noopener nofollow">Google Ads Settings</a> or <a href="https://www.aboutads.info/choices/" rel="noopener nofollow">aboutads.info</a>. Learn more in <a href="https://policies.google.com/technologies/partner-sites" rel="noopener nofollow">how Google uses information from sites that use its services</a>.</p>

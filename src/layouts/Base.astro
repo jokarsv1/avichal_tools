@@ -15,9 +15,13 @@ interface Props {
   ogImage?: string;
   /** Skip the brand suffix in <title> (home page). */
   rawTitle?: boolean;
+  /** Analytics context. */
+  pageType?: 'home' | 'hub' | 'tool' | 'content';
+  tool?: string;
 }
 
-const { title, description, path, schema = [], activeCategory, noindex = false, ogImage = '/og.png', rawTitle = false } = Astro.props;
+const { title, description, path, schema = [], activeCategory, noindex = false, ogImage = '/og.png', rawTitle = false, pageType = path === '/' ? 'home' : 'content', tool } = Astro.props;
+const an = ANALYTICS.posthogKey ? JSON.stringify({ key: ANALYTICS.posthogKey, host: ANALYTICS.posthogHost, ecpm: ANALYTICS.estimatedEcpmUsd }) : '';
 const fullTitle = rawTitle ? title : `${title} | ${SITE.name}`;
 const canonical = SITE.url + (path === '/' ? '/' : path.replace(/\/$/, ''));
 const ogUrl = ogImage.startsWith('http') ? ogImage : SITE.url + ogImage;
@@ -53,7 +57,7 @@ const cfBeacon = ANALYTICS.cloudflareToken ? JSON.stringify({ token: ANALYTICS.c
     {ADS.client && <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin />}
     <slot name="head" />
   </head>
-  <body>
+  <body data-page-type={pageType} data-tool={tool} data-category={activeCategory}>
     <a class="skip-link" href="#main">Skip to content</a>
     <div class="usp-strip" role="note"><div class="container"><span class="usp-long">{USP.strip}</span><span class="usp-short">{USP.stripShort}</span></div></div>
     <header class="site-header">
@@ -139,6 +143,11 @@ const cfBeacon = ANALYTICS.cloudflareToken ? JSON.stringify({ token: ANALYTICS.c
         })();
       </script>
     )}
+    {an && <script is:inline set:html={`window.__AN=${an};`} />}
+    <script>
+      import { initAnalytics } from '../lib/analytics';
+      initAnalytics();
+    </script>
     {isProd && cfBeacon && <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={cfBeacon}></script>}
     {isProd && ANALYTICS.ga4Id && (
       <>

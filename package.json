@@ -31,6 +31,7 @@
     "mediabunny": "^1.65.1",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^6.5.438",
+    "posthog-js": "^1.438.12",
     "qrcode": "^1.5.4",
     "tesseract.js": "^7.0.0",
     "upng-js": "^2.1.0"

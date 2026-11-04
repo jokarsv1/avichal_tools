@@ -55,7 +55,10 @@ const schema = [
     const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-cat]'));
     const popular = document.getElementById('popular')!;
     const none = document.getElementById('no-results')!;
+    let st: number | undefined;
     input.addEventListener('input', () => {
+      clearTimeout(st);
+      st = window.setTimeout(() => import('../lib/analytics').then((a) => a.capture('search_used', { query: input.value.toLowerCase().trim().slice(0, 40), results: tiles.filter((t) => !t.classList.contains('hidden')).length })), 1200);
       const terms = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
       let shown = 0;
       tiles.forEach((t) => {

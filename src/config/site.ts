@@ -67,6 +67,16 @@ export const ADS = {
 export const ANALYTICS = {
   cloudflareToken: process.env.CF_ANALYTICS_TOKEN || '',
   ga4Id: process.env.GA4_ID || '',
+  /**
+   * PostHog product analytics (AARRR dashboards). Create a free PostHog Cloud project, then set:
+   *  POSTHOG_KEY  = the project API key (starts with "phc_", safe to expose)
+   *  POSTHOG_HOST = https://us.i.posthog.com or https://eu.i.posthog.com
+   * Then run `node scripts/posthog-dashboards.mjs` once to create all dashboards (see docs/ANALYTICS.md).
+   */
+  posthogKey: process.env.POSTHOG_KEY || '',
+  posthogHost: process.env.POSTHOG_HOST || 'https://us.i.posthog.com',
+  /** Estimated AdSense eCPM in USD, used only to show an "estimated revenue" trend in PostHog. */
+  estimatedEcpmUsd: Number(process.env.EST_ECPM_USD || 0.8),
 };
 
 /**

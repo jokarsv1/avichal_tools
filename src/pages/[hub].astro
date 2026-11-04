@@ -17,7 +17,7 @@ const schema = [
   { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: tools.map((t, i) => ({ '@type': 'ListItem', position: i + 1, name: t.name, url: `${SITE.url}/${t.slug}` })) },
 ];
 ---
-<Base title={cat.title} description={cat.description} path={cat.path} schema={schema} activeCategory={cat.id}>
+<Base title={cat.title} description={cat.description} path={cat.path} schema={schema} activeCategory={cat.id} pageType="hub">
   <div class="container">
     <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> › {cat.label} tools</nav>
     <header class="tool-hero">
