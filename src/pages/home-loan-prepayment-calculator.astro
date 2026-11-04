@@ -1,0 +1,62 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+const faqs = [
+  { q: 'Is it better to reduce EMI or reduce tenure after prepaying?', a: 'Reducing tenure saves much more interest, because the loan ends sooner. Reduce EMI only if you need lower monthly outgo. Compare both with the toggle above.' },
+  { q: 'When should I prepay my home loan?', a: 'As early as possible. In the first years most of each EMI is interest, so every rupee prepaid then saves the most.' },
+  { q: 'Are there charges for prepaying a home loan?', a: 'RBI rules do not allow banks to charge prepayment penalties on floating-rate home loans for individuals. Fixed-rate loans may carry charges; check your loan agreement.' },
+  { q: 'Prepay the loan or invest in SIP?', a: 'Prepaying "earns" your loan rate (for example 8.5%) risk-free. Equity SIPs may earn more over the long term but with risk. Many people do both: a yearly prepayment plus a SIP.' },
+];
+const steps = ['Enter your loan amount, interest rate and tenure.', 'Add a one-time prepayment (and when), and/or regular monthly or yearly extra payments.', 'Choose whether to reduce tenure or EMI.', 'See interest saved and how many months earlier you will be debt-free.'];
+---
+<ToolLayout slug="home-loan-prepayment-calculator" h1="Home Loan Prepayment Calculator" lead="See how much interest you save and how much sooner you finish your loan by prepaying a lump sum or paying a little extra every month or year." steps={steps} faqs={faqs} badges={['💸 Interest saved', '⏩ Months saved', '📤 Shareable link', '✅ No login']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="p" key="p" label="Loan amount" unit="₹" min={100000} max={30000000} step={50000} value={5000000} />
+      <SliderField id="r" key="r" label="Interest rate" unit="%" min={5} max={15} step={0.05} value={8.5} />
+      <SliderField id="y" key="y" label="Tenure" unit="years" min={1} max={30} step={1} value={20} />
+      <div class="grid-2">
+        <div class="field"><label for="lump">One-time prepayment (₹)</label><input id="lump" data-key="l" type="number" min="0" step="10000" value="500000" /></div>
+        <div class="field"><label for="lm">In month no.</label><input id="lm" data-key="lm" type="number" min="1" step="1" value="12" /></div>
+        <div class="field"><label for="me">Extra every month (₹)</label><input id="me" data-key="me" type="number" min="0" step="500" value="0" /></div>
+        <div class="field"><label for="ye">Extra every year (₹)</label><input id="ye" data-key="ye" type="number" min="0" step="5000" value="0" /></div>
+      </div>
+      <div class="field"><label for="mode">After prepaying</label><select id="mode" data-key="m"><option value="tenure">Reduce tenure (saves more)</option><option value="emi">Reduce EMI</option></select></div>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Interest saved</span><div class="big-number" id="o-saved">–</div></div>
+      <div class="result-rows">
+        <div><span>Loan ends after</span><b id="o-months">–</b></div>
+        <div><span>Time saved</span><b id="o-msaved">–</b></div>
+        <div><span>Original EMI</span><b id="o-emi">–</b></div>
+        <div><span>EMI after prepayment</span><b id="o-emi2">–</b></div>
+        <div><span>Interest without prepayment</span><b id="o-base">–</b></div>
+        <div><span>Interest with prepayment</span><b id="o-int">–</b></div>
+      </div>
+      <button type="button" class="btn btn-sm" data-share="Loan prepayment plan">📤 Share</button>
+    </div>
+  </div>
+  <h2 style="margin-top:28px">Outstanding balance by year</h2>
+  <div class="table-wrap"><table class="data"><thead><tr><th>Year</th><th>Principal repaid (incl. prepayments)</th><th>Interest paid</th><th>Balance</th></tr></thead><tbody id="o-table"></tbody></table></div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { prepayment } from '../lib/finance';
+    import { rupees } from '../lib/format';
+    const get = (id: string) => document.getElementById(id) as HTMLInputElement;
+    const ym = (m: number) => `${Math.floor(m / 12)} yr ${m % 12} mo`;
+    function update() {
+      const r = prepayment({ principal: val('p'), ratePct: val('r'), months: Math.round(val('y') * 12), lump: val('lump'), lumpMonth: Math.max(1, val('lm')), monthlyExtra: val('me'), yearlyExtra: val('ye'), mode: get('mode').value as any });
+      setText('o-saved', rupees(Math.max(0, r.saved)));
+      setText('o-months', ym(r.months)); setText('o-msaved', r.monthsSaved > 0 ? ym(r.monthsSaved) : '–');
+      setText('o-emi', rupees(r.baseEmi)); setText('o-emi2', rupees(r.finalEmi));
+      setText('o-base', rupees(r.baseInterest)); setText('o-int', rupees(r.interest));
+      document.getElementById('o-table')!.innerHTML = r.years.map((x) => `<tr><td>Year ${x.year}</td><td>${rupees(x.a)}</td><td>${rupees(x.b)}</td><td>${rupees(x.balance)}</td></tr>`).join('');
+    }
+    initCalculator(update, Object.fromEntries(['lump', 'lm', 'me', 'ye', 'mode'].map((id) => [get(id).dataset.key!, get(id)])));
+  </script>
+  <Fragment slot="content">
+    <h2>Small extras, big savings</h2>
+    <p>On a ₹50 lakh, 20-year loan at 8.5%, paying just one extra EMI a year (about ₹43,400) cuts the loan by over 3 years and saves around ₹10 lakh in interest. Try "Extra every year" with your EMI amount to see it for your own loan.</p>
+    <p>Related: <a href="/emi-calculator">EMI calculator</a> · <a href="/sip-calculator">SIP calculator</a> · <a href="/income-tax-calculator">income tax (Section 24b interest)</a></p>
+  </Fragment>
+</ToolLayout>

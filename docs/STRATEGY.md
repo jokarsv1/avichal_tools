@@ -30,11 +30,11 @@ Two adjustments decide the **build order** for ad revenue. They don't change the
 | 7 | Resize image to exact KB (+ 7 "compress to N KB" pages) | 5 | 3 | 5 | **75** | Med | Med | ✅ |
 | 8 | Merge PDF | 5 | 3 | 5 | **75** | Med | High | ✅ |
 | 9 | JPG to PDF | 5 | 3 | 5 | **75** | Med | High | ✅ |
-| 10 | **Edit PDF** (add text, white-out, shapes) | 5 | 5 | 3 | **75** | High | High | 🔜 #1 |
+| 10 | Edit PDF (add text, white-out, highlight, flatten redaction) | 5 | 5 | 3 | **75** | High | High | ✅ |
 | 11 | **Background remover** | 5 | 5 | 3 | **75** | Med | High | 🔜 #2 |
 | 12 | **Resume builder** (free PDF download) | 5 | 5 | 3 | **75** | **High** | High | 🔜 #3 |
 | 13 | Screen recorder | 4 | 4 | 4 | **64** | Med | Med | ✅ |
-| 14 | **Invoice / GST invoice generator** | 4 | 4 | 4 | **64** | **High** | Med | 🔜 #5 |
+| 14 | GST invoice generator (with UPI pay QR) | 4 | 4 | 4 | **64** | **High** | Med | ✅ |
 | 15 | Video to MP3 | 5 | 3 | 4 | **60** | Low | High | ✅ |
 | 16 | HEIC to JPG | 4 | 3 | 5 | **60** | Med | Med | ✅ |
 | 17 | PDF to JPG | 4 | 3 | 5 | **60** | Med | High | ✅ |
@@ -50,13 +50,13 @@ Two adjustments decide the **build order** for ad revenue. They don't change the
 | 27 | Rotate PDF | 3 | 3 | 5 | **45** | Med | Med | ✅ |
 | 28 | Add page numbers / watermark PDF | 3 | 3 | 5 | **45** | Med | Med | ✅ |
 | 29 | UPI QR code generator | 3 | 3 | 5 | **45** | Med | **Low** | ✅ |
-| 30 | **Rent receipt generator** (HRA, Jan–Mar peak) | 3 | 3 | 5 | **45** | **High** | **Low** | 🔜 |
+| 30 | Rent receipt generator (HRA, Jan–Mar peak) | 3 | 3 | 5 | **45** | **High** | **Low** | ✅ |
 | 31 | Income tax calculator, new vs old | 4 | 2 | 5 | **40** | **Very high** | High | ✅ |
 | 32 | **Speech to text / auto subtitles** (Whisper) | 4 | 5 | 2 | **40** | Med | Med | later |
 | 33 | PDF to Word | 5 | 4 | 2 | **40** | Med | High | later |
 | 34 | Text to handwriting | 3 | 3 | 4 | **36** | Low | **Low** | ✅ |
-| 35 | **Salary CTC → in-hand calculator** | 4 | 2 | 4 | **32** | **Very high** | Med | 🔜 #6 |
-| 36 | **Home loan prepayment calculator** | 3 | 2 | 5 | **30** | **Very high** | Med | 🔜 |
+| 35 | Salary CTC → in-hand calculator (+ HRA calculator) | 4 | 2 | 4 | **32** | **Very high** | Med | ✅ |
+| 36 | Home loan prepayment calculator | 3 | 2 | 5 | **30** | **Very high** | Med | ✅ |
 | 37 | Word to PDF | 5 | 3 | 2 | **30** | Med | High | later |
 | 38 | EMI calculator | 5 | 1 | 5 | **25** | **Very high** | High | ✅ |
 | 39 | SIP calculator (step-up, lump sum) | 5 | 1 | 5 | **25** | **Very high** | High | ✅ |
@@ -71,18 +71,18 @@ Two adjustments decide the **build order** for ad revenue. They don't change the
 | 48 | Bank statement / CAS analyzer | 3 | 5 | 2 | **30** | **Very high** | **Low** | later (moat) |
 | 49 | JSON formatter & dev tools | 4 | 1 | 5 | **20** | Very low | High | later (backlinks only) |
 
-**Built now: 42 tools plus 13 long-tail landing pages (6 exam pages and 7 KB-size pages), 70 pages in total.**
+**Built now: 49 tools plus 13 long-tail landing pages (6 exam pages and 7 KB-size pages), 76 pages in total.**
 
 ## 3. Build order from here (Phase 2, roughly 4–6 weeks)
 
 The order favours **shared engines** (the next tool reuses code you already have) and **high RPM**:
 
-1. **Edit PDF** (add text, white-out, rectangles, highlight). The Sign PDF placement engine already does 80% of this. "Edit PDF" is one of the largest PDF keywords, and nearly every competitor paywalls it.
+1. ~~Edit PDF~~ ✅ done (shares the Sign PDF overlay engine).
 2. **Background remover.** Use Transformers.js (Apache-2.0) with a model whose licence allows commercial use: **MODNet (Apache-2.0)** for portraits, or **BiRefNet-lite (MIT)** for general images. ⚠️ **Avoid BRIA RMBG** (non-commercial licence) and **@imgly/background-removal** (AGPL). Host the model on Cloudflare R2 or the Hugging Face CDN, not in the build, because of the 25 MiB file limit.
 3. **Resume builder.** Highest-RPM consumer tool (jobs). Keep it to 3–4 ATS-friendly templates, export a text PDF with pdf-lib, and save the draft in localStorage.
 4. **Passport/visa photo maker.** Reuses #2 for the white background, adds a 4×6 print sheet with 8 photos. Strong India and global intent.
-5. **GST invoice + rent receipt + salary slip generators.** One "document generator" engine (form → PDF) gives three high-RPM pages. Publish the rent receipt page **before January**, which is tax-proof submission season.
-6. **Salary (CTC → in-hand), HRA and loan prepayment calculators.** Reuses the finance engine. Very high RPM; about a day of work each.
+5. ~~GST invoice + rent receipt generators~~ ✅ done. Next on the same engine: **salary slip generator** and **quotation generator**. Promote the rent receipt page **before January**, which is tax-proof submission season.
+6. ~~Salary (CTC → in-hand), HRA and loan prepayment calculators~~ ✅ done. Next on the finance engine: **lumpsum, SWP, RD, NPS, gratuity and CAGR** calculators (each under an hour, high RPM).
 7. **OCR (image → text)** with Tesseract.js (Apache-2.0), plus Hindi language data.
 8. **Unlock/protect PDF** with qpdf-wasm (Apache-2.0).
 9. **Video → GIF and audio cutter**, reusing Mediabunny.

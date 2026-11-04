@@ -1,0 +1,52 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'How is HRA exemption calculated?', a: 'The exempt HRA is the lowest of: (1) actual HRA received, (2) rent paid minus 10% of basic + DA, and (3) 50% of basic + DA in Delhi, Mumbai, Kolkata or Chennai (40% elsewhere). The rest of your HRA is taxable.' },
+  { q: 'Is HRA exemption available in the new tax regime?', a: 'No. HRA exemption can be claimed only under the old regime. Use the <a href="/income-tax-calculator">income tax calculator</a> to see which regime is better for you.' },
+  { q: 'Do I need my landlord\'s PAN?', a: 'Yes, if the rent you pay is more than ₹1 lakh a year (about ₹8,333 a month). Without it your employer may not allow the exemption.' },
+  { q: 'Can I claim HRA if I pay rent to my parents?', a: 'Yes, if you genuinely pay rent and they own the house; they must show it as income. Keep rent receipts and bank transfer records. Create receipts with our <a href="/rent-receipt-generator">rent receipt generator</a>.' },
+];
+const steps = ['Enter your annual basic + DA, HRA received and rent paid.', 'Choose whether you live in a metro city.', 'See the exempt and taxable HRA.'];
+---
+<ToolLayout slug="hra-calculator" h1="HRA Exemption Calculator" lead="Find out how much of your House Rent Allowance is tax-free under Section 10(13A), and how much is taxable." steps={steps} faqs={faqs} badges={['🇮🇳 Old regime', '⚡ Instant', '📤 Shareable link', '✅ No login']}>
+  <div class="calc">
+    <div class="stack-sm">
+      <div class="grid-2">
+        <div class="field"><label for="b">Basic + DA (₹/month)</label><input id="b" data-key="b" type="number" min="0" step="500" value="50000" /></div>
+        <div class="field"><label for="h">HRA received (₹/month)</label><input id="h" data-key="h" type="number" min="0" step="500" value="20000" /></div>
+        <div class="field"><label for="r">Rent paid (₹/month)</label><input id="r" data-key="r" type="number" min="0" step="500" value="18000" /></div>
+        <div class="field"><label for="m">City</label><select id="m" data-key="m"><option value="1">Metro (Delhi, Mumbai, Kolkata, Chennai)</option><option value="0">Non-metro</option></select></div>
+      </div>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Exempt HRA (per year)</span><div class="big-number" id="o-ex">–</div></div>
+      <div class="result-rows">
+        <div><span>Taxable HRA (per year)</span><b id="o-tax">–</b></div>
+        <div><span>HRA received</span><b id="o-a">–</b></div>
+        <div><span>Rent − 10% of basic</span><b id="o-b">–</b></div>
+        <div><span id="o-c-label">50% of basic</span><b id="o-c">–</b></div>
+      </div>
+      <p class="hint" id="o-pan"></p>
+      <button type="button" class="btn btn-sm" data-share="HRA exemption">📤 Share</button>
+    </div>
+  </div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { hraExemption } from '../lib/finance';
+    import { rupees } from '../lib/format';
+    const get = (id: string) => document.getElementById(id) as HTMLInputElement;
+    function update() {
+      const b = val('b') * 12, h = val('h') * 12, r = val('r') * 12, metro = val('m') === 1;
+      const ex = hraExemption(b, h, r, metro);
+      setText('o-ex', rupees(ex)); setText('o-tax', rupees(Math.max(0, h - ex)));
+      setText('o-a', rupees(h)); setText('o-b', rupees(Math.max(0, r - 0.1 * b)));
+      setText('o-c-label', `${metro ? 50 : 40}% of basic`); setText('o-c', rupees((metro ? 0.5 : 0.4) * b));
+      setText('o-pan', r > 100000 ? 'Your rent is above ₹1 lakh a year, so you need your landlord\'s PAN.' : '');
+    }
+    initCalculator(update, Object.fromEntries(['b', 'h', 'r', 'm'].map((id) => [id, get(id)])));
+  </script>
+  <Fragment slot="content">
+    <h2>Example</h2>
+    <p>Basic ₹50,000/month, HRA ₹20,000/month, rent ₹18,000/month in Mumbai. Annually: HRA ₹2,40,000; rent − 10% of basic = ₹2,16,000 − ₹60,000 = ₹1,56,000; 50% of basic = ₹3,00,000. The lowest is <b>₹1,56,000</b>, which is exempt; the remaining ₹84,000 is taxable.</p>
+  </Fragment>
+</ToolLayout>

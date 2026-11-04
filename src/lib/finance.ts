@@ -212,3 +212,81 @@ export function attendance(attended: number, total: number, targetPct: number) {
   const skip = pct < targetPct || t === 0 ? 0 : Math.floor(attended / t - total + 1e-9);
   return { pct, need: Math.max(0, need), skip: Math.max(0, skip) };
 }
+
+// ---------------- Salary: CTC -> in-hand ----------------
+export interface SalaryInput {
+  ctc: number;
+  variable: number;
+  basicPct: number;
+  hraPct: number;
+  pfMode: 'capped' | 'full' | 'none';
+  gratuityInCtc: boolean;
+  profTax: number;
+  regime: 'new' | 'old';
+  rentPaid: number;
+  metro: boolean;
+  otherDeductions80c: number;
+  d80d: number;
+}
+
+export function salaryBreakup(s: SalaryInput) {
+  const fixed = Math.max(0, s.ctc - s.variable);
+  const basic = (fixed * s.basicPct) / 100;
+  const pfBase = s.pfMode === 'capped' ? Math.min(basic, 15000 * 12) : basic;
+  const employerPf = s.pfMode === 'none' ? 0 : pfBase * 0.12;
+  const employeePf = employerPf;
+  const gratuity = s.gratuityInCtc ? basic * 0.0481 : 0;
+  const gross = Math.max(0, fixed - employerPf - gratuity);
+  const hra = Math.min((basic * s.hraPct) / 100, Math.max(0, gross - basic));
+  const special = Math.max(0, gross - basic - hra);
+  const taxable = gross + s.variable;
+  const hraEx = s.regime === 'old' && s.rentPaid > 0 ? hraExemption(basic, hra, s.rentPaid, s.metro) : 0;
+  const tax = incomeTax({
+    salary: taxable, otherIncome: 0, age: 'below60',
+    d80c: s.regime === 'old' ? employeePf + s.otherDeductions80c : 0, d80d: s.d80d, dNps: 0, dHomeLoan: 0, dHra: hraEx, dOther: 0,
+    profTax: s.profTax, employerNps: 0,
+  }, s.regime);
+  const fixedShare = taxable ? gross / taxable : 1;
+  const taxOnFixed = tax.total * fixedShare;
+  const inHandAnnual = gross - employeePf - s.profTax - taxOnFixed;
+  return {
+    basic, hra, special, gross, employerPf, employeePf, gratuity, hraExemption: hraEx,
+    tax: tax.total, taxOnFixed, variableAfterTax: s.variable - (tax.total - taxOnFixed),
+    inHandAnnual, inHandMonthly: inHandAnnual / 12,
+  };
+}
+
+// ---------------- Loan prepayment ----------------
+export interface PrepayInput {
+  principal: number; ratePct: number; months: number;
+  lump: number; lumpMonth: number; monthlyExtra: number; yearlyExtra: number;
+  mode: 'tenure' | 'emi';
+}
+
+export function prepayment(p: PrepayInput) {
+  const r = p.ratePct / 12 / 100;
+  const baseEmi = emi(p.principal, p.ratePct, p.months);
+  const baseInterest = baseEmi * p.months - p.principal;
+  let bal = p.principal, pay = baseEmi, interest = 0, m = 0, prepaid = 0;
+  const years: YearRow[] = [];
+  let yi = 0, yp = 0;
+  while (bal > 0.5 && m < p.months * 2) {
+    m++;
+    const int = bal * r;
+    let princ = Math.min(bal, pay - int);
+    let extra = 0;
+    if (p.monthlyExtra > 0) extra += p.monthlyExtra;
+    if (p.yearlyExtra > 0 && m % 12 === 0) extra += p.yearlyExtra;
+    if (p.lump > 0 && m === p.lumpMonth) extra += p.lump;
+    extra = Math.min(extra, Math.max(0, bal - princ));
+    bal -= princ + extra;
+    interest += int; prepaid += extra;
+    yi += int; yp += princ + extra;
+    if (extra > 0 && p.mode === 'emi' && bal > 0) {
+      const left = p.months - m;
+      if (left > 0) pay = emi(bal, p.ratePct, left);
+    }
+    if (m % 12 === 0 || bal <= 0.5) { years.push({ year: Math.ceil(m / 12), a: yp, b: yi, balance: Math.max(0, bal) }); yi = 0; yp = 0; }
+  }
+  return { baseEmi, baseInterest, interest, saved: baseInterest - interest, months: m, monthsSaved: p.months - m, finalEmi: pay, prepaid, years };
+}

@@ -4,15 +4,15 @@
 
 PDF, image, video, exam-form and finance tools. Your files never leave your device: everything is processed locally with WebAssembly and WebCodecs, so there are no servers to pay for, no limits, and nothing to leak.
 
-## What's inside (42 tools + 13 landing pages)
+## What's inside (49 tools + 13 landing pages)
 
 | Category | Tools |
 |---|---|
-| **PDF** | Compress (smart image recompression or pages-to-images), Merge, Split, JPG→PDF, PDF→JPG, Rotate, Organize (reorder/delete), Page numbers, Watermark (any language), **Sign PDF** |
+| **PDF** | Compress (smart image recompression or pages-to-images), Merge, Split, JPG→PDF, PDF→JPG, Rotate, Organize (reorder/delete), Page numbers, Watermark (any language), **Sign PDF**, **Edit PDF** (text, white-out, highlight, true redaction) |
 | **Image** | **Resize to exact KB** (min + max, DPI, padding), Compressor (TinyPNG-style PNG), Resizer (presets), Crop (circle), HEIC→JPG, PNG↔JPG, WebP→JPG, Converter |
 | **Exam & Govt** | Exam photo & signature resizer with presets for **SSC, IBPS/SBI, UPSC, NEET, JEE Main, PAN**, signature cleaner, `/compress-image-to-{10,20,30,50,100,200,500}kb` |
 | **Video** | **Compress** (quality or target MB), Trim, Video→MP3/M4A/WAV, MOV/MKV/WebM→MP4, Mute, **Screen recorder** |
-| **Finance** | EMI (amortization), SIP (step-up + lump sum), **Income tax FY 2026-27 new vs old** (87A marginal relief, surcharge relief, break-even deductions, HRA), GST 2.0, FD, PPF |
+| **Finance** | EMI (amortization), SIP (step-up + lump sum), **Income tax FY 2026-27 new vs old** (87A marginal relief, surcharge relief, break-even deductions), **Salary CTC → in-hand**, HRA, Loan prepayment, GST 2.0, FD, PPF, **GST invoice generator** (UPI QR), **Rent receipt generator** |
 | **Student** | Attendance (75% rule), CGPA→percentage, Text→handwriting (Hindi support) |
 | **Everyday** | QR code generator (static, never expires, logo), UPI QR poster, Word counter, Age calculator (age as on exam date), Percentage, Number→words (lakh/crore) |
 

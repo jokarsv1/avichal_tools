@@ -1,0 +1,71 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+const faqs = [
+  { q: 'How is in-hand salary calculated from CTC?', a: 'In-hand = CTC − employer PF − gratuity (if part of CTC) − variable pay − employee PF − professional tax − income tax. This calculator splits your CTC into basic, HRA and special allowance, then works out each deduction.' },
+  { q: 'What is the in-hand salary for 12 LPA?', a: 'With 50% basic, PF on ₹15,000 and gratuity inside CTC, a ₹12 lakh CTC with no variable pay gives roughly ₹93,800 a month under the new regime, with zero income tax. Your exact figure depends on your salary structure.' },
+  { q: 'What is employer PF and why is it in my CTC?', a: 'Your employer contributes 12% of basic (often capped at ₹15,000 basic, i.e. ₹1,800/month) to your EPF. It is part of CTC but goes to your PF account, not your bank account. You also contribute the same amount from your salary.' },
+  { q: 'What is gratuity in CTC?', a: 'Many companies include gratuity (4.81% of basic) in CTC. You receive it only after 5 years of service, so it is not part of your monthly pay.' },
+  { q: 'How much is professional tax?', a: 'It is set by each state, up to ₹2,500 a year (₹2,400–2,500 in Maharashtra, Karnataka, West Bengal and others; nil in states like Delhi, Haryana and UP).' },
+];
+const steps = ['Enter your annual CTC and any variable/bonus component.', 'Adjust basic %, HRA %, PF and gratuity to match your offer letter.', 'Pick the tax regime (and rent for HRA under the old regime).', 'Read your monthly in-hand salary and the full breakdown.'];
+---
+<ToolLayout slug="salary-calculator" h1="In-hand Salary Calculator (CTC to Take-home)" lead="Convert your CTC to monthly in-hand salary with PF, gratuity, professional tax and income tax (new or old regime, FY 2026-27)." steps={steps} faqs={faqs} badges={['🇮🇳 FY 2026-27', '💼 CTC → in-hand', '📤 Shareable link', '✅ No login']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="ctc" key="c" label="Annual CTC" unit="₹" min={100000} max={10000000} step={10000} value={1200000} />
+      <SliderField id="var" key="v" label="Variable pay / bonus (annual, in CTC)" unit="₹" min={0} max={3000000} step={5000} value={0} />
+      <SliderField id="basic" key="b" label="Basic salary (% of fixed pay)" unit="%" min={30} max={60} step={1} value={50} />
+      <div class="grid-2">
+        <div class="field"><label for="hra">HRA (% of basic)</label><select id="hra" data-key="h"><option value="50">50% (metro)</option><option value="40">40% (non-metro)</option><option value="0">No HRA</option></select></div>
+        <div class="field"><label for="pf">Provident fund</label><select id="pf" data-key="p"><option value="capped">12% of ₹15,000 (capped)</option><option value="full">12% of full basic</option><option value="none">No PF</option></select></div>
+        <div class="field"><label for="grat">Gratuity</label><select id="grat" data-key="g"><option value="1">Included in CTC</option><option value="0">Not in CTC</option></select></div>
+        <div class="field"><label for="pt">Professional tax (₹/yr)</label><input id="pt" data-key="t" type="number" min="0" max="2500" step="100" value="2400" /></div>
+        <div class="field"><label for="reg">Tax regime</label><select id="reg" data-key="r"><option value="new">New regime</option><option value="old">Old regime</option></select></div>
+        <div class="field"><label for="rent">Rent paid (₹/month, old regime)</label><input id="rent" data-key="rp" type="number" min="0" step="500" value="0" /></div>
+      </div>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Monthly in-hand salary</span><div class="big-number" id="o-month">–</div><span class="hint" id="o-year"></span></div>
+      <div class="table-wrap"><table class="data"><thead><tr><th>Component</th><th>Monthly</th><th>Annual</th></tr></thead><tbody id="o-table"></tbody></table></div>
+      <p class="hint" id="o-var"></p>
+      <button type="button" class="btn btn-sm" data-share="My salary breakup">📤 Share</button>
+    </div>
+  </div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { salaryBreakup } from '../lib/finance';
+    import { rupees } from '../lib/format';
+    const get = (id: string) => document.getElementById(id) as HTMLInputElement | HTMLSelectElement;
+    const extra = Object.fromEntries(['hra', 'pf', 'grat', 'pt', 'reg', 'rent'].map((id) => [get(id).dataset.key!, get(id)]));
+    function update() {
+      const r = salaryBreakup({
+        ctc: val('ctc'), variable: val('var'), basicPct: val('basic'), hraPct: val('hra'), pfMode: get('pf').value as any,
+        gratuityInCtc: get('grat').value === '1', profTax: Math.min(2500, val('pt')), regime: get('reg').value as any,
+        rentPaid: val('rent') * 12, metro: val('hra') === 50, otherDeductions80c: 0, d80d: 0,
+      });
+      setText('o-month', rupees(r.inHandMonthly));
+      setText('o-year', `${rupees(r.inHandAnnual)} a year (excluding variable pay)`);
+      const row = (label: string, annual: number, neg = false, hl = false) => `<tr${hl ? ' class="hl"' : ''}><td>${label}</td><td>${neg && annual ? '−' : ''}${rupees(annual / 12)}</td><td>${neg && annual ? '−' : ''}${rupees(annual)}</td></tr>`;
+      document.getElementById('o-table')!.innerHTML = [
+        row('Basic', r.basic), row('HRA', r.hra), row('Special allowance', r.special),
+        row('Gross salary', r.gross, false, true),
+        row('Employee PF', r.employeePf, true), row('Professional tax', Math.min(2500, val('pt')), true), row('Income tax (TDS)', r.taxOnFixed, true),
+        row('In-hand', r.inHandAnnual, false, true),
+        `<tr><td colspan="3" class="hint" style="text-align:left">Also in CTC: employer PF ${rupees(r.employerPf)}${r.gratuity ? `, gratuity ${rupees(r.gratuity)}` : ''}${r.hraExemption ? ` · HRA exemption used: ${rupees(r.hraExemption)}` : ''}</td></tr>`,
+      ].join('');
+      setText('o-var', val('var') > 0 ? `Variable pay after tax ≈ ${rupees(r.variableAfterTax)} (paid as per your company's cycle). Total tax for the year: ${rupees(r.tax)}.` : `Total income tax for the year: ${rupees(r.tax)}.`);
+    }
+    initCalculator(update, extra);
+  </script>
+  <Fragment slot="content">
+    <h2>Understanding your salary slip</h2>
+    <ul>
+      <li><b>Basic:</b> usually 40–50% of fixed pay; PF, gratuity and HRA are calculated on it.</li>
+      <li><b>HRA:</b> taxable under the new regime; partly exempt under the old regime if you pay rent. Use the <a href="/hra-calculator">HRA calculator</a>.</li>
+      <li><b>Special allowance:</b> the balancing figure; fully taxable.</li>
+      <li><b>Employer PF and gratuity:</b> part of CTC but not paid monthly.</li>
+    </ul>
+    <p>Compare regimes in detail with the <a href="/income-tax-calculator">income tax calculator</a>, and plan investments with the <a href="/sip-calculator">SIP calculator</a>.</p>
+  </Fragment>
+</ToolLayout>

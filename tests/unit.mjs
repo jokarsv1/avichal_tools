@@ -1,5 +1,5 @@
 // Unit tests for pure finance/format functions. Run: node tests/unit.mjs (Node 22.18+ strips TS types natively).
-import { emi, sip, fd, ppf, gst, incomeTax, breakEvenDeductions, hraExemption, attendance } from '../src/lib/finance.ts';
+import { emi, sip, fd, ppf, gst, incomeTax, breakEvenDeductions, hraExemption, attendance, salaryBreakup, prepayment } from '../src/lib/finance.ts';
 import { numberToWords, indianGrouping, rupeesShort } from '../src/lib/format.ts';
 
 let fails = 0;
@@ -41,6 +41,20 @@ eq('HRA exemption metro', hraExemption(600000, 240000, 240000, true), 180000);
 const at = attendance(30, 50, 75);
 eq('Attendance 30/50 need for 75%', at.need, 30);
 eq('Attendance 40/50 can skip at 75%', attendance(40, 50, 75).skip, 3);
+
+// Salary: 12L CTC, no variable, 50% basic, capped PF, gratuity in CTC, PT 2400, new regime
+const sal = salaryBreakup({ ctc: 1200000, variable: 0, basicPct: 50, hraPct: 50, pfMode: 'capped', gratuityInCtc: true, profTax: 2400, regime: 'new', rentPaid: 0, metro: true, otherDeductions80c: 0, d80d: 0 });
+eq('Salary employer PF capped (21,600)', sal.employerPf, 21600);
+eq('Salary gratuity 4.81% of basic', Math.round(sal.gratuity), 28860);
+eq('Salary gross = CTC - PF - gratuity', Math.round(sal.gross), 1149540);
+eq('Salary tax 0 (under 12.75L)', sal.tax, 0);
+eq('Salary in-hand monthly', Math.round(sal.inHandMonthly), Math.round((1149540 - 21600 - 2400) / 12));
+// Prepayment: 50L @8.5% 20y, 5L lump in month 12, reduce tenure
+const pre = prepayment({ principal: 5000000, ratePct: 8.5, months: 240, lump: 500000, lumpMonth: 12, monthlyExtra: 0, yearlyExtra: 0, mode: 'tenure' });
+eq('Prepay saves interest (> 0)', pre.saved > 1000000 ? 1 : 0, 1);
+eq('Prepay shortens tenure', pre.monthsSaved > 30 ? 1 : 0, 1);
+const none = prepayment({ principal: 5000000, ratePct: 8.5, months: 240, lump: 0, lumpMonth: 1, monthlyExtra: 0, yearlyExtra: 0, mode: 'tenure' });
+eq('No prepayment = baseline interest', Math.round(none.interest), Math.round(none.baseInterest), 5);
 
 // Words
 eq('Words 1,25,00,050 INR', numberToWords('12500050', 'indian', 'inr'), 'Rupees One Crore Twenty-Five Lakh Fifty Only');

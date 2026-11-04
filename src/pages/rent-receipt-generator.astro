@@ -1,0 +1,118 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const now = new Date();
+const fyStart = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+const faqs = [
+  { q: 'Why do I need rent receipts?', a: 'Salaried employees claiming HRA exemption (old tax regime) must submit rent receipts to their employer, usually between January and March, as proof of rent paid.' },
+  { q: 'Is the landlord\'s PAN mandatory?', a: 'Yes, if the annual rent is more than ₹1 lakh. Without it your employer may disallow the HRA exemption.' },
+  { q: 'Do rent receipts need a revenue stamp?', a: 'A revenue stamp (₹1) is needed on receipts for cash payments above ₹5,000. Receipts for bank transfer, UPI or cheque payments don\'t need one. The generator adds a stamp box automatically when needed.' },
+  { q: 'Who should sign the receipt?', a: 'The landlord. Print the receipts, get them signed (and stamped for cash payments), then scan and submit them.' },
+  { q: 'Is my data stored?', a: 'Your details are saved only in this browser so you don\'t have to retype them next month. Nothing is uploaded.' },
+];
+const steps = ['Enter tenant, landlord and property details.', 'Enter monthly rent and the period (e.g. April to March).', 'Pick the payment mode.', 'Download the PDF (2 receipts per A4 page), print, get it signed and submit it.'];
+---
+<ToolLayout slug="rent-receipt-generator" h1="Rent Receipt Generator" lead="Create monthly rent receipts for HRA claims in seconds: one receipt per month, two per A4 page, with landlord PAN and revenue-stamp box." steps={steps} faqs={faqs} badges={['🇮🇳 For HRA claims', '🧾 PDF, ready to print', '💾 Remembers your details', '✅ No login']}>
+  <form class="stack-sm" id="rr-form" onsubmit="return false">
+    <div class="grid-2">
+      <div class="field"><label for="rr-tenant">Tenant name (employee)</label><input id="rr-tenant" type="text" required value="" placeholder="Rahul Sharma" /></div>
+      <div class="field"><label for="rr-landlord">Landlord name</label><input id="rr-landlord" type="text" required placeholder="Suresh Gupta" /></div>
+      <div class="field"><label for="rr-pan">Landlord PAN</label><input id="rr-pan" type="text" maxlength="10" placeholder="ABCDE1234F" style="text-transform:uppercase" /><small class="hint" id="rr-pan-hint"></small></div>
+      <div class="field"><label for="rr-rent">Monthly rent (₹)</label><input id="rr-rent" type="number" min="1" step="100" value="15000" /></div>
+      <div class="field" style="grid-column:1/-1"><label for="rr-addr">Rented property address</label><textarea id="rr-addr" rows="2" placeholder="Flat 302, Sunrise Apartments, MG Road, Pune 411001"></textarea></div>
+      <div class="field"><label for="rr-from">From month</label><input id="rr-from" type="month" value={`${fyStart}-04`} /></div>
+      <div class="field"><label for="rr-to">To month</label><input id="rr-to" type="month" value={`${fyStart + 1}-03`} /></div>
+      <div class="field"><label for="rr-mode">Payment mode</label><select id="rr-mode"><option>Bank transfer</option><option>UPI</option><option>Cheque</option><option>Cash</option></select></div>
+      <div class="field"><label for="rr-day">Receipt date</label><select id="rr-day"><option value="first">1st of the month</option><option value="last">Last day of the month</option></select></div>
+    </div>
+    <div class="status" id="rr-status"></div>
+    <div class="result" id="rr-preview" style="font-family:Georgia,serif;line-height:1.6"></div>
+    <div class="btn-row"><button type="button" class="btn btn-primary btn-lg" id="rr-go">⬇ Download receipts (PDF)</button><button type="button" class="btn" id="rr-clear">Clear saved details</button></div>
+  </form>
+  <script>
+    import { loadPdfLib, pdfBlob } from '../lib/pdf';
+    import { latin, hasNonLatin, para, MONTHS, lastDay } from '../lib/pdfdoc';
+    import { numberToWords } from '../lib/format';
+    import { downloadBlob, setStatus, store } from '../lib/ui';
+    const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
+    const ids = ['rr-tenant', 'rr-landlord', 'rr-pan', 'rr-rent', 'rr-addr', 'rr-from', 'rr-to', 'rr-mode', 'rr-day'];
+    const saved = store.get<Record<string, string>>('rent-receipt', {});
+    ids.forEach((id) => { if (saved[id]) $(id).value = saved[id]; });
+    const months = () => {
+      const [fy, fm] = $('rr-from').value.split('-').map(Number), [ty, tm] = $('rr-to').value.split('-').map(Number);
+      const out: { y: number; m: number }[] = [];
+      if (!fy || !ty) return out;
+      let y = fy, m = fm - 1;
+      while (y * 12 + m <= ty * 12 + tm - 1 && out.length < 60) {
+        out.push({ y, m });
+        if (++m > 11) { m = 0; y++; }
+      }
+      return out;
+    };
+    const fmtDate = (y: number, m: number, d: number) => `${String(d).padStart(2, '0')}/${String(m + 1).padStart(2, '0')}/${y}`;
+    function text(ym: { y: number; m: number }) {
+      const rent = +$('rr-rent').value || 0;
+      const words = numberToWords(String(rent), 'indian', 'inr');
+      return `Received a sum of Rs. ${rent.toLocaleString('en-IN')} (${words}) from ${$('rr-tenant').value || '[Tenant]'} towards the rent of the property at ${$('rr-addr').value || '[Address]'} for the period 01/${String(ym.m + 1).padStart(2, '0')}/${ym.y} to ${fmtDate(ym.y, ym.m, lastDay(ym.y, ym.m))}, paid by ${$('rr-mode').value.toLowerCase()}.`;
+    }
+    function update() {
+      store.set('rent-receipt', Object.fromEntries(ids.map((id) => [id, $(id).value])));
+      const ms = months();
+      const rent = +$('rr-rent').value || 0;
+      const annual = rent * 12;
+      const pan = $('rr-pan').value.trim().toUpperCase();
+      document.getElementById('rr-pan-hint')!.textContent = annual > 100000 ? (pan ? (/^[A-Z]{5}\d{4}[A-Z]$/.test(pan) ? '✓ Required (rent above ₹1 lakh a year)' : '⚠ PAN format looks wrong') : '⚠ Required: annual rent is above ₹1 lakh') : 'Optional (annual rent up to ₹1 lakh)';
+      const first = ms[0];
+      document.getElementById('rr-preview')!.innerHTML = first ? `<b>RENT RECEIPT</b> · ${MONTHS[first.m]} ${first.y}<br>${text(first).replace(/</g, '&lt;')}<br><span class="hint">…and ${ms.length - 1} more receipt${ms.length === 2 ? '' : 's'} up to ${MONTHS[ms[ms.length - 1].m]} ${ms[ms.length - 1].y}. Landlord: ${$('rr-landlord').value || '[Landlord]'}${pan ? ` (PAN ${pan})` : ''}.</span>` : 'Choose a valid period.';
+    }
+    ids.forEach((id) => $(id).addEventListener('input', update));
+    update();
+    document.getElementById('rr-clear')!.addEventListener('click', () => { store.set('rent-receipt', {}); location.reload(); });
+    document.getElementById('rr-go')!.addEventListener('click', async () => {
+      const st = document.getElementById('rr-status')!;
+      if (!$('rr-tenant').value || !$('rr-landlord').value || !(+$('rr-rent').value)) return setStatus(st, 'Please fill tenant name, landlord name and rent.', 'warn');
+      const { PDFDocument, StandardFonts, rgb } = await loadPdfLib();
+      const doc = await PDFDocument.create();
+      const font = await doc.embedFont(StandardFonts.Helvetica), bold = await doc.embedFont(StandardFonts.HelveticaBold);
+      const ms = months();
+      const rent = +$('rr-rent').value;
+      const cash = $('rr-mode').value === 'Cash' && rent > 5000;
+      const pan = $('rr-pan').value.trim().toUpperCase();
+      const grey = rgb(0.35, 0.35, 0.4);
+      ms.forEach((ym, i) => {
+        if (i % 2 === 0) doc.addPage([595.28, 841.89]);
+        const page = doc.getPage(doc.getPageCount() - 1);
+        const top = i % 2 === 0 ? 810 : 400;
+        page.drawRectangle({ x: 36, y: top - 370, width: 523, height: 370, borderColor: rgb(0.3, 0.3, 0.45), borderWidth: 1 });
+        page.drawText('RENT RECEIPT', { x: 230, y: top - 36, size: 18, font: bold });
+        const d = $('rr-day').value === 'first' ? 1 : lastDay(ym.y, ym.m);
+        page.drawText(`Receipt No: ${String(i + 1).padStart(3, '0')}`, { x: 56, y: top - 66, size: 10, font, color: grey });
+        page.drawText(`Date: ${fmtDate(ym.y, ym.m, d)}`, { x: 430, y: top - 66, size: 10, font, color: grey });
+        page.drawText(`${MONTHS[ym.m]} ${ym.y}`, { x: 56, y: top - 90, size: 12, font: bold });
+        para(page, latin(text(ym), font), { x: 56, y: top - 120, width: 480, size: 11.5, font, lineGap: 1.55 });
+        const by = top - 290;
+        page.drawText(`Landlord: ${latin($('rr-landlord').value, font)}`, { x: 56, y: by, size: 11, font: bold });
+        if (pan) page.drawText(`PAN: ${latin(pan, font)}`, { x: 56, y: by - 18, size: 11, font });
+        page.drawLine({ start: { x: 360, y: by - 26 }, end: { x: 530, y: by - 26 }, thickness: 0.8, color: grey });
+        page.drawText("Landlord's signature", { x: 390, y: by - 40, size: 9, font, color: grey });
+        if (cash) {
+          page.drawRectangle({ x: 470, y: by + 8, width: 60, height: 52, borderColor: grey, borderWidth: 0.8, borderDashArray: [3, 2] });
+          page.drawText('Revenue', { x: 482, y: by + 38, size: 8, font, color: grey });
+          page.drawText('stamp', { x: 486, y: by + 27, size: 8, font, color: grey });
+        }
+      });
+      downloadBlob(pdfBlob(await doc.save()), `rent-receipts-${$('rr-from').value}-to-${$('rr-to').value}.pdf`);
+      setStatus(st, `${ms.length} receipt${ms.length === 1 ? '' : 's'} created.${hasNonLatin($('rr-tenant').value, $('rr-landlord').value, $('rr-addr').value) ? ' Note: non-English characters were replaced; please type names in English.' : ''}`, 'ok');
+    });
+  </script>
+  <Fragment slot="content">
+    <h2>What a valid rent receipt contains</h2>
+    <ul>
+      <li>Tenant and landlord names, and the rented property's address.</li>
+      <li>Rent amount (in figures and words) and the period it covers.</li>
+      <li>Payment mode and date.</li>
+      <li>Landlord's PAN if annual rent exceeds ₹1 lakh, and the landlord's signature.</li>
+      <li>A revenue stamp for cash payments above ₹5,000.</li>
+    </ul>
+    <p>Check how much HRA is tax-free with the <a href="/hra-calculator">HRA calculator</a>, and whether the old regime is worth it with the <a href="/income-tax-calculator">income tax calculator</a>.</p>
+  </Fragment>
+</ToolLayout>
