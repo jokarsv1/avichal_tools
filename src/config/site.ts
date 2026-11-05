@@ -7,14 +7,14 @@
  */
 export const SITE = {
   /** Brand shown in the header, titles and schema markup. */
-  name: 'Avichal Tools',
+  name: 'SaralKit',
   /** Short tagline used on the home page and in meta descriptions. */
   tagline: 'Free online tools that run in your browser. No login, no watermark, no upload.',
   /**
    * Production URL, without a trailing slash. Used for canonical URLs, the sitemap and Open Graph.
    * Override at build time with the SITE_URL environment variable (set it in the Cloudflare dashboard).
    */
-  url: (process.env.SITE_URL || 'https://avichal-tools.pages.dev').replace(/\/$/, ''),
+  url: (process.env.SITE_URL || 'https://saralkit.com').replace(/\/$/, ''),
   /** Contact address shown in the footer, contact page and privacy policy. */
   email: 'jokars.v1@gmail.com',
   /** Public source code repository (open source = trust + backlinks). */
@@ -90,7 +90,7 @@ export const ANALYTICS = {
  */
 export const DONATE = {
   upiId: process.env.UPI_ID || '',
-  upiName: 'Avichal Tools',
+  upiName: 'SaralKit',
   buyMeACoffee: '', // e.g. 'https://buymeacoffee.com/yourname'
   kofi: '', // e.g. 'https://ko-fi.com/yourname'
   githubSponsors: '', // e.g. 'https://github.com/sponsors/yourname'

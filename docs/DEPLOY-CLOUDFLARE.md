@@ -17,7 +17,7 @@ Config already in the repo:
 2. Open **Workers & Pages → Create application → Import a repository** (the wording may be "Connect to Git").
 3. Authorise GitHub and pick **`jokarsv1/avichal_tools`**.
 4. Build settings:
-   - **Project / Worker name:** use exactly the `name` in `wrangler.jsonc` (currently `avichal-tools`). Builds fail if the two differ (newer Wrangler versions can override it automatically, but matching is safest).
+   - **Project / Worker name:** use exactly the `name` in `wrangler.jsonc` (`saralkit`). Builds fail if the two differ (newer Wrangler versions can override it automatically, but matching is safest).
    - **Production branch:** `main`.
    - **Build command:** `npm run build`
    - **Deploy command:** `npx wrangler deploy` (the default)
@@ -37,7 +37,7 @@ Config already in the repo:
    | `EST_ECPM_USD` | `0.8` | Optional. Your AdSense eCPM, used for the estimated-revenue-by-tool charts |
    | `GA4_ID` | `G-XXXXXXX` | Optional, only if you also want Google Analytics |
 
-6. Press **Deploy**. The first build takes about 1–2 minutes and gives you a URL like `https://avichal-tools.<your-subdomain>.workers.dev`.
+6. Press **Deploy**. The first build takes about 1–2 minutes and gives you a URL like `https://saralkit.<your-subdomain>.workers.dev`.
 7. Set `SITE_URL` to that URL (or your custom domain later) and **redeploy**, so canonical URLs and the sitemap point to the right place.
 
 From now on, **every `git push` to `main` redeploys automatically**. Pushes to other branches can produce preview URLs if you enable non-production branch builds.

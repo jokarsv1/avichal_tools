@@ -1,4 +1,4 @@
-# Avichal Tools
+# SaralKit
 
 **Free, open-source tools that run 100% in your browser. No login, no upload, no watermark.**
 

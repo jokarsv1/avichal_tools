@@ -141,7 +141,7 @@ for (let url = '/dashboards/?limit=200'; url;) {
 }
 for (const d of plan) {
   if (existing.has(d.name)) { console.log(`skip (exists): ${d.name}`); continue; }
-  const dash = await api('POST', '/dashboards/', { name: d.name, description: d.description, tags: ['avichal-tools', 'aarrr'] });
+  const dash = await api('POST', '/dashboards/', { name: d.name, description: d.description, tags: ['saralkit', 'aarrr'] });
   for (const [name, query] of d.insights) await api('POST', '/insights/', { name, query, dashboards: [dash.id], saved: true });
   console.log(`created: ${d.name} (${d.insights.length} insights) → ${HOST}/project/${PID}/dashboard/${dash.id}`);
 }

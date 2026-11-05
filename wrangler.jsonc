@@ -2,7 +2,7 @@
   // Cloudflare Workers (static assets only: no server code, free & unlimited static requests).
   // Deploy: `npm run deploy`, or connect the GitHub repo in the Cloudflare dashboard (Workers Builds).
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "avichal-tools",
+  "name": "saralkit",
   "compatibility_date": "2026-10-01",
   "assets": {
     "directory": "./dist",

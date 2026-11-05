@@ -2,7 +2,7 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
-const SITE_URL = (process.env.SITE_URL || 'https://avichal-tools.pages.dev').replace(/\/$/, '');
+const SITE_URL = (process.env.SITE_URL || 'https://saralkit.com').replace(/\/$/, '');
 
 export default defineConfig({
   site: SITE_URL,

@@ -6,7 +6,7 @@ const faqs = [
   { q: 'Can it convert JSON to CSV?', a: 'Yes, if the JSON is an array of objects (like most API results). Each object becomes a row and keys become columns.' },
 ];
 const steps = ['Paste JSON (or drop a .json file).', 'Format, minify, sort keys or convert to CSV.', 'Copy or download the result.'];
-const sample = '{"name":"Avichal Tools","free":true,"tools":["pdf","image","video"],"stats":{"uploads":0,"accounts":0}}';
+const sample = '{"name":"SaralKit","free":true,"tools":["pdf","image","video"],"stats":{"uploads":0,"accounts":0}}';
 ---
 <ToolLayout slug="json-formatter" h1="JSON Formatter & Validator" lead="Format, validate and minify JSON in your browser, with line and column for errors, key sorting and JSON to CSV. Safe for API keys and private data: nothing is uploaded."
   presets={[{ label: '✨ Beautify', set: { '#js-indent': '2' }, hint: 'Then press Format' }, { label: '🗜️ Minify', set: { '#js-indent': '0' } }, { label: '🔤 Sort keys', set: { '#js-sort': true } }, { label: '🧪 Load sample', set: { '#js-in': sample } }]}
