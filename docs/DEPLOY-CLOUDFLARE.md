@@ -17,7 +17,8 @@ Config already in the repo:
 2. Open **Workers & Pages → Create application → Import a repository** (the wording may be "Connect to Git").
 3. Authorise GitHub and pick **`jokarsv1/avichal_tools`**.
 4. Build settings:
-   - **Production branch:** `main` (merge this work into `main` first, or temporarily pick the `claude/...` branch).
+   - **Project / Worker name:** use exactly the `name` in `wrangler.jsonc` (currently `avichal-tools`). Builds fail if the two differ (newer Wrangler versions can override it automatically, but matching is safest).
+   - **Production branch:** `main`.
    - **Build command:** `npm run build`
    - **Deploy command:** `npx wrangler deploy` (the default)
    - **Root directory:** `/` (leave empty)
