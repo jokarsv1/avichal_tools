@@ -46,7 +46,7 @@ export const USP = {
  */
 export const ADS = {
   /** e.g. 'ca-pub-1234567890123456'. Empty = no ads (good for development). */
-  client: process.env.ADSENSE_CLIENT || '',
+  client: process.env.ADSENSE_CLIENT || 'ca-pub-7464488420393610',
   slots: {
     /** Below the tool, where people wait for results. Responsive. */
     belowTool: process.env.ADSENSE_SLOT_BELOW_TOOL || '',
