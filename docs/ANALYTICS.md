@@ -11,7 +11,11 @@ Everything is built and tested. It switches on when you add one key. Until then 
    - `POSTHOG_HOST` = `https://us.i.posthog.com` (or `https://eu.i.posthog.com`)
    - optional `EST_ECPM_USD` = your AdSense eCPM (for example `0.8`), which powers the "estimated revenue" charts
 4. Redeploy. Events start flowing within minutes (check *Activity* in PostHog).
-5. Create all dashboards with one command. Create a **Personal API key** (*Settings → Personal API keys*, scopes: `dashboard:write`, `insight:write`, `project:read`) and note your **Project ID**:
+5. Create all dashboards. Create a **Personal API key** (*Settings → Personal API keys*, scopes: `dashboard:write`, `insight:write`, `project:read`) and note your **Project ID**.
+
+   **Easiest (no install):** in GitHub open the repo → *Settings → Secrets and variables → Actions* → add secrets `POSTHOG_PERSONAL_API_KEY` and `POSTHOG_PROJECT_ID`. Then *Actions → Create PostHog dashboards → Run workflow* (pick your region). It takes about a minute.
+
+   **Or from your computer** (needs Node.js 22):
 
 ```bash
 POSTHOG_API_HOST=https://us.posthog.com POSTHOG_PERSONAL_API_KEY=phx_xxx POSTHOG_PROJECT_ID=12345 node scripts/posthog-dashboards.mjs

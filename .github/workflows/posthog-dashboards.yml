@@ -1,0 +1,35 @@
+# One-click PostHog dashboards: GitHub → Actions → "Create PostHog dashboards" → Run workflow.
+# Needs two repository secrets (Settings → Secrets and variables → Actions):
+#   POSTHOG_PERSONAL_API_KEY  (PostHog → Settings → Personal API keys; scopes: dashboard write, insight write, project read)
+#   POSTHOG_PROJECT_ID        (PostHog → Settings → Project → Project ID)
+# Re-running is safe: dashboards that already exist are skipped.
+name: Create PostHog dashboards
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: PostHog region of your account
+        type: choice
+        options: [us, eu]
+        default: us
+      tools:
+        description: Dashboards per tool (popular ≈ 32 dashboards, all ≈ 80, none = overall + categories)
+        type: choice
+        options: [popular, all, none]
+        default: popular
+permissions:
+  contents: read
+jobs:
+  dashboards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Create dashboards
+        run: node scripts/posthog-dashboards.mjs --tools=${{ inputs.tools }}
+        env:
+          POSTHOG_API_HOST: https://${{ inputs.region }}.posthog.com
+          POSTHOG_PERSONAL_API_KEY: ${{ secrets.POSTHOG_PERSONAL_API_KEY }}
+          POSTHOG_PROJECT_ID: ${{ secrets.POSTHOG_PROJECT_ID }}

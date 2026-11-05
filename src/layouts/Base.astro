@@ -72,6 +72,7 @@ const cfBeacon = ANALYTICS.cloudflareToken ? JSON.stringify({ token: ANALYTICS.c
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogUrl} />
     {schema.map((s) => <script type="application/ld+json" set:html={JSON.stringify(s)} />)}
+    {ADS.client && <meta name="google-adsense-account" content={ADS.client} />}
     {ADS.client && <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin />}
     <slot name="head" />
   </head>
