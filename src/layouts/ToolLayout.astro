@@ -23,6 +23,9 @@ interface Props {
   title?: string;
   description?: string;
   h1?: string;
+  /** One short line under the H1. Defaults to the tool's short text (or the lead's first sentence on landing pages). */
+  tagline?: string;
+  /** Longer intro; shown at the top of the guide section below the tool. */
   lead?: string;
   steps?: string[];
   faqs?: Faq[];
@@ -60,6 +63,16 @@ const {
 } = en ? props : props.localized ? { ...props, badges: props.badges ?? [`📵 ${t('Files never leave your device')}`, `🚫 ${t('No watermark')}`, `∞ ${t('No limits')}`], path: localize(props.path ?? `/${props.slug}`, lang), presets: props.presets?.map((p) => (p.href ? { ...p, href: localizeHref(p.href, lang) } : p)) } : { slug: props.slug, presets: props.presets?.map((p) => (p.href ? { ...p, href: localizeHref(p.href, lang) } : p)), steps: [1, 2, 3].map((i) => t(`steps.${kind}.${i}`)), faqs: ['free', 'upload', 'account', 'mobile'].map((k) => ({ q: t(`faq.${k}.q`), a: t(`faq.${k}.a`) })), badges: [`📵 ${t('Files never leave your device')}`, `🚫 ${t('No watermark')}`, `∞ ${t('No limits')}`] } as typeof props;
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const strip = (s: string) => s.replace(/<[^>]+>/g, '');
+// The top of the page stays short: H1, one line, the tool. All reading text goes to the guide section below.
+const firstSentence = (s: string) => (strip(s).match(/^(.{20,}?[.!?।])(\s|$)/)?.[1] ?? strip(s));
+const isLanding = !!props.path && props.path !== `/${tool.slug}`;
+const landingLine = isLanding ? firstSentence(lead) : '';
+const tagline = (en || props.localized ? props.tagline : undefined) ?? (landingLine && landingLine.length <= 130 ? landingLine : tt.short);
+const heroMeta = [t('Free forever'), t('No account, ever'), t(kind === 'file' ? 'Files never leave your device' : 'No data stored')];
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+const embedCode = kind === 'calc'
+  ? `<iframe src="${SITE.url + path}?embed=1" title="${esc(h1)}" width="100%" height="900" style="border:0;max-width:820px" loading="lazy"></iframe>\n<p style="font-size:13px">Free <a href="${SITE.url + path}">${esc(h1)}</a> by ${SITE.name}</p>\n<script>addEventListener('message',function(e){if(e.origin==='${SITE.url}'&&e.data&&e.data.skH)document.querySelectorAll('iframe').forEach(function(f){if(f.contentWindow===e.source)f.style.height=e.data.skH+'px'})})</script>`
+  : '';
 // The USP badges always come first; page-specific badges follow (duplicates of the USP are dropped).
 const usp = en ? USP.short : [`🆓 ${t('Free forever')}`, `👤 ${t('No account, ever')}`, `🔒 ${t('No data stored')}`];
 const badges = [...usp, ...extraBadges.filter((b) => !/no login|no account|free forever|no data/i.test(b))];
@@ -111,10 +124,9 @@ if (faqs.length && (en || props.localized)) {
       <div>
         <header class="tool-hero">
           <h1>{h1}</h1>
-          <p class="lead" set:html={lead} />
-          <div class="trust">{badges.map((b) => <span>{b}</span>)}</div>
-          {tool.desktopOnly && <p class="hint" style="margin-top:8px">💻 {t('desktopOnly')}</p>}
-          {!en && <p class="hint lang-note" style="margin-top:8px">🌐 {t('lang.note')} <a href={props.localized && props.path ? props.path : `/${tool.slug}`} data-lang="en" hreflang="en">{t('Read in English')}</a></p>}
+          <p class="tagline" set:html={tagline} />
+          <p class="hero-meta">{heroMeta.map((m) => <span>{m}</span>)}</p>
+          {tool.desktopOnly && <p class="hint" style="margin:8px 0 0">💻 {t('desktopOnly')}</p>}
         </header>
 
         {presets.length > 0 && (
@@ -129,45 +141,60 @@ if (faqs.length && (en || props.localized)) {
           <noscript><p class="status warn">{t('noscript')}</p></noscript>
           <slot />
         </section>
+        <p class="embed-credit"><a href={url} target="_blank" rel="noopener">{h1} · {SITE.name} ↗</a></p>
 
         <AdSlot slot="belowTool" />
 
-        <article class="prose">
-          {(en || props.localized) && <slot name="content" />}
-          {steps.length > 0 && (
-            <>
-              <h2>{t('How to use the {tool} tool', { tool: h1 })}</h2>
-              <ol>{steps.map((s) => <li set:html={s} />)}</ol>
-            </>
-          )}
-          <AdSlot slot="inContent" />
-          <h2>{t('Why {site}?', { site: SITE.name })}</h2>
-          <ul>
-            <li set:html={t('why.free')} />
-            <li set:html={t('why.account')} />
-            <li set:html={t('why.data')} />
-            <li set:html={t('why.offline')} />
-            <li set:html={t('why.open').replace('GitHub', `<a href="${SITE.github}" rel="noopener">GitHub</a>`)} />
-          </ul>
-          {faqs.length > 0 && (
-            <section class="faq">
-              <h2>{t('Frequently asked questions')}</h2>
-              {faqs.map((f) => (
-                <details>
-                  <summary>{f.q}</summary>
-                  <p set:html={f.a} />
-                </details>
-              ))}
-            </section>
-          )}
-        </article>
-
         {related.length > 0 && (
-          <section>
+          <section class="related">
             <div class="section-head"><h2>{t('Related tools')}</h2><a href={L(cat.path)}>{t('All {cat} tools', { cat: en ? ct.label.toLowerCase() : ct.label })} →</a></div>
-            <div class="tool-grid">{related.map((x) => <ToolTile tool={x} lang={lang} />)}</div>
+            <div class="tool-grid m-compact">{related.map((x) => <ToolTile tool={x} lang={lang} />)}</div>
           </section>
         )}
+
+        <section class="guide" id="guide" aria-label={t('guide.label')}>
+          <p class="guide-eyebrow">📖 {t('guide.label')}</p>
+          <p class="guide-lead" set:html={lead} />
+          <div class="trust">{badges.map((b) => <span>{b}</span>)}</div>
+          {!en && <p class="hint lang-note">🌐 {t('lang.note')} <a href={props.localized && props.path ? props.path : `/${tool.slug}`} data-lang="en" hreflang="en">{t('Read in English')}</a></p>}
+          <article class="prose">
+            {(en || props.localized) && <slot name="content" />}
+            {steps.length > 0 && (
+              <>
+                <h2>{t('How to use the {tool} tool', { tool: h1 })}</h2>
+                <ol>{steps.map((s) => <li set:html={s} />)}</ol>
+              </>
+            )}
+            <AdSlot slot="inContent" />
+            <h2>{t('Why {site}?', { site: SITE.name })}</h2>
+            <ul>
+              <li set:html={t('why.free')} />
+              <li set:html={t('why.account')} />
+              <li set:html={t('why.data')} />
+              <li set:html={t('why.offline')} />
+              <li set:html={t('why.open').replace('GitHub', `<a href="${SITE.github}" rel="noopener">GitHub</a>`)} />
+            </ul>
+            {faqs.length > 0 && (
+              <section class="faq">
+                <h2>{t('Frequently asked questions')}</h2>
+                {faqs.map((f) => (
+                  <details>
+                    <summary>{f.q}</summary>
+                    <p set:html={f.a} />
+                  </details>
+                ))}
+              </section>
+            )}
+            {embedCode && (
+              <section class="embed-box">
+                <h2>{t('embed.h2')}</h2>
+                <p>{t('embed.p')}</p>
+                <textarea class="embed-code" rows="5" readonly spellcheck="false" aria-label={t('embed.h2')}>{embedCode}</textarea>
+                <button type="button" class="btn btn-sm" id="embed-copy" data-done={t('Copied')}>📋 {t('Copy code')}</button>
+              </section>
+            )}
+          </article>
+        </section>
       </div>
       {hasSidebar && (
         <aside class="tool-aside" aria-label="Sidebar">
@@ -219,6 +246,20 @@ if (faqs.length && (en || props.localized)) {
         tr(root);
         new MutationObserver((ms) => ms.forEach((m) => (m.type === 'characterData' ? tr(m.target) : m.addedNodes.forEach(tr)))).observe(root, { childList: true, subtree: true, characterData: true });
       }).catch(() => {});
+    }
+    // "Add this calculator to your website": copy the embed code.
+    const embedBtn = document.getElementById('embed-copy');
+    embedBtn?.addEventListener('click', async () => {
+      const code = (document.querySelector('.embed-code') as HTMLTextAreaElement).value;
+      try { await navigator.clipboard.writeText(code); } catch { (document.querySelector('.embed-code') as HTMLTextAreaElement).select(); }
+      embedBtn.textContent = `✅ ${embedBtn.dataset.done}`;
+      track('embed_code_copied');
+    });
+    // Embedded on another site (?embed=1): tell the host page our height so its iframe fits without scrollbars.
+    if (document.documentElement.classList.contains('embed') && parent !== window) {
+      const send = () => parent.postMessage({ skH: Math.ceil(document.documentElement.scrollHeight) }, '*');
+      new ResizeObserver(send).observe(document.body);
+      send();
     }
     const want = new URLSearchParams(location.search).get('preset');
     const match = want && document.querySelector<HTMLElement>(`.quick [data-preset-id="${CSS.escape(want)}"]`);

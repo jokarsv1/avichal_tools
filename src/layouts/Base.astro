@@ -24,7 +24,8 @@ interface Props {
 
 const { title, description, path, schema = [], activeCategory, noindex = false, ogImage = '/og.png', rawTitle = false, pageType = path === '/' ? 'home' : 'content', tool } = Astro.props;
 const an = ANALYTICS.posthogKey ? JSON.stringify({ key: ANALYTICS.posthogKey, host: ANALYTICS.posthogHost, ecpm: ANALYTICS.estimatedEcpmUsd }) : '';
-const fullTitle = rawTitle ? title : `${title} | ${SITE.name}`;
+// Add " | SaralKit" only if the whole title still fits in a search result (~70 chars); long titles keep their keywords instead.
+const fullTitle = rawTitle || [...`${title} | ${SITE.name}`].length > 70 ? title : `${title} | ${SITE.name}`;
 const canonical = SITE.url + (path === '/' ? '/' : path.replace(/\/$/, ''));
 const ogUrl = ogImage.startsWith('http') ? ogImage : SITE.url + ogImage;
 const popular = LIVE_TOOLS.filter((t) => t.popular).slice(0, 8);
@@ -49,10 +50,14 @@ const cfBeacon = ANALYTICS.cloudflareToken ? JSON.stringify({ token: ANALYTICS.c
     <link rel="canonical" href={canonical} />
     {hasAlt && LANGS.map((l) => <link rel="alternate" hreflang={l.code} href={SITE.url + (localize(enPath, l.code) === '/' ? '/' : localize(enPath, l.code))} />)}
     {hasAlt && <link rel="alternate" hreflang="x-default" href={SITE.url + (enPath === '/' ? '/' : enPath)} />}
+    <script is:inline>
+      // ?embed=1: the tool is shown inside another website's iframe, so hide our header, footer and text.
+      if (/[?&]embed=1(&|$)/.test(location.search)) document.documentElement.classList.add('embed');
+    </script>
     {hasAlt && lang === 'en' && (
       <script is:inline>
         // A visitor who chose a language earlier sees that version (crawlers have no saved choice, so they always get English).
-        try { var l = localStorage.getItem('lang'); if (l && /^(hi|bn|mr|te|ta)$/.test(l)) location.replace('/' + l + (location.pathname === '/' ? '' : location.pathname) + location.search + location.hash); } catch (e) {}
+        try { var l = localStorage.getItem('lang'); if (l && /^(hi|bn|mr|te|ta)$/.test(l) && !document.documentElement.classList.contains('embed')) location.replace('/' + l + (location.pathname === '/' ? '' : location.pathname) + location.search + location.hash); } catch (e) {}
       </script>
     )}
     {noindex && <meta name="robots" content="noindex, follow" />}
@@ -158,6 +163,8 @@ const cfBeacon = ANALYTICS.cloudflareToken ? JSON.stringify({ token: ANALYTICS.c
       <script is:inline define:vars={{ client: ADS.client }}>
         // Load AdSense after the page is interactive so it never delays the tool (Core Web Vitals).
         (function () {
+          // Never show ads inside another site's frame (embedded calculators): AdSense doesn't allow it.
+          if (window.top !== window.self || document.documentElement.classList.contains('embed')) return;
           function pushSlots() {
             document.querySelectorAll('ins.adsbygoogle:not([data-pushed])').forEach(function (el) {
               if (el.offsetWidth === 0) return; // hidden (e.g. sidebar on mobile)
@@ -198,7 +205,7 @@ const cfBeacon = ANALYTICS.cloudflareToken ? JSON.stringify({ token: ANALYTICS.c
     )}
     {isProd && (
       <script is:inline>
-        if ('serviceWorker' in navigator) addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function () {}); });
+        if ('serviceWorker' in navigator && window.top === window.self) addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function () {}); });
       </script>
     )}
   </body>

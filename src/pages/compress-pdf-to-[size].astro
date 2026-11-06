@@ -23,7 +23,7 @@ const steps = [`Choose the PDF (the target of ${label} is already filled in).`, 
 ---
 <ToolLayout slug="compress-pdf" path={`/compress-pdf-to-${s.slug}`} crumb={`Under ${label}`}
   title={`Compress PDF to ${label} – Free, Online, No Upload`}
-  description={`Reduce a PDF to ${label} or less in seconds, for ${s.uses}. Tries stronger settings automatically. Free, no sign-up, files never leave your device.`}
+  description={`Reduce a PDF to ${label} or less in seconds for ${s.short}. Free, no sign-up, and the file never leaves your device.`}
   h1={`Compress PDF to ${label}`}
   lead={`Make your PDF <b>${label} or smaller</b> for ${s.uses}. Choose the file and the tool automatically tries stronger settings until it fits. Nothing is uploaded.`}
   presets={others.map((o) => ({ label: `🎯 ${o.value} ${o.unit}`, href: `/compress-pdf-to-${o.slug}` }))}

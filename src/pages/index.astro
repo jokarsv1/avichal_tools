@@ -12,25 +12,24 @@ const lang = langFromPath(Astro.url.pathname);
 const t = useT(lang);
 const L = (p: string) => localize(p, lang);
 const schema = [
-  { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE.name, url: SITE.url + '/', description: SITE.tagline },
-  { '@context': 'https://schema.org', '@type': 'Organization', name: SITE.name, url: SITE.url + '/', email: SITE.email, logo: SITE.url + '/icon-512.png', sameAs: [SITE.github] },
+  { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE.name, alternateName: ['Saral Kit', 'saralkit.com'], url: SITE.url + '/', description: SITE.tagline, inLanguage: ['en', 'hi', 'bn', 'mr', 'te', 'ta'], publisher: { '@id': SITE.url + '/#org' } },
+  { '@context': 'https://schema.org', '@type': 'Organization', '@id': SITE.url + '/#org', name: SITE.name, alternateName: 'Saral Kit', url: SITE.url + '/', email: SITE.email, logo: SITE.url + '/icon-512.png', description: SITE.tagline, sameAs: [SITE.github] },
 ];
 ---
 <Base title={`${SITE.name} – ${t('home.title')}`} rawTitle description={t('home.description', { n: LIVE_TOOLS.length })} path={L('/')} schema={schema} pageType="home">
   <div class="container">
     <section class="hero">
       <h1>{t('home.h1')}</h1>
-      <p>{t('home.lead')}</p>
       <div class="search" role="search">
         <label for="tool-search" class="visually-hidden">{t('Search tools')}</label>
         <input id="tool-search" type="text" placeholder={t('search.placeholder')} autocomplete="off" />
       </div>
-      <div class="pills"><span>🆓 {t('Free forever')}</span><span>👤 {t('No account, ever')}</span><span>🔒 {t('No data stored')}</span><span>📵 {t('Files never leave your device')}</span><span>🚫 {t('No watermark')}</span><span>💻 {t('Open source')}</span></div>
+      <p class="hero-meta"><span>{t('Free forever')}</span><span>{t('No account, ever')}</span><span>{t('Files never leave your device')}</span><span>{t('No watermark')}</span></p>
     </section>
 
     <section id="popular">
       <div class="section-head"><h2>{t('Popular tools')}</h2></div>
-      <div class="tool-grid">{popular.map((x) => <ToolTile tool={x} lang={lang} />)}</div>
+      <div class="tool-grid m-compact">{popular.slice(0, 12).map((x) => <ToolTile tool={x} lang={lang} />)}</div>
     </section>
 
     <AdSlot slot="belowTool" />
@@ -38,7 +37,7 @@ const schema = [
     {CATEGORIES.map((c) => (
       <section id={c.id} data-cat>
         <div class="section-head"><h2>{c.icon} {t('{cat} tools', { cat: catText(c, lang).label })}</h2><a href={L(c.path)}>{t('View all')} →</a></div>
-        <div class="tool-grid">{toolsIn(c.id).map((x) => <ToolTile tool={x} lang={lang} />)}</div>
+        <div class="tool-grid compact">{toolsIn(c.id).map((x) => <ToolTile tool={x} lang={lang} compact />)}</div>
         {c.id === 'exam' && (
           <p class="hint" style="margin-top:10px">{lang === 'en' ? 'Exam presets' : t('Exam-specific resizers')}: {EXAMS.map((e, i) => <>{i ? ' · ' : ''}<a href={L(`/${e.slug}-photo-resizer`)}>{e.name}</a></>)} · <a href={L('/compress-image-to-20kb')}>20 KB</a> · <a href={L('/compress-image-to-50kb')}>50 KB</a> · <a href={L('/compress-image-to-100kb')}>100 KB</a></p>
         )}
@@ -46,11 +45,15 @@ const schema = [
     ))}
     <p class="status warn hidden" id="no-results">{t('search.none')} <a href="/roadmap">{t('Request it')}</a></p>
 
-    <section class="prose" style="margin-top:40px">
+    <section class="guide" aria-label={t('guide.label')}>
+      <p class="guide-eyebrow">📖 {t('guide.label')}</p>
+      <p class="guide-lead">{t('home.lead')}</p>
+      <div class="prose" style="margin-top:0">
       <h2>{t('home.why.h2')}</h2>
       {lang === 'en'
         ? <p>Most "free" online tools upload your file to a server, then charge for credits, add a watermark or limit you to two files a day, because servers cost money. {SITE.name} works differently: the processing code runs inside your browser using modern web technology (WebAssembly and WebCodecs). Your device does the work, so there are no server costs to pass on, no limits, and nothing to leak. The site is supported by a few non-intrusive ads and by donations.</p>
         : <p>{t('home.why.p')}</p>}
+      </div>
     </section>
   </div>
   <script>

@@ -1,11 +1,11 @@
 ---
 import type { Tool } from '../data/tools';
 import { type Lang, toolText, localize } from '../i18n';
-interface Props { tool: Tool; lang?: Lang }
-const { tool, lang = 'en' } = Astro.props;
+interface Props { tool: Tool; lang?: Lang; /** Icon and name only (the description becomes a tooltip). */ compact?: boolean }
+const { tool, lang = 'en', compact = false } = Astro.props;
 const { name, short } = toolText(tool, lang);
 ---
-<a class="tool-tile" href={localize(`/${tool.slug}`, lang)} data-search={`${name} ${short} ${tool.name} ${tool.short} ${tool.keywords ?? ''}`.toLowerCase()}>
+<a class={compact ? 'tool-tile compact' : 'tool-tile'} href={localize(`/${tool.slug}`, lang)} title={compact ? short : undefined} data-search={`${name} ${short} ${tool.name} ${tool.short} ${tool.keywords ?? ''}`.toLowerCase()}>
   <span class="ti" aria-hidden="true">{tool.icon}</span>
-  <span><b>{name}</b><span>{short}</span></span>
+  {compact ? <b>{name}</b> : <span><b>{name}</b><span>{short}</span></span>}
 </a>

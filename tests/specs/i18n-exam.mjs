@@ -12,7 +12,7 @@ export default (test, { BASE, newPage, download, fixture, assert }) => {
 
     await page.goto(`${BASE}/ta/compress-image-to-20kb`);
     assert((await page.textContent('h1')).includes('20 KB'), 'tamil kb h1');
-    assert((await page.textContent('.lead')).includes('SSC'), 'computed exam uses listed');
+    assert((await page.textContent('.guide-lead')).includes('SSC'), 'computed exam uses listed (guide intro)');
     assert((await page.getAttribute('link[rel=canonical]', 'href')).endsWith('/ta/compress-image-to-20kb'), 'canonical');
     await page.setInputFiles('#kb-drop input[type=file]', fixture('photo.jpg'));
     await page.waitForSelector('.kb-status.ok', { timeout: 30000 });

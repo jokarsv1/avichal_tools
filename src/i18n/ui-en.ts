@@ -95,5 +95,11 @@ export const UI_EN = {
   'Read in English': 'Read this page in English',
   'Exam-specific resizers': 'Exam-specific resizers',
   'Compress to a fixed size': 'Compress to a fixed size',
+  // guide section + embeddable calculators
+  'guide.label': 'Guide & FAQ',
+  'embed.h2': 'Add this calculator to your website',
+  'embed.p': 'Free for blogs and websites. Paste this code where you want the calculator to appear. It works on WordPress, Blogger and plain HTML.',
+  'Copy code': 'Copy code',
+  'Copied': 'Copied',
 };
 export type UiKey = keyof typeof UI_EN;

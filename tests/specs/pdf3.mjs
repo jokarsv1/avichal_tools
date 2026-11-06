@@ -13,6 +13,8 @@ export default (test, { BASE, newPage, download, fixture, assert }) => {
     await page.waitForSelector('.ov-text');
     await page.keyboard.type('Hello Edited 2026');
     await page.click('[data-tool=whiteout]');
+    // The pages sit in their own scroll box: bring its top into view so the drag lands on the page.
+    await page.$eval('.ov-pages', (e) => { e.scrollTop = 0; e.scrollIntoView({ block: 'center' }); });
     const box = await canvas.boundingBox();
     await page.mouse.move(box.x + box.width * 0.1, box.y + 60);
     await page.mouse.down();

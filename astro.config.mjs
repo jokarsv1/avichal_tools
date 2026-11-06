@@ -11,8 +11,10 @@ export default defineConfig({
   build: { format: 'file' },
   integrations: [
     sitemap({
-      filter: (page) => !/\/(404|thank-you)$/.test(page),
-      changefreq: 'weekly',
+      // noindex pages stay out of the sitemap.
+      filter: (page) => !/\/(404|thank-you|search)$/.test(page),
+      // hreflang alternates (xhtml:link) so Google finds and pairs every translated page quickly.
+      i18n: { defaultLocale: 'en', locales: { en: 'en', hi: 'hi', bn: 'bn', mr: 'mr', te: 'te', ta: 'ta' } },
     }),
   ],
   vite: {
