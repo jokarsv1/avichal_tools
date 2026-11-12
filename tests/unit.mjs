@@ -130,6 +130,33 @@ eq('Discount 1000 -20% -10%', discount(1000, 20, 10).afterExtra, 720);
 eq('Discount effective %', Math.round(discount(1000, 20, 10).effectivePct), 28);
 eq('Discount + 18% GST', discount(1000, 20, 0, 18).final, 944);
 
+// YouTube helpers
+{
+  const y = await import('../src/lib/youtube.ts');
+  const id = (u) => y.parseYouTube(u)?.id ?? null;
+  eq('YT watch link', id('https://www.youtube.com/watch?v=dQw4w9WgXcQ&si=abc'), 'dQw4w9WgXcQ');
+  eq('YT youtu.be + t', y.parseYouTube('youtu.be/dQw4w9WgXcQ?t=90')?.t, 90);
+  eq('YT shorts', y.parseYouTube('https://youtube.com/shorts/dQw4w9WgXcQ?feature=share')?.isShort, true);
+  eq('YT embed start', y.parseYouTube('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?start=42')?.t, 42);
+  eq('YT mobile/music/live', [id('https://m.youtube.com/watch?v=dQw4w9WgXcQ'), id('https://music.youtube.com/watch?v=dQw4w9WgXcQ'), id('https://www.youtube.com/live/dQw4w9WgXcQ')].join(), 'dQw4w9WgXcQ,dQw4w9WgXcQ,dQw4w9WgXcQ');
+  eq('YT bare id', id('dQw4w9WgXcQ'), 'dQw4w9WgXcQ');
+  eq('YT rejects other sites', id('https://vimeo.com/dQw4w9WgXcQ'), null);
+  eq('YT rejects bad id', id('https://www.youtube.com/watch?v=short'), null);
+  eq('Time 1m30s', y.parseTime('1m30s'), 90);
+  eq('Time 1:02:03', y.parseTime('1:02:03'), 3723);
+  eq('Time 1:75 invalid', Number.isNaN(y.parseTime('1:75')), true);
+  eq('fmtTime 3723', y.fmtTime(3723), '1:02:03');
+  eq('Embed autoplay mutes, loop adds playlist', y.embedSrc('dQw4w9WgXcQ', { autoplay: true, loop: true }), 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&loop=1&playlist=dQw4w9WgXcQ');
+  eq('Embed privacy + start/end', y.embedSrc('dQw4w9WgXcQ', { privacy: true, start: 30, end: 20 }), 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?start=30');
+  eq('Chapters OK', y.checkChapters('0:00 Intro\n1:00 Middle\n2:00 End').errors.length, 0);
+  eq('Chapters first not 0:00', y.checkChapters('0:05 A\n1:00 B\n2:00 C').errors[0].startsWith('The first timestamp'), true);
+  eq('Chapters too short', y.checkChapters('0:00 A\n0:05 B\n1:00 C').errors.some((e) => e.includes('at least 10 seconds')), true);
+  eq('Chapters too few', y.checkChapters('0:00 A\n1:00 B').errors.some((e) => e.includes('at least 3')), true);
+  eq('Chapters last vs duration', y.checkChapters('0:00 A\n1:00 B\n2:00 C', 125).errors.some((e) => e.includes('last chapter')), true);
+  eq('YT RPM India finance', y.ytRpm('long', 'india', 'finance').map(Math.round).join('-'), '55-220');
+  eq('YT 10k/day @₹25-100 month', y.ytEarnings(10000, [25, 100]).month.join('-'), '7500-30000');
+}
+
 // i18n completeness: every language has every UI string, category, tool page name and in-tool phrase.
 {
   const fs = await import('node:fs');

@@ -8,6 +8,7 @@ const SYN: Record<string, string[]> = {
   remove: ['unlock', 'remover'], lock: ['protect'], decrypt: ['unlock'], encrypt: ['protect'], aadhar: ['aadhaar'],
   sign: ['signature'], esign: ['signature', 'sign'], loan: ['emi'], interest: ['emi', 'fd'], pension: ['nps', 'retirement'],
   tax: ['income'], salary: ['salary'], ctc: ['salary'], mp3: ['audio'], ringtone: ['audio', 'cutter'], resume: ['resume', 'cv'], cv: ['resume'],
+  yt: ['youtube'], earning: ['money'], earnings: ['money'], thumb: ['thumbnail'], timestamp: ['timestamp'], iframe: ['embed'],
   bg: ['background'], ocr: ['text'], dollar: ['usd'], dollars: ['usd'], pound: ['gbp'], euro: ['eur'], dirham: ['aed'], riyal: ['sar'], rupee: ['inr'], rupees: ['inr'], rs: ['inr'],
 };
 

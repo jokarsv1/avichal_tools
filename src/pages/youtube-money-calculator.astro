@@ -1,0 +1,111 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import SliderField from '../components/SliderField.astro';
+import { ytRpm, YT_RPM } from '../lib/youtube';
+import { rupees } from '../lib/format';
+
+const faqs = [
+  { q: 'How much does YouTube pay for 1,000 views in India?', a: 'For long videos watched mostly in India, creators typically earn about <b>₹25–100 per 1,000 views</b> (RPM), more for finance, tech and education, less for entertainment. Shorts pay far less: roughly ₹0.5–3 per 1,000 views. Viewers from the US, UK and Canada pay several times more.' },
+  { q: 'How much money is 1 million (10 lakh) views?', a: `At an Indian-audience RPM of ₹25–100, 10 lakh long-video views earn roughly <b>₹25,000–1,00,000</b>. The same views on Shorts earn about ₹500–3,000.` },
+  { q: 'What is RPM and how is it different from CPM?', a: '<b>CPM</b> is what advertisers pay per 1,000 ad impressions, before YouTube\'s share. <b>RPM</b> is what you actually earn per 1,000 views, after YouTube\'s share and counting views that showed no ad. RPM is always lower, and it\'s the number that matters for you. Find yours in YouTube Studio → Analytics → Revenue.' },
+  { q: 'When does YouTube start paying?', a: 'You need to join the YouTube Partner Program. For ad revenue that means 1,000 subscribers plus either 4,000 public watch hours in the last 12 months or 10 million public Shorts views in the last 90 days. Long videos give creators 55% of the ad revenue; Shorts give 45% of the creator pool. YouTube pays through AdSense once your balance reaches the payout threshold. Check YouTube Help for the current rules in your country.' },
+  { q: 'Is this exact?', a: 'No. It\'s an estimate from typical published RPM ranges. Your real RPM depends on your viewers\' countries, topic, video length, season (Oct–Dec pays more) and how many viewers use ad blockers or YouTube Premium. Enter your own RPM from YouTube Studio for an exact projection.' },
+];
+const steps = ['Enter how many views you get per day.', 'Choose long videos or Shorts, your audience and your topic.', 'See your estimated earnings per day, month and year. Add your real RPM for an exact figure.'];
+// Example table from the same model as the calculator, so the page and the tool always agree.
+const ex = [
+  { label: 'Long videos, Indian audience (education)', rpm: ytRpm('long', 'india', 'education') },
+  { label: 'Long videos, Indian audience (finance)', rpm: ytRpm('long', 'india', 'finance') },
+  { label: 'Long videos, US/UK audience (education)', rpm: ytRpm('long', 'west', 'education') },
+  { label: 'Shorts, Indian audience', rpm: ytRpm('shorts', 'india', 'education') },
+];
+const range = (r: [number, number], views: number) => `${rupees(Math.round((views / 1000) * r[0]))} – ${rupees(Math.round((views / 1000) * r[1]))}`;
+---
+<ToolLayout slug="youtube-money-calculator" h1="YouTube Money Calculator"
+  lead="Estimate how much a YouTube channel earns from its views: per day, month and year, for long videos or Shorts, Indian or foreign viewers, and your topic. Add your own RPM from YouTube Studio for an exact projection."
+  presets={[
+    { label: '🇮🇳 10K views/day, India', href: '/youtube-money-calculator?v=10000&f=long&a=india&n=education&r=' },
+    { label: '📱 1 lakh Shorts views/day', href: '/youtube-money-calculator?v=100000&f=shorts&a=india&n=entertainment&r=' },
+    { label: '💰 Finance channel, US viewers', href: '/youtube-money-calculator?v=5000&f=long&a=west&n=finance&r=' },
+    { label: '🎮 Gaming, 50K views/day', href: '/youtube-money-calculator?v=50000&f=long&a=mixed&n=gaming&r=' },
+  ]}
+  steps={steps} faqs={faqs} badges={['📊 Long videos & Shorts', '🌍 India vs foreign viewers', '🔗 Shareable']}>
+  <div class="calc">
+    <div class="stack">
+      <SliderField id="v" label="Views per day" min={0} max={1000000} step={1000} value={10000} />
+      <div class="field">
+        <span style="font-weight:600">Video type</span>
+        <select id="f" data-key="f" aria-label="Video type"><option value="long">Long videos</option><option value="shorts">Shorts</option></select>
+      </div>
+      <div class="field">
+        <label for="a">Where your viewers are</label>
+        <select id="a" data-key="a"><option value="india">Mostly India</option><option value="mixed">Mixed (India + abroad)</option><option value="west">Mostly US, UK, Canada, Australia</option></select>
+      </div>
+      <div class="field">
+        <label for="n">Channel topic</label>
+        <select id="n" data-key="n"><option value="entertainment">Entertainment, vlogs, music, comedy</option><option value="gaming">Gaming</option><option value="education" selected>Education, how-to, cooking</option><option value="tech">Tech, reviews, gadgets</option><option value="finance">Finance, business, insurance</option></select>
+      </div>
+      <div class="field">
+        <label for="r">Your RPM in ₹ (optional)</label>
+        <input id="r" data-key="r" type="number" min="0" step="any" inputmode="decimal" placeholder="From YouTube Studio → Analytics → Revenue" />
+        <small class="hint">Leave empty to use the typical range for your audience and topic.</small>
+      </div>
+    </div>
+    <div class="stack calc-out" aria-live="polite">
+      <div><span class="hint">Estimated earnings per month</span><div class="big-number" id="o-month">–</div></div>
+      <div class="result-rows">
+        <div><span>Per day</span><b id="o-day">–</b></div>
+        <div><span>Per year</span><b id="o-year">–</b></div>
+        <div><span>Views per month</span><b id="o-views">–</b></div>
+        <div><span>RPM used (per 1,000 views)</span><b id="o-rpm">–</b></div>
+      </div>
+      <p class="hint" id="o-note"></p>
+      <button type="button" class="btn btn-sm" data-share="YouTube earnings">📤 Share</button>
+    </div>
+  </div>
+  <script>
+    import { initCalculator, val, setText } from '../lib/calc-ui';
+    import { ytRpm, ytEarnings, type YtFormat, type YtAudience, type YtNiche } from '../lib/youtube';
+    import { rupees, fmtNum } from '../lib/format';
+    const sel = (id: string) => document.getElementById(id) as HTMLSelectElement;
+    const money = (n: number) => rupees(Math.round(n));
+    const span = (r: [number, number]) => (Math.round(r[0]) === Math.round(r[1]) ? money(r[0]) : `${money(r[0])} – ${money(r[1])}`);
+    function update() {
+      const format = sel('f').value as YtFormat;
+      const custom = val('r');
+      const rpm: [number, number] = custom > 0 ? [custom, custom] : ytRpm(format, sel('a').value as YtAudience, sel('n').value as YtNiche);
+      const e = ytEarnings(val('v'), rpm);
+      setText('o-month', span(e.month));
+      setText('o-day', span(e.day));
+      setText('o-year', span(e.year));
+      setText('o-views', fmtNum(Math.round(val('v') * 30)));
+      setText('o-rpm', rpm[0] === rpm[1] ? `₹${+rpm[0].toFixed(2)}` : `₹${+rpm[0].toFixed(2)} – ₹${+rpm[1].toFixed(2)}`);
+      setText('o-note', custom > 0
+        ? 'Using your own RPM.'
+        : format === 'shorts'
+          ? 'Shorts pay much less per view than long videos. Many creators use Shorts to grow and long videos to earn.'
+          : 'Typical range for this audience and topic. Your real RPM is in YouTube Studio → Analytics → Revenue.');
+    }
+    initCalculator(update, { f: sel('f'), a: sel('a'), n: sel('n'), r: document.getElementById('r') as HTMLInputElement });
+    update();
+  </script>
+  <Fragment slot="content">
+    <h2>How much do YouTube views pay? (examples)</h2>
+    <table>
+      <thead><tr><th>Channel</th><th>1 lakh views</th><th>10 lakh views</th><th>1 crore views</th></tr></thead>
+      <tbody>{ex.map((r) => <tr><td>{r.label}</td><td>{range(r.rpm, 1e5)}</td><td>{range(r.rpm, 1e6)}</td><td>{range(r.rpm, 1e7)}</td></tr>)}</tbody>
+    </table>
+    <p>The same views can pay ten times more or less depending on <b>who watches</b> (advertisers pay more for viewers in the US, UK, Canada and Australia) and <b>what the video is about</b> (finance, insurance, software and education attract the highest bids). Long videos also earn more because they can show several ads; Shorts are paid from a shared pool.</p>
+    <h2>How to earn more per view</h2>
+    <ul>
+      <li>Make videos longer than 8 minutes so mid-roll ads can play (only where it fits the content).</li>
+      <li>Cover topics advertisers pay for: personal finance, tax, loans, careers, software and product reviews.</li>
+      <li>Add English titles or subtitles to reach viewers abroad, who pay more.</li>
+      <li>Expect higher RPM from October to December (festive and holiday ad budgets) and lower in January.</li>
+      <li>Earn beyond ads: memberships, Super Thanks, sponsorships and affiliate links usually pay more than ads for small channels.</li>
+    </ul>
+    <p>Typical RPM ranges used here (₹ per 1,000 views, education topic): long videos {YT_RPM.long.india.join('–')} (India), {YT_RPM.long.mixed.join('–')} (mixed), {YT_RPM.long.west.join('–')} (US/UK); Shorts {YT_RPM.shorts.india.join('–')}, {YT_RPM.shorts.mixed.join('–')} and {YT_RPM.shorts.west.join('–')}. Topic multipliers: entertainment ×0.6, gaming ×0.75, tech ×1.4, finance ×2.2 (smaller effect on Shorts).</p>
+    <p>Related: <a href="/youtube-thumbnail-resizer">YouTube thumbnail resizer</a> · <a href="/youtube-timestamp-link-generator">chapters checker</a> · <a href="/income-tax-calculator">income tax calculator</a> (YouTube income is taxable as business income).</p>
+    <p class="hint">SaralKit is not affiliated with YouTube or Google. Figures are estimates, not a promise of earnings.</p>
+  </Fragment>
+</ToolLayout>

@@ -1,0 +1,136 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'How do I download a YouTube thumbnail?', a: 'Copy the video link (Share → Copy link), paste it above and press <b>Download</b> under the size you want. HD (1280×720) is the sharpest. If your browser opens the image instead of saving it, long-press it and choose "Download image" on a phone, or right-click → "Save image as" on a computer.' },
+  { q: 'What size is a YouTube thumbnail?', a: 'The largest is <b>1280×720</b> (HD, called maxresdefault). It exists only when the video was uploaded in HD or has a custom thumbnail; otherwise the largest is 480×360. YouTube also keeps 640×480, 320×180 and 120×90 versions.' },
+  { q: 'Can I use someone else\'s thumbnail?', a: 'A thumbnail belongs to the video\'s creator. Using it for reference, a review or a link preview is common; reusing it on your own videos or for commercial work needs the creator\'s permission.' },
+  { q: 'Can I download the YouTube video or MP3 here?', a: 'No. YouTube\'s terms only allow saving videos through YouTube\'s own features: YouTube Premium for offline viewing, or YouTube Studio (Content → ⋮ → Download) for videos you uploaded yourself. If the video file is already on your device, use our <a href="/video-to-mp3">Video to MP3</a> or <a href="/compress-video">Compress Video</a> tools.' },
+  { q: 'Does it work for Shorts and live streams?', a: 'Yes. Paste a Shorts link (youtube.com/shorts/…), a live stream, a youtu.be short link or a normal watch link.' },
+];
+const steps = ['Copy the YouTube video link (Share → Copy link).', 'Paste it in the box. Every thumbnail size appears.', 'Press Download under the size you want.'];
+---
+<ToolLayout slug="youtube-thumbnail-downloader" h1="YouTube Thumbnail Downloader"
+  lead="Get the thumbnail of any YouTube video or Short in every size, up to HD 1280×720, and save it in one tap. Paste a link; nothing to install and no sign-up."
+  presets={[
+    { label: '🧪 Try an example', set: { '#yt-url': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }, id: 'example' },
+    { label: '📱 Shorts link', set: { '#yt-url': 'https://youtube.com/shorts/dQw4w9WgXcQ' }, id: 'shorts' },
+    { label: '🖼️ Make your own thumbnail', href: '/youtube-thumbnail-resizer' },
+    { label: '🔗 Embed code', href: '/youtube-embed-code-generator' },
+  ]}
+  steps={steps} faqs={faqs} badges={['🖼️ Up to 1280×720', '📱 Shorts too', '⚡ Instant']}>
+  <div class="stack">
+    <div class="field">
+      <label for="yt-url">YouTube link</label>
+      <div class="row" style="flex-wrap:nowrap">
+        <input id="yt-url" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="Paste a YouTube link, e.g. https://youtu.be/…" style="flex:1" />
+        <button type="button" class="btn btn-primary" id="yt-go">Get thumbnails</button>
+      </div>
+      <small class="hint">Normal videos, Shorts, live streams and youtu.be links all work.</small>
+    </div>
+    <p id="yt-status" class="status" role="status"></p>
+    <div id="yt-grid" class="yt-thumbs"></div>
+  </div>
+  <style is:global>
+    .yt-thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+    .yt-thumb { margin: 0; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); overflow: hidden; display: grid; }
+    .yt-thumb img { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; display: block; background: #000; }
+    .yt-thumb figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 12px; }
+    .yt-thumb figcaption .yt-size { color: var(--muted); font-size: .85rem; margin-right: auto; }
+    .yt-thumb.missing img { opacity: .35; }
+    .yt-thumb .yt-miss { color: var(--muted); font-size: .85rem; padding: 0 12px 10px; }
+  </style>
+  <script>
+    import { parseYouTube, thumbnails, type Thumb } from '../lib/youtube';
+    import { setStatus, downloadBlob, track } from '../lib/ui';
+    import { toolStarted, taskCompleted } from '../lib/analytics';
+    const input = document.getElementById('yt-url') as HTMLInputElement;
+    const grid = document.getElementById('yt-grid')!;
+    const st = document.getElementById('yt-status')!;
+    let current = '';
+
+    async function save(t: Thumb, id: string) {
+      try {
+        const r = await fetch(t.url, { mode: 'cors' });
+        if (!r.ok) throw new Error(String(r.status));
+        downloadBlob(await r.blob(), `youtube-thumbnail-${id}-${t.w}x${t.h}.jpg`);
+        setStatus(st, `✅ Saved the ${t.label} thumbnail (${t.w}×${t.h}).`, 'ok');
+      } catch {
+        // Some browsers block cross-site downloads: open the image so it can be saved by hand.
+        window.open(t.url, '_blank', 'noopener');
+        setStatus(st, 'The image opened in a new tab. To save it: long-press it and tap "Download image" (phone), or right-click → "Save image as" (computer).', 'warn');
+        track('yt_thumb_fallback');
+      }
+      taskCompleted('download');
+    }
+
+    function card(t: Thumb, id: string) {
+      const fig = document.createElement('figure');
+      fig.className = 'yt-thumb';
+      const img = new Image();
+      img.alt = `${t.label} thumbnail, ${t.w}×${t.h}`;
+      img.decoding = 'async';
+      img.referrerPolicy = 'no-referrer';
+      img.src = t.url;
+      const cap = document.createElement('figcaption');
+      cap.innerHTML = `<b>${t.label}</b><span class="yt-size">${t.w} × ${t.h}</span>`;
+      const dl = document.createElement('button');
+      dl.type = 'button'; dl.className = 'btn btn-sm btn-primary'; dl.textContent = '⬇ Download';
+      dl.addEventListener('click', () => save(t, id));
+      const open = document.createElement('a');
+      open.className = 'btn btn-sm'; open.href = t.url; open.target = '_blank'; open.rel = 'noopener'; open.textContent = '↗'; open.title = 'Open full size in a new tab'; open.setAttribute('aria-label', `Open ${t.label} thumbnail in a new tab`);
+      cap.append(dl, open);
+      fig.append(img, cap);
+      // YouTube answers a missing size with a tiny 120×90 placeholder.
+      const missing = () => {
+        if (fig.classList.contains('missing')) return;
+        fig.classList.add('missing');
+        dl.disabled = true;
+        const p = document.createElement('p');
+        p.className = 'yt-miss';
+        p.textContent = t.key === 'maxresdefault' ? 'No HD thumbnail for this video (it was not uploaded in HD). Use the next size.' : 'Not available for this video.';
+        fig.append(p);
+      };
+      img.addEventListener('load', () => { if (t.key !== 'default' && img.naturalWidth <= 120) missing(); });
+      img.addEventListener('error', missing);
+      return fig;
+    }
+
+    function render(force = false) {
+      const raw = input.value.trim();
+      if (!raw) { grid.replaceChildren(); setStatus(st, ''); current = ''; return; }
+      const link = parseYouTube(raw);
+      if (!link) { grid.replaceChildren(); current = ''; setStatus(st, 'That doesn\'t look like a YouTube link. Copy it from the Share button or the address bar and paste it here.', 'err'); return; }
+      const key = link.id + (link.isShort ? ':short' : '');
+      if (key === current && !force) return;
+      current = key;
+      toolStarted('input');
+      setStatus(st, `Video ID: ${link.id}${link.isShort ? ' (Short)' : ''}`, 'info');
+      grid.replaceChildren(...thumbnails(link.id).map((t) => card(t, link.id)));
+    }
+    let timer: number | undefined;
+    input.addEventListener('input', () => { clearTimeout(timer); timer = window.setTimeout(render, 250); });
+    input.addEventListener('paste', () => setTimeout(() => render(), 0));
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') render(true); });
+    document.getElementById('yt-go')!.addEventListener('click', () => render(true));
+    const q = new URLSearchParams(location.search).get('url');
+    if (q) { input.value = q; render(); }
+  </script>
+  <Fragment slot="content">
+    <h2>YouTube thumbnail sizes</h2>
+    <table>
+      <thead><tr><th>Name</th><th>Size</th><th>When it exists</th></tr></thead>
+      <tbody>
+        <tr><td>HD (maxresdefault)</td><td>1280 × 720</td><td>Videos uploaded in HD, or with a custom thumbnail</td></tr>
+        <tr><td>SD (sddefault)</td><td>640 × 480</td><td>Most videos</td></tr>
+        <tr><td>High (hqdefault)</td><td>480 × 360</td><td>Every video</td></tr>
+        <tr><td>Medium (mqdefault)</td><td>320 × 180</td><td>Every video</td></tr>
+        <tr><td>Small (default)</td><td>120 × 90</td><td>Every video</td></tr>
+      </tbody>
+    </table>
+    <p>The 640×480 and 480×360 versions have black bars above and below a 16:9 picture, because YouTube keeps them in the old 4:3 shape. For a clean 16:9 image, use HD or Medium.</p>
+    <h2>Making your own thumbnail?</h2>
+    <p>YouTube's custom thumbnails should be <b>1280×720 pixels, 16:9, JPG or PNG, under 2 MB</b>. The <a href="/youtube-thumbnail-resizer">YouTube thumbnail resizer</a> turns any photo or screenshot into exactly that, and shows how it looks at the small size people see in their feed.</p>
+    <p>Related: <a href="/youtube-timestamp-link-generator">YouTube timestamp link</a> · <a href="/youtube-embed-code-generator">YouTube embed code</a> · <a href="/youtube-money-calculator">YouTube earnings calculator</a></p>
+    <p class="hint">SaralKit is not affiliated with YouTube or Google. Thumbnail images load directly from YouTube's image server; we don't store anything.</p>
+  </Fragment>
+</ToolLayout>

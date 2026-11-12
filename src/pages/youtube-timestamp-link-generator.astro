@@ -1,0 +1,149 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+const faqs = [
+  { q: 'How do I share a YouTube video at a specific time?', a: 'Paste the link, type the time (like 2:15) and copy the link. It ends in <code>?t=135</code>, so the video starts at 2 minutes 15 seconds. On a computer you can also pause the video, right-click it and choose "Copy video URL at current time".' },
+  { q: 'Why don\'t my YouTube chapters show up?', a: 'YouTube shows chapters only if the description has <b>at least 3 timestamps</b>, the <b>first one is 0:00</b>, they are in <b>ascending order</b>, and each chapter is <b>at least 10 seconds</b> long. Paste your list in the checker to find the line that breaks a rule. Chapters can also be turned off in YouTube Studio (Automatic chapters / video settings).' },
+  { q: 'What is the "si=" part in YouTube share links?', a: 'It\'s a tracking code YouTube adds to links copied from the Share button, so it can tell who shared with whom. The clean link removes it (and other extras like <code>feature=share</code>); the video still opens the same.' },
+  { q: 'How do I open a Short as a normal video?', a: 'Paste the Shorts link: the "Normal video player" link opens the same video in the regular player, where you can pause, seek, change quality and see the description.' },
+];
+const steps = ['Paste a YouTube link.', 'Type the time you want the video to start (optional).', 'Copy the link you need. Check your chapter list below if you are a creator.'];
+---
+<ToolLayout slug="youtube-timestamp-link-generator" h1="YouTube Timestamp Link Generator"
+  lead="Share a YouTube video from an exact moment, clean tracking codes out of share links, open Shorts in the normal player, and check that your video chapters follow YouTube's rules."
+  presets={[
+    { label: '🧪 Try an example', set: { '#yl-url': 'https://youtu.be/dQw4w9WgXcQ?si=Tr4ckingC0de', '#yl-time': '0:43' }, id: 'example' },
+    { label: '📱 Shorts → normal player', set: { '#yl-url': 'https://youtube.com/shorts/dQw4w9WgXcQ?feature=share' }, id: 'shorts' },
+    { label: '📑 Check sample chapters', set: { '#yl-ch': '0:00 Intro\n0:45 What you need\n0:50 Step 1\n3:10 Step 2\n6:40 Result' }, id: 'chapters' },
+    { label: '🔗 Embed code', href: '/youtube-embed-code-generator' },
+  ]}
+  steps={steps} faqs={faqs} badges={['⏱️ Exact moment', '🧹 Removes tracking', '📑 Chapter checker']}>
+  <div class="stack">
+    <div class="grid-2 yl-2col">
+      <div class="field"><label for="yl-url">YouTube link</label><input id="yl-url" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="Paste a YouTube or Shorts link" /></div>
+      <div class="field"><label for="yl-time">Start at</label><input id="yl-time" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 2:15" /></div>
+    </div>
+    <p id="yl-status" class="status" role="status"></p>
+    <div id="yl-out" class="yl-links"></div>
+
+    <hr class="divider" />
+    <h2 style="margin:4px 0 0;font-size:1.15rem">📑 Chapters checker</h2>
+    <div class="grid-2 yl-2col">
+      <div class="field"><label for="yl-ch">Timestamps from your description</label><textarea id="yl-ch" rows="7" spellcheck="false" placeholder={'0:00 Intro\n1:20 Setup\n4:05 Result'}></textarea></div>
+      <div class="field"><label for="yl-dur">Video length (optional)</label><input id="yl-dur" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 12:30" /><small class="hint">Lets us check the last chapter too.</small></div>
+    </div>
+    <div id="yl-ch-out" aria-live="polite"></div>
+  </div>
+  <style is:global>
+    .grid-2.yl-2col { grid-template-columns: minmax(0, 3fr) minmax(0, 1fr); }
+    .yl-links { display: grid; gap: 8px; }
+    @media (max-width: 520px) { .grid-2.yl-2col { grid-template-columns: minmax(0, 1fr); } .yl-link > div:first-child { grid-column: 1 / -1; } .yl-link { grid-template-columns: auto auto 1fr; } }
+    .yl-link { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; background: var(--surface); }
+    .yl-link small { display: block; color: var(--muted); font-size: .8rem; font-weight: 600; }
+    .yl-link code { display: block; overflow-x: auto; white-space: nowrap; background: none; padding: 0; font-size: .86rem; }
+    .yl-chapters { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 4px; font-variant-numeric: tabular-nums; }
+    .yl-chapters li { display: flex; gap: 10px; }
+    .yl-chapters b { min-width: 64px; }
+    .yl-chapters span { color: var(--muted); margin-left: auto; font-size: .85rem; }
+  </style>
+  <script>
+    import { parseYouTube, parseTime, fmtTime, watchUrl, shortLink, embedSrc, checkChapters } from '../lib/youtube';
+    import { setStatus } from '../lib/ui';
+    import { toolStarted, taskCompleted } from '../lib/analytics';
+    const $ = (id: string) => document.getElementById(id) as HTMLInputElement;
+    const out = document.getElementById('yl-out')!;
+    const st = document.getElementById('yl-status')!;
+    let started = false;
+
+    function row(label: string, url: string) {
+      const d = document.createElement('div');
+      d.className = 'yl-link';
+      const text = document.createElement('div');
+      text.innerHTML = `<small></small><code></code>`;
+      text.querySelector('small')!.textContent = label;
+      text.querySelector('code')!.textContent = url;
+      const copy = document.createElement('button');
+      copy.type = 'button'; copy.className = 'btn btn-sm btn-primary'; copy.textContent = '📋 Copy';
+      copy.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(url); } catch {}
+        copy.textContent = '✅ Copied';
+        setTimeout(() => (copy.textContent = '📋 Copy'), 1500);
+        taskCompleted('copy');
+      });
+      const open = document.createElement('a');
+      open.className = 'btn btn-sm'; open.href = url; open.target = '_blank'; open.rel = 'noopener'; open.textContent = 'Open';
+      d.append(text, copy, open);
+      return d;
+    }
+
+    function links() {
+      const raw = $('yl-url').value.trim();
+      out.replaceChildren();
+      if (!raw) { setStatus(st, ''); return; }
+      const link = parseYouTube(raw);
+      if (!link) { setStatus(st, 'That doesn\'t look like a YouTube link.', 'err'); return; }
+      if (!started) { started = true; toolStarted('input'); }
+      const tv = $('yl-time').value.trim();
+      const t = tv ? parseTime(tv) : link.t;
+      if (tv && Number.isNaN(t)) { setStatus(st, 'Write the time like 90, 2:15 or 1:02:03.', 'err'); return; }
+      setStatus(st, t ? `Starts at ${fmtTime(t!)} (${t} seconds).` : 'Add a time to start the video at a moment.', 'info');
+      const rows = [
+        row(t ? `Short link from ${fmtTime(t!)}` : 'Short link', shortLink(link.id, t)),
+        row(t ? `Full link from ${fmtTime(t!)}` : 'Clean link (tracking removed)', watchUrl(link.id, t)),
+      ];
+      if (t) rows.push(row('Clean link without time', watchUrl(link.id)));
+      if (link.isShort) rows.push(row('Normal video player (for this Short)', watchUrl(link.id)));
+      rows.push(row('Embed link (for websites)', embedSrc(link.id, { start: t })));
+      out.replaceChildren(...rows);
+    }
+
+    function chapters() {
+      const box = document.getElementById('yl-ch-out')!;
+      const text = $('yl-ch').value;
+      if (!text.trim()) { box.replaceChildren(); return; }
+      if (!started) { started = true; toolStarted('input'); }
+      const dur = $('yl-dur').value.trim() ? parseTime($('yl-dur').value) : undefined;
+      const r = checkChapters(text, Number.isNaN(dur) ? undefined : dur);
+      const status = document.createElement('div');
+      status.className = `status ${r.errors.length ? 'err' : 'ok'}`;
+      if (r.errors.length) {
+        status.innerHTML = '<b>YouTube won\'t show these chapters yet:</b>';
+        const ul = document.createElement('ul');
+        ul.style.margin = '6px 0 0'; ul.style.paddingLeft = '1.2em';
+        r.errors.forEach((e) => { const li = document.createElement('li'); li.textContent = e; ul.append(li); });
+        status.append(ul);
+      } else {
+        status.textContent = `✅ ${r.chapters.length} chapters. These follow YouTube's rules.`;
+        taskCompleted('chapters');
+      }
+      const list = document.createElement('ol');
+      list.className = 'yl-chapters';
+      r.chapters.forEach((c, i) => {
+        const next = r.chapters[i + 1]?.start ?? dur;
+        const li = document.createElement('li');
+        li.innerHTML = '<b></b><em></em><span></span>';
+        li.querySelector('b')!.textContent = fmtTime(c.start);
+        li.querySelector('em')!.textContent = c.title || '(no title)';
+        li.querySelector('span')!.textContent = next && next > c.start ? fmtTime(next - c.start) : '';
+        list.append(li);
+      });
+      box.replaceChildren(status, list);
+    }
+    ['yl-url', 'yl-time'].forEach((id) => { $(id).addEventListener('input', links); $(id).addEventListener('change', links); });
+    ['yl-ch', 'yl-dur'].forEach((id) => { $(id).addEventListener('input', chapters); $(id).addEventListener('change', chapters); });
+    links(); chapters();
+  </script>
+  <Fragment slot="content">
+    <h2>YouTube chapter rules</h2>
+    <ul>
+      <li>The first timestamp must be <b>0:00</b>.</li>
+      <li>At least <b>3 timestamps</b>, in ascending order.</li>
+      <li>Every chapter must be at least <b>10 seconds</b> long.</li>
+      <li>Put each timestamp at the start of its own line in the description, followed by the title: <code>1:20 Setup</code>.</li>
+    </ul>
+    <p>Chapters help viewers jump to the part they want, and Google often shows them as "key moments" in search results, which can bring extra clicks to your video.</p>
+    <h2>Time formats you can type</h2>
+    <p><code>90</code>, <code>90s</code>, <code>1:30</code>, <code>1m30s</code> and <code>1:02:03</code> all work. Links already containing <code>t=</code> or <code>start=</code> keep their time unless you type a new one.</p>
+    <p>Related: <a href="/youtube-embed-code-generator">YouTube embed code generator</a> · <a href="/youtube-thumbnail-downloader">YouTube thumbnail downloader</a> · <a href="/qr-code-generator">QR code for a link</a></p>
+    <p class="hint">SaralKit is not affiliated with YouTube or Google.</p>
+  </Fragment>
+</ToolLayout>

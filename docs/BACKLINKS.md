@@ -61,7 +61,7 @@ Write to 10–20 personal-finance, loan, tax and exam-prep blogs (email template
 
 ### D. Write about how it's built (developers link to this)
 
-A post on dev.to, Hashnode or Medium, "I built 83 free tools that run entirely in the browser (no uploads)", covering WebAssembly (qpdf, libheif), WebCodecs video compression, on-device OCR and background removal, and hosting 674 pages for free on Cloudflare. Then submit it to Hacker News as "Show HN" (text below). Technical posts get linked from newsletters and other blogs.
+A post on dev.to, Hashnode or Medium, "I built 88 free tools that run entirely in the browser (no uploads)", covering WebAssembly (qpdf, libheif), WebCodecs video compression, on-device OCR and background removal, and hosting 704 pages for free on Cloudflare. Then submit it to Hacker News as "Show HN" (text below). Technical posts get linked from newsletters and other blogs.
 
 ### Never do these (they get sites penalised)
 
@@ -77,18 +77,18 @@ A post on dev.to, Hashnode or Medium, "I built 83 free tools that run entirely i
 **Tagline (60 characters):** Free PDF, image and money tools. No login, no upload.
 
 **Short description (about 160 characters):**
-> 83 free tools that run in your browser: compress PDF, resize photos to exact KB for exam forms, EMI, SIP and tax calculators. No sign-up, files never leave your device.
+> 88 free tools that run in your browser: compress PDF, resize photos to exact KB for exam forms, EMI, SIP and tax calculators. No sign-up, files never leave your device.
 
 **Long description:**
-> SaralKit is a free, open-source collection of 83 everyday tools for India: compress, merge, edit, sign and unlock PDFs; resize photos and signatures to the exact KB size SSC, IBPS, UPSC, NEET and PAN forms ask for; compress videos for WhatsApp; and calculate EMI, SIP, income tax, salary, PPF and retirement. Everything runs on your own device using WebAssembly, so files are never uploaded, there are no daily limits or watermarks, and there's no account to create. Available in English, Hindi, Bengali, Marathi, Telugu and Tamil.
+> SaralKit is a free, open-source collection of 88 everyday tools for India: compress, merge, edit, sign and unlock PDFs; resize photos and signatures to the exact KB size SSC, IBPS, UPSC, NEET and PAN forms ask for; compress videos for WhatsApp; and calculate EMI, SIP, income tax, salary, PPF and retirement. Everything runs on your own device using WebAssembly, so files are never uploaded, there are no daily limits or watermarks, and there's no account to create. Available in English, Hindi, Bengali, Marathi, Telugu and Tamil.
 
-**Show HN title:** Show HN: SaralKit – 83 free tools that run entirely in your browser (no uploads)
+**Show HN title:** Show HN: SaralKit – 88 free tools that run entirely in your browser (no uploads)
 
 **Show HN text:**
 > I got tired of "free" PDF and image sites that upload your files, then ask for money after two uses. SaralKit does the work in the browser instead: qpdf and pdf-lib (WebAssembly) for PDFs, WebCodecs for video, Tesseract for OCR, a MediaPipe model for background removal. Nothing is uploaded, so there are no limits and no server costs. It's a static Astro site on Cloudflare's free plan (674 pages, 6 languages), MIT licensed. The India-specific bits: exam photo resizer with official SSC/IBPS/UPSC sizes, e-Aadhaar PDF unlock, GST invoice and EMI calculators. Feedback welcome, especially on what breaks on low-end Android phones.
 
 **Product Hunt first comment:**
-> Hi! SaralKit started from a simple annoyance: every exam form in India wants your photo at "20–50 KB, 200×230 px", and every site that does it either uploads your photo or watermarks it. So I built tools that run on your own phone instead. 83 of them now, from PDF compress/edit/sign to EMI, SIP and income tax calculators, in 6 Indian languages. Free forever, no account, no data stored. What should I build next?
+> Hi! SaralKit started from a simple annoyance: every exam form in India wants your photo at "20–50 KB, 200×230 px", and every site that does it either uploads your photo or watermarks it. So I built tools that run on your own phone instead. 88 of them now, from PDF compress/edit/sign to EMI, SIP and income tax calculators, in 6 Indian languages. Free forever, no account, no data stored. What should I build next?
 
 **Reddit post:**
 > **I made a set of free tools that run in your browser, with no uploads or sign-up**

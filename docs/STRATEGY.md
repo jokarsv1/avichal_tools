@@ -86,7 +86,7 @@ Two adjustments decide the **build order** for ad revenue. They don't change the
 | 63 | Translated exam photo pages (6 exams) and KB-size pages (7 sizes) × 5 languages | 4 | 4 | 5 | **80** | Med | **Very low** | ✅ |
 | 64 | Quotation generator (converts to GST invoice) | 4 | 4 | 4 | **64** | **High** | Med | ✅ |
 
-**Built now: 83 tools and 674 pages in 6 languages** (tools plus exam, KB-size, PDF-size, loan-type, country and currency-pair landing pages, and the translated pages).
+**Built now: 88 tools and 704 pages in 6 languages** (tools plus exam, KB-size, PDF-size, loan-type, country and currency-pair landing pages, and the translated pages).
 
 ## 3. Build order from here
 

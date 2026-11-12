@@ -1,0 +1,80 @@
+---
+import ToolLayout from '../layouts/ToolLayout.astro';
+import Dropzone from '../components/Dropzone.astro';
+const faqs = [
+  { q: 'What is the right size for a YouTube thumbnail?', a: '<b>1280 × 720 pixels</b> (16:9), at least 640 pixels wide, as JPG, PNG or GIF, and <b>under 2 MB</b>. This tool exports exactly that as a JPG and keeps it under the limit.' },
+  { q: 'What size should a YouTube banner (channel art) be?', a: 'YouTube asks for at least <b>2048 × 1152</b> and up to 6 MB. We export <b>2560 × 1440</b>. Keep text and logos inside the safe area in the middle (1546 × 423 at this size, 1235 × 338 at 2048 × 1152): that strip shows on phones, computers and TVs; TVs show the whole image.' },
+  { q: 'What size is a YouTube profile picture?', a: '<b>800 × 800 pixels</b>, square. YouTube shows it as a circle and as small as 98 × 98, so keep your face or logo in the middle. The preview dims the corners that will be cut off.' },
+  { q: 'My photo is vertical. How do I make a 16:9 thumbnail?', a: 'Choose "Fit, blurred background": the whole photo stays visible and the sides are filled with a soft blurred copy, the way many news channels do it. Or use "Fill & crop" and slide the position to choose the part you want.' },
+  { q: 'Is my photo uploaded?', a: 'No. The image is resized inside your browser and never leaves your device.' },
+];
+const steps = ['Choose or drop a photo or screenshot.', 'Pick thumbnail, banner or profile picture, and how the photo should fit.', 'Check the preview and press Download.'];
+---
+<ToolLayout slug="youtube-thumbnail-resizer" h1="YouTube Thumbnail Resizer"
+  lead="Turn any photo or screenshot into a YouTube thumbnail (1280×720, under 2 MB), channel banner (2560×1440 with the safe area marked) or profile picture (800×800), and see how the thumbnail looks in the feed before you upload."
+  presets={[
+    { label: '🖼️ Thumbnail 1280×720', set: { '#yi-k-thumb': true }, id: 'thumbnail' },
+    { label: '🏞️ Channel banner', set: { '#yi-k-banner': true }, id: 'banner' },
+    { label: '👤 Profile picture', set: { '#yi-k-profile': true }, id: 'profile' },
+    { label: '🌫️ Vertical photo → blurred sides', set: { '#yi-m-blur': true }, id: 'blur' },
+  ]}
+  steps={steps} faqs={faqs} badges={['📐 Exact YouTube sizes', '🔒 Never uploaded', '👀 Feed preview']}>
+  <div class="stack">
+    <Dropzone id="yi-drop" accept="image/*,.heic,.heif" title="Choose a photo or screenshot" hint="JPG, PNG, WebP, HEIC · drag & drop or paste" icon="🖼️" />
+    <p id="yi-status" class="status" role="status"></p>
+    <div id="yi-panel" class="stack hidden">
+      <div class="field">
+        <span style="font-weight:600">Making a</span>
+        <div class="seg" role="radiogroup" aria-label="Image type">
+          <label><input type="radio" name="yi-kind" id="yi-k-thumb" value="thumb" checked /><span>Thumbnail</span></label>
+          <label><input type="radio" name="yi-kind" id="yi-k-banner" value="banner" /><span>Channel banner</span></label>
+          <label><input type="radio" name="yi-kind" id="yi-k-profile" value="profile" /><span>Profile picture</span></label>
+        </div>
+      </div>
+      <div class="field">
+        <span style="font-weight:600">Fit</span>
+        <div class="seg" role="radiogroup" aria-label="Fit">
+          <label><input type="radio" name="yi-mode" id="yi-m-fill" value="fill" checked /><span>Fill & crop</span></label>
+          <label><input type="radio" name="yi-mode" id="yi-m-blur" value="blur" /><span>Fit, blurred background</span></label>
+          <label><input type="radio" name="yi-mode" id="yi-m-color" value="color" /><span>Fit, colour background</span></label>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div class="field"><label for="yi-zoom">Zoom</label><input type="range" id="yi-zoom" min="100" max="300" value="100" /></div>
+        <div class="field"><label for="yi-x">Left ↔ right</label><input type="range" id="yi-x" min="-100" max="100" value="0" /></div>
+        <div class="field"><label for="yi-y">Up ↕ down</label><input type="range" id="yi-y" min="-100" max="100" value="0" /></div>
+      </div>
+      <div class="field hidden" id="yi-bg-wrap"><label for="yi-bg">Background colour</label><input type="color" id="yi-bg" value="#111827" /></div>
+      <div class="preview-box" style="padding:8px"><canvas id="yi-preview" aria-label="Preview"></canvas></div>
+      <p class="hint" id="yi-dims"></p>
+      <div id="yi-feed" class="row" style="align-items:flex-end;gap:18px">
+        <figure style="margin:0"><canvas id="yi-feed-big" style="border-radius:10px"></canvas><figcaption class="hint">Home feed</figcaption></figure>
+        <figure style="margin:0"><canvas id="yi-feed-small" style="border-radius:6px"></canvas><figcaption class="hint">"Up next" list</figcaption></figure>
+      </div>
+      <div class="btn-row">
+        <button type="button" class="btn btn-primary btn-lg" id="yi-download">⬇ Download JPG</button>
+        <button type="button" class="btn" id="yi-reset">↺ Reset position</button>
+      </div>
+    </div>
+  </div>
+  <script>import '../tools/youtube-image';</script>
+  <Fragment slot="content">
+    <h2>YouTube image sizes (2026)</h2>
+    <table>
+      <thead><tr><th>Image</th><th>Size</th><th>File limit</th><th>Tip</th></tr></thead>
+      <tbody>
+        <tr><td>Video thumbnail</td><td>1280 × 720 (16:9)</td><td>2 MB</td><td>Big face, 3–5 words of large text, high contrast</td></tr>
+        <tr><td>Channel banner</td><td>2560 × 1440 (min 2048 × 1152)</td><td>6 MB</td><td>Text only inside the centre safe area</td></tr>
+        <tr><td>Profile picture</td><td>800 × 800</td><td>–</td><td>Shown as a circle, as small as 98 px</td></tr>
+      </tbody>
+    </table>
+    <h2>Thumbnails that get clicked</h2>
+    <ul>
+      <li>Check the small "Up next" preview: if you can't read the text there, make it bigger or shorter.</li>
+      <li>Keep important things away from the bottom-right corner; YouTube puts the video length there.</li>
+      <li>Use the same style on every video so viewers recognise your channel.</li>
+    </ul>
+    <p>Related: <a href="/youtube-thumbnail-downloader">YouTube thumbnail downloader</a> · <a href="/background-remover">background remover</a> (cut yourself out for a thumbnail) · <a href="/compress-video">compress video</a></p>
+    <p class="hint">SaralKit is not affiliated with YouTube or Google.</p>
+  </Fragment>
+</ToolLayout>
