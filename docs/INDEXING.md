@@ -16,7 +16,7 @@ Ready-to-paste descriptions for every listing are in [`BACKLINKS.md`](BACKLINKS.
 
 | ✓ | Search engine | What it covers | What to do |
 |---|---|---|---|
-| [x] | ⭐⭐⭐ **Google Search Console**<br>search.google.com/search-console | Google Search, Images, Discover, AI Overviews | Verified, and the sitemap was submitted. **Keep doing:** URL inspection → paste a URL → **Request indexing**, 10 a day (list in `BACKLINKS.md` §2). Check **Indexing → Pages** once a week. |
+| [x] | ⭐⭐⭐ **Google Search Console**<br>search.google.com/search-console | Google Search, Images, Discover, AI Overviews | Verified, and the sitemap was submitted. **Keep doing:** URL inspection → paste a URL → **Request indexing**, 10 a day, using the day-by-day list in [`REQUEST-INDEXING.md`](REQUEST-INDEXING.md). Check **Indexing → Pages** once a week. |
 | [ ] | ⭐⭐⭐ **Bing Webmaster Tools**<br>bing.com/webmasters | Bing, Yahoo, DuckDuckGo, Ecosia, Microsoft Copilot, and the Bing index that ChatGPT search also uses | If not done: **Add site → Import from Google Search Console** (one click). Then **Sitemaps**: check that `https://saralkit.com/sitemap-index.xml` is listed. Then **URL Submission**: paste your top 20 URLs (Bing allows many per day). |
 | [x] | ⭐⭐⭐ **IndexNow** | Bing, Yandex, Seznam, Naver | Already automatic: Cloudflare **Crawler Hints** pings them whenever a page changes. Nothing to do. |
 | [ ] | ⭐ **Yandex Webmaster**<br>webmaster.yandex.com | Yandex (Russia, some Asia) | Optional, low traffic for India. **Add site → choose the DNS verification → add the TXT record in Cloudflare DNS → Verify → Indexing → Sitemap files → add the sitemap URL.** |
@@ -58,7 +58,7 @@ If a visitor ever reports "site blocked by antivirus or office firewall", tell m
 
 ## 4. Claim "SaralKit" on social sites
 
-Brand searches then show your profiles, and each profile links back to the site. Use the same name and logo everywhere (`public/icon-512.png`):
+Links from social profiles and posts are almost always **nofollow**, so they pass little or no ranking power: this is mainly for **visitors, trust and your brand search** (someone who searches "SaralKit" sees your profiles), and to stop anyone else taking the name. The real ranking boost comes when people who found you on social media link to you from their own blogs and sites. Claim the names in one evening, then post regularly on just one or two (YouTube Shorts and Instagram Reels work best in India). Use the same name and logo everywhere (`public/icon-512.png`):
 
 - [ ] X / Twitter `@saralkit`
 - [ ] Instagram `saralkit`: post 20-second Reels like "SSC photo 20–50 KB in 10 seconds"
